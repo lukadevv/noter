@@ -3,11 +3,54 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#17171c" />
-    <meta name="description" content="Local-first offline notes with folders, images and themes." />
-    <link rel="icon" href="/icons/icon-192.png" type="image/png" />
-    <link rel="apple-touch-icon" href="/icons/icon-192.png" />
-    <title>Noter</title>
+
+    <title>Noter — Local-first notes that work offline</title>
+    <meta
+      name="description"
+      content="A note-taking app that runs entirely in your browser. Folders, images, checklists and search, with your notes stored on your own device and no account to create."
+    />
+    <meta name="application-name" content="Noter" />
+    <meta name="theme-color" content="#17171c" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f7f7fa" media="(prefers-color-scheme: light)" />
+    <meta name="color-scheme" content="dark light" />
+
+    <!-- Icons. The .ico carries 16/32/48 for browser tabs and OS shortcuts; the
+         PNGs let modern browsers skip the ICO container entirely. -->
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+
+    <!-- Installed-app behaviour on iOS, which ignores the web manifest. -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Noter" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="mobile-web-app-capable" content="yes" />
+
+    <!-- Link previews. `og:image` has to be absolute, so the deployed origin is
+         substituted at build time from VITE_SITE_URL. -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Noter" />
+    <meta property="og:title" content="Noter — Local-first notes that work offline" />
+    <meta
+      property="og:description"
+      content="A note-taking app that runs entirely in your browser. Folders, images, checklists and search, with your notes stored on your own device and no account to create."
+    />
+    <meta property="og:url" content="%SITE_URL%/" />
+    <meta property="og:image" content="%SITE_URL%/og.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="The Noter logo beside the words “Local-first notes that work offline”." />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Noter — Local-first notes that work offline" />
+    <meta
+      name="twitter:description"
+      content="A note-taking app that runs entirely in your browser. Folders, images, checklists and search, with your notes stored on your own device and no account to create."
+    />
+    <meta name="twitter:image" content="%SITE_URL%/og.png" />
   </head>
   <body>
     <div id="app"></div>

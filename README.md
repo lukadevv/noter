@@ -86,7 +86,7 @@ yarn would build something that does not match CI.
 | `pnpm test:e2e` | End-to-end tests (Playwright) |
 | `pnpm test:e2e:ui` | Playwright's interactive runner |
 | `pnpm test:all` | Unit tests, then end-to-end |
-| `node scripts/gen-icons.mjs` | Regenerate the PWA icons |
+| `node scripts/gen-icons.mjs` | Regenerate every icon and the social card from `assets/logo.png` |
 
 Run one-off binaries with `pnpm exec`, never `npx`. The first e2e run needs the
 browser: `pnpm exec playwright install chromium`.
@@ -167,6 +167,40 @@ Two conventions keep the suite honest:
 `E2E_DEV=1 pnpm test:e2e` runs against the dev server instead, which is faster
 when iterating (the offline spec skips itself there, since there is no service
 worker).
+
+## Branding assets
+
+`assets/logo.png` is the only artwork maintained by hand. Everything under
+`public/` is generated from it by `scripts/gen-icons.mjs` and committed, so a
+clone builds without any image tooling:
+
+| Output | Used for |
+|---|---|
+| `favicon.ico`, `icons/favicon-16.png`, `icons/favicon-32.png` | Browser tabs and OS shortcuts |
+| `icons/icon-192.png`, `icons/icon-512.png` | PWA icons with `purpose: any` |
+| `icons/maskable-192.png`, `icons/maskable-512.png` | Android, which crops to its own shape |
+| `icons/apple-touch-icon.png` | iOS home screen (opaque; iOS composites transparency onto black) |
+| `icons/logo-64.png` | The brand mark in the sidebar |
+| `og.png` | Link previews (1200×630) |
+
+The maskable and Apple icons are full-bleed: those platforms apply their own
+mask, so an icon with rounded corners of its own gets clipped twice and looks
+smaller than its neighbours. Their corners are filled by extrapolating the logo's
+own gradient rather than by inventing a background, which is what keeps the join
+invisible.
+
+Regenerating needs ImageMagick (`sudo apt install imagemagick` /
+`brew install imagemagick`); the script says so if it is missing.
+
+**Link previews need an absolute URL.** Set `VITE_SITE_URL` when building for a
+real deployment:
+
+```bash
+VITE_SITE_URL=https://your-domain.example pnpm build
+```
+
+Without it the Open Graph tags fall back to relative paths, which most scrapers
+ignore — previews simply do not appear, rather than pointing somewhere wrong.
 
 ## Bundle budget
 

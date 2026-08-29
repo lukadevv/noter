@@ -23,7 +23,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       # `build` runs svelte-check, builds, and fails if the initial payload
-      # outgrows its budget.
+      # outgrows its budget. Icons are committed, so no image tooling is needed.
       - run: pnpm build
 
       - run: pnpm test

@@ -73,6 +73,61 @@ test.describe('offline and PWA', () => {
     expect(manifest.icons.some((icon) => icon.purpose === 'maskable')).toBe(true)
   })
 
+  test('serves every icon the metadata points at', async ({ page }) => {
+    await openApp(page)
+
+    const links = await page.evaluate(() =>
+      [...document.querySelectorAll<HTMLLinkElement>('link[rel*="icon"], link[rel="manifest"]')].map(
+        (link) => link.getAttribute('href') ?? '',
+      ),
+    )
+    expect(links).toContain('/favicon.ico')
+    expect(links).toContain('/icons/apple-touch-icon.png')
+
+    const manifest = await page.evaluate(async () => {
+      const response = await fetch('/manifest.webmanifest')
+      return (await response.json()) as { icons: { src: string }[] }
+    })
+
+    // A broken icon path is invisible until someone tries to install the app.
+    const targets = [...links, ...manifest.icons.map((icon) => `/${icon.src}`), '/og.png']
+    for (const target of targets) {
+      const status = await page.evaluate(async (url) => (await fetch(url)).status, target)
+      expect(status, `${target} should be served`).toBe(200)
+    }
+  })
+
+  test('shows the product logo as the sidebar brand mark', async ({ page }) => {
+    await openApp(page)
+
+    const mark = page.locator('.brand img')
+    await expect(mark).toBeVisible()
+    // A decoded image, not a broken one.
+    await expect.poll(() => mark.evaluate((el: HTMLImageElement) => el.naturalWidth)).toBeGreaterThan(0)
+  })
+
+  test('carries link-preview metadata', async ({ page }) => {
+    await openApp(page)
+
+    const meta = await page.evaluate(() => {
+      const get = (selector: string) =>
+        document.querySelector(selector)?.getAttribute('content') ?? null
+      return {
+        title: get('meta[property="og:title"]'),
+        description: get('meta[property="og:description"]'),
+        image: get('meta[property="og:image"]'),
+        card: get('meta[name="twitter:card"]'),
+        width: get('meta[property="og:image:width"]'),
+      }
+    })
+
+    expect(meta.title).toContain('Noter')
+    expect(meta.description).toBeTruthy()
+    expect(meta.image).toContain('og.png')
+    expect(meta.card).toBe('summary_large_image')
+    expect(meta.width).toBe('1200')
+  })
+
   test('ships a Content-Security-Policy that blocks inline scripts', async ({ page }) => {
     await openApp(page)
 

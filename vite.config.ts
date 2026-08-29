@@ -42,10 +42,29 @@ function csp(): Plugin {
   }
 }
 
+/**
+ * Fills in `%SITE_URL%` for the link-preview tags.
+ *
+ * Open Graph requires an absolute URL for `og:image`, which a static build has
+ * no way to know. Set `VITE_SITE_URL` when deploying; without it the tags fall
+ * back to relative paths, which most scrapers ignore — so previews simply do not
+ * appear rather than pointing somewhere wrong.
+ */
+function siteUrl(): Plugin {
+  return {
+    name: 'noter-site-url',
+    transformIndexHtml(html) {
+      const base = (process.env.VITE_SITE_URL ?? '').replace(/\/$/, '')
+      return html.replaceAll('%SITE_URL%', base)
+    },
+  }
+}
+
 export default defineConfig({
   plugins: [
     svelte(),
     csp(),
+    siteUrl(),
     VitePWA({
       strategies: 'injectManifest',
       srcDir: 'src',
@@ -56,7 +75,9 @@ export default defineConfig({
         id: '/',
         name: 'Noter',
         short_name: 'Noter',
-        description: 'Local-first offline notes with folders, images and themes.',
+        description:
+          'A note-taking app that runs entirely in your browser. Folders, images, checklists and ' +
+          'search, with your notes stored on your own device and no account to create.',
         start_url: '/',
         scope: '/',
         display: 'standalone',
@@ -67,6 +88,7 @@ export default defineConfig({
         icons: [
           { src: 'icons/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
           { src: 'icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+          { src: 'icons/maskable-192.png', sizes: '192x192', type: 'image/png', purpose: 'maskable' },
           { src: 'icons/maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
         share_target: {
