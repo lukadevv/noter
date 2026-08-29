@@ -56,10 +56,20 @@ to. Install it, go offline, keep writing.
 
 ## Getting started
 
+This project uses **pnpm**. The version is pinned in `package.json`, so the
+simplest way to get the right one is Corepack, which ships with Node:
+
 ```bash
+corepack enable
 pnpm install
 pnpm dev
 ```
+
+Other package managers are rejected by a `preinstall` guard
+(`scripts/only-pnpm.mjs`). That is not gatekeeping: the lockfile is
+`pnpm-lock.yaml`, and pnpm's symlinked `node_modules` layout surfaces missing
+dependency declarations that npm's flat layout hides. An install from npm or
+yarn would build something that does not match CI.
 
 ## Commands
 
@@ -76,7 +86,8 @@ pnpm dev
 | `pnpm test:all` | Unit tests, then end-to-end |
 | `node scripts/gen-icons.mjs` | Regenerate the PWA icons |
 
-First run of the e2e suite needs the browser: `pnpm exec playwright install chromium`.
+Run one-off binaries with `pnpm exec`, never `npx`. The first e2e run needs the
+browser: `pnpm exec playwright install chromium`.
 
 ## Keyboard
 

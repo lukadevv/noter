@@ -9,3 +9,8 @@ test-results/
 playwright-report/
 blob-report/
 .playwright/
+
+# This project uses pnpm; a lockfile from another package manager is a mistake.
+package-lock.json
+yarn.lock
+bun.lockb

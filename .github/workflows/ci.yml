@@ -12,6 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # No version input: the action reads the pinned one from packageManager.
       - uses: pnpm/action-setup@v4
 
       - uses: actions/setup-node@v4
@@ -33,6 +34,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # No version input: the action reads the pinned one from packageManager.
       - uses: pnpm/action-setup@v4
 
       - uses: actions/setup-node@v4
