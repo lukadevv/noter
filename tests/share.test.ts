@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { decodeNote, inlineSharedImages } from '$lib/share/encode'
+import { decodeNote, encodeNote, inlineSharedImages, MAX_URL_LENGTH } from '$lib/share/encode'
 import { compressToEncodedURIComponent } from 'lz-string'
 
 const ASSET = '11111111-1111-4111-8111-111111111111'
@@ -7,6 +7,49 @@ const ASSET = '11111111-1111-4111-8111-111111111111'
 function encode(payload: unknown): string {
   return compressToEncodedURIComponent(JSON.stringify(payload))
 }
+
+describe('encodeNote', () => {
+  const note = { title: 'A title', body: 'The body text.', view: 'doc' as const }
+
+  it('round-trips through decodeNote', () => {
+    const decoded = decodeNote(encodeNote(note).payload)
+    expect(decoded).toMatchObject({ t: 'A title', b: 'The body text.', m: 'doc' })
+  })
+
+  it('falls back to the derived title when none is set', () => {
+    const decoded = decodeNote(encodeNote({ title: '', body: '# Heading\nbody', view: 'doc' }).payload)
+    expect(decoded?.t).toBe('Heading')
+  })
+
+  it('never carries images, and says how many were left out', () => {
+    const withImages = {
+      title: 'Pictures',
+      body: `one ![[img:${ASSET}]] two ![[img:22222222-2222-4222-8222-222222222222]]`,
+      view: 'doc' as const,
+    }
+    const result = encodeNote(withImages)
+
+    expect(result.imagesOmitted).toBe(2)
+    expect(decodeNote(result.payload)?.i).toBeUndefined()
+  })
+
+  it('reports nothing omitted for a note with no images', () => {
+    expect(encodeNote(note).imagesOmitted).toBe(0)
+  })
+
+  it('keeps the image references themselves in the text', () => {
+    const body = `see ![[img:${ASSET}]]`
+    expect(decodeNote(encodeNote({ title: 'T', body, view: 'doc' }).payload)?.b).toBe(body)
+  })
+
+  it('flags a payload too long to share reliably', () => {
+    expect(encodeNote(note).tooLong).toBe(false)
+    // Random text does not compress, so this reliably exceeds the limit.
+    const noise = Array.from({ length: 40_000 }, () => Math.random().toString(36)[2]).join('')
+    expect(encodeNote({ title: 'Big', body: noise, view: 'doc' }).tooLong).toBe(true)
+    expect(encodeNote({ title: 'Big', body: noise, view: 'doc' }).length).toBeGreaterThan(MAX_URL_LENGTH)
+  })
+})
 
 describe('decodeNote', () => {
   it('reads a well-formed payload', () => {

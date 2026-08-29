@@ -450,6 +450,13 @@ a:hover {
   font-size: 0.85em;
 }
 
+/* A shared link deliberately carries no images, so its placeholders are a note
+   to the reader, not a fault to report. */
+.prose .missing-image--expected {
+  border-color: var(--border-strong);
+  color: var(--text-faint);
+}
+
 /* Wiki links. A link to a note that does not exist yet is dimmed rather than
    hidden: writing the link first and creating the note later is the point. */
 .prose .wikilink {

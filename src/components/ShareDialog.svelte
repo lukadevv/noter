@@ -13,24 +13,10 @@
 
   let { note, body, onclose }: Props = $props()
 
-  let includeImages = $state(true)
-  let url = $state('')
-  let imagesOmitted = $state(false)
-  let tooLong = $state(false)
-  let length = $state(0)
-  let building = $state(true)
-
-  $effect(() => {
-    building = true
-    const wanted = includeImages
-    void encodeNote({ ...note, body }, { includeImages: wanted }).then((result) => {
-      url = shareUrl(result.payload)
-      imagesOmitted = result.imagesOmitted
-      tooLong = result.tooLong
-      length = result.length
-      building = false
-    })
-  })
+  // Encoding is synchronous: the link carries text only, so nothing is read
+  // from the database to build it.
+  let encoded = $derived(encodeNote({ ...note, body }))
+  let url = $derived(shareUrl(encoded.payload))
 
   async function copy() {
     try {
@@ -61,28 +47,25 @@
       link decodes it in their own browser.
     </p>
 
-    <label class="check">
-      <input type="checkbox" bind:checked={includeImages} />
-      Include images (as small previews)
-    </label>
+    <p class="callout">
+      <Icon name="image" size={14} />
+      <span>
+        <strong>Images are not shared.</strong> The link carries the note's text only.
+        {#if encoded.imagesOmitted > 0}
+          This note has {encoded.imagesOmitted}
+          {encoded.imagesOmitted === 1 ? 'image' : 'images'}, which the recipient will not see.
+        {/if}
+      </span>
+    </p>
 
-    <textarea
-      class="url"
-      data-testid="share-url"
-      readonly
-      value={building ? 'Building the link…' : url}
-      rows="4"
-    ></textarea>
+    <textarea class="url" data-testid="share-url" readonly value={url} rows="4"></textarea>
 
     <div class="meta faint">
-      <span>{length.toLocaleString()} characters</span>
-      {#if tooLong}
+      <span>{encoded.length.toLocaleString()} characters</span>
+      {#if encoded.tooLong}
         <span class="warn">
           Longer than {MAX_URL_LENGTH.toLocaleString()} — some apps will truncate it.
         </span>
-      {/if}
-      {#if imagesOmitted}
-        <span class="warn">Images were left out to keep the link usable.</span>
       {/if}
     </div>
 
@@ -93,7 +76,7 @@
 
   <footer class="foot">
     <button class="btn" data-testid="share-close" onclick={onclose}>Close</button>
-    <button class="btn btn--primary" disabled={building} onclick={copy}>
+    <button class="btn btn--primary" onclick={copy}>
       <Icon name="copy" size={14} />
       Copy link
     </button>
@@ -152,17 +135,27 @@
     line-height: 1.55;
   }
 
-  .check {
+  .callout {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: var(--space-2);
     margin: var(--space-3) 0;
-    font-size: 13px;
-    cursor: pointer;
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface-2);
+    font-size: 12px;
+    line-height: 1.55;
+    color: var(--text-dim);
   }
 
-  .check input {
-    accent-color: var(--accent);
+  .callout :global(svg) {
+    flex: none;
+    margin-top: 2px;
+  }
+
+  .callout strong {
+    color: var(--text);
   }
 
   .url {

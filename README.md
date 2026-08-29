@@ -52,7 +52,9 @@ to. Install it, go offline, keep writing.
 - Automatic backups to a real folder on disk (Chrome and Edge)
 - Per-note version history with a line diff and restore
 - Per-folder encryption; keys live in memory only and expire after 15 idle minutes
-- Share a note as a link with no server: the note is compressed into the URL fragment
+- Share a note as a link with no server: the text is compressed into the URL
+  fragment. Images are never included — even as thumbnails they would push the
+  link past the length chat apps and browsers truncate at
 
 ## Getting started
 

@@ -11,9 +11,15 @@
     onchange?: (body: string) => void
     /** Called when a `[[wiki link]]` is followed. */
     onlink?: (target: string) => void
+    /**
+     * Set when the images this note references are known not to be available —
+     * a shared link carries text only. Their placeholders then read as expected
+     * rather than as an error.
+     */
+    imagesUnavailable?: boolean
   }
 
-  let { body, readOnly = false, onchange, onlink }: Props = $props()
+  let { body, readOnly = false, onchange, onlink, imagesUnavailable = false }: Props = $props()
 
   let render = $state<((source: string) => string) | null>(null)
   let container = $state<HTMLElement | null>(null)
@@ -55,8 +61,8 @@
 
   function missingImagePlaceholder(): HTMLElement {
     const span = document.createElement('span')
-    span.className = 'missing-image'
-    span.textContent = 'missing image'
+    span.className = imagesUnavailable ? 'missing-image missing-image--expected' : 'missing-image'
+    span.textContent = imagesUnavailable ? 'Image not included in this link' : 'missing image'
     return span
   }
 

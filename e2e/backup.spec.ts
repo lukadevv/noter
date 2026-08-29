@@ -237,6 +237,7 @@ test.describe('backup and restore', () => {
 
     await noteMenu(page, 'Share a copy')
     await expect(page.getByTestId('share-dialog')).toBeVisible()
+    await expect(page.getByTestId('share-dialog')).toContainText('Images are not shared')
 
     await expect
       .poll(() => page.getByTestId('share-url').inputValue())
@@ -254,6 +255,35 @@ test.describe('backup and restore', () => {
 
     await guestPage.getByRole('button', { name: 'Save to my notes' }).click()
     await expect(guestPage.getByTestId('note-item')).toHaveCount(1)
+
+    await guest.close()
+  })
+
+  test('leaves images out of a shared link and says so', async ({ page, browser }) => {
+    await createNoteWith(page, 'Illustrated note\nWith a picture below.')
+
+    const chooser = page.waitForEvent('filechooser')
+    await noteMenu(page, 'Add images')
+    await (await chooser).setFiles({ name: 'shot.png', mimeType: 'image/png', buffer: TINY_PNG })
+    await expect(page.locator('.cm-inline-image')).toHaveCount(1)
+
+    await noteMenu(page, 'Share a copy')
+    await expect(page.getByTestId('share-dialog')).toContainText('This note has 1 image')
+
+    await expect.poll(() => page.getByTestId('share-url').inputValue()).toMatch(/#\/s\//)
+    const link = await page.getByTestId('share-url').inputValue()
+    // A data URL in the link would mean an image slipped through.
+    expect(link).not.toContain('data:image')
+
+    const guest = await browser.newContext()
+    const guestPage = await guest.newPage()
+    await guestPage.goto(link)
+
+    await expect(guestPage.locator('.prose')).toContainText('With a picture below.')
+    // The recipient sees an explanation, not a broken-image error.
+    await expect(guestPage.locator('.missing-image--expected')).toContainText(
+      'Image not included in this link',
+    )
 
     await guest.close()
   })

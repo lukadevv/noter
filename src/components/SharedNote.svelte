@@ -35,7 +35,7 @@
     })
     notes.select(note.id)
     navigate(HOME)
-    ui.toast('Saved to your notes. Images from the link were not imported.', 'ok')
+    ui.toast('Saved to your notes. Shared links do not carry images.', 'ok')
   }
 </script>
 
@@ -66,7 +66,7 @@
         <h1>{shared.t}</h1>
         <!-- Untrusted content from whoever made the link: rendered through the
              same sanitising pipeline as everything else. -->
-        <ReadingView {body} readOnly />
+        <ReadingView {body} readOnly imagesUnavailable />
       </article>
     {/if}
   </div>
