@@ -8,7 +8,7 @@
   import { notes } from '$lib/stores/notes.svelte'
   import { ui } from '$lib/stores/ui.svelte'
   import { ROOT } from '$lib/db/schema'
-  import { moveFolder } from '$lib/db/repo/folders'
+  import { moveFolder, neighboursFor, nudgeFolder } from '$lib/db/repo/folders'
   import { moveNote } from '$lib/db/repo/notes'
 
   interface Props {
@@ -79,24 +79,28 @@
   }
 
   async function handleFolderDrop(draggedId: string, targetId: string, position: DropPosition) {
-    const target = notes.folders.find((f) => f.id === targetId)
-    if (!target) return
-
     if (position === 'inside') {
       const ok = await moveFolder(draggedId, targetId, null, null)
       if (!ok) ui.toast('A folder cannot be moved inside itself.', 'warn')
       return
     }
 
-    const siblings = notes.folders
-      .filter((f) => f.parentId === target.parentId)
-      .sort((a, b) => a.order - b.order)
-    const index = siblings.findIndex((f) => f.id === targetId)
-    const before = position === 'before' ? (siblings[index - 1]?.id ?? null) : targetId
-    const after = position === 'before' ? targetId : (siblings[index + 1]?.id ?? null)
+    const neighbours = neighboursFor(notes.folders, draggedId, targetId, position)
+    if (!neighbours) return
 
-    const ok = await moveFolder(draggedId, target.parentId, before, after)
+    const ok = await moveFolder(draggedId, neighbours.parentId, neighbours.before, neighbours.after)
     if (!ok) ui.toast('A folder cannot be moved inside itself.', 'warn')
+  }
+
+  /** Keyboard reordering, one slot at a time. */
+  async function nudge(id: string, direction: -1 | 1) {
+    const moved = await nudgeFolder(id, direction)
+    if (!moved) return
+    // Keep focus on the row that just moved, so a run of nudges keeps working.
+    requestAnimationFrame(() => {
+      const row = document.querySelector<HTMLElement>(`[data-folder-id="${id}"] .label`)
+      row?.focus()
+    })
   }
 
   async function saveCurrentSearch() {
@@ -132,7 +136,9 @@
 <aside class="sidebar" data-testid="sidebar">
   <header class="head">
     <div class="brand">
-      <Icon name="notebook" size={18} />
+      <!-- The product mark, not a generic icon: this is the one place the app
+           names itself. Served from public/ so it is precached for offline. -->
+      <img class="mark" src="/icons/logo-64.png" alt="" width="18" height="18" />
       <span>Noter</span>
     </div>
     <button
@@ -208,6 +214,7 @@
         ondropfolder={(a, b, p) => void handleFolderDrop(a, b, p)}
         ondropnote={(n, f) => void handleNoteDrop(n, f)}
         ondraghover={(id, position) => (hover = { id, position })}
+        onnudge={(id, direction) => void nudge(id, direction)}
       />
     {/each}
 
@@ -339,6 +346,13 @@
     font-weight: 650;
     letter-spacing: 0.01em;
     color: var(--text);
+  }
+
+  .mark {
+    flex: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
   }
 
   .search {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildTree, flattenTree, isAncestor } from '$lib/db/repo/folders'
+import { buildTree, flattenTree, isAncestor, neighboursFor } from '$lib/db/repo/folders'
 import { ROOT, type Folder } from '$lib/db/schema'
 
 function folder(id: string, parentId: string, order: number, collapsed = false): Folder {
@@ -59,5 +59,50 @@ describe('isAncestor', () => {
 
   it('returns false for unrelated folders', () => {
     expect(isAncestor(folders, 'c', 'a')).toBe(false)
+  })
+})
+
+describe('neighboursFor', () => {
+  const siblings = [
+    folder('a', ROOT, 1000),
+    folder('b', ROOT, 2000),
+    folder('c', ROOT, 3000),
+  ]
+
+  it('places an item before the first sibling', () => {
+    expect(neighboursFor(siblings, 'c', 'a', 'before')).toEqual({
+      parentId: ROOT,
+      before: null,
+      after: 'a',
+    })
+  })
+
+  it('places an item after the last sibling', () => {
+    expect(neighboursFor(siblings, 'a', 'c', 'after')).toEqual({
+      parentId: ROOT,
+      before: 'c',
+      after: null,
+    })
+  })
+
+  /**
+   * The dragged folder is leaving its slot, so counting it as a neighbour would
+   * position the item relative to where it no longer is.
+   */
+  it('ignores the dragged folder when finding neighbours', () => {
+    expect(neighboursFor(siblings, 'b', 'c', 'before')).toEqual({
+      parentId: ROOT,
+      before: 'a',
+      after: 'c',
+    })
+  })
+
+  it('reports the target parent, so a drop reparents as well as reorders', () => {
+    const nested = [...siblings, folder('child', 'a', 1000)]
+    expect(neighboursFor(nested, 'c', 'child', 'after')?.parentId).toBe('a')
+  })
+
+  it('returns null for an unknown target', () => {
+    expect(neighboursFor(siblings, 'a', 'missing', 'before')).toBeNull()
   })
 })

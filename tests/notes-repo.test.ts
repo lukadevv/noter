@@ -99,6 +99,37 @@ describe('note lifecycle', () => {
     expect(trashed.map((n) => n.id)).toEqual([note.id])
   })
 
+  it('appends a moved note after the folder it lands in', async () => {
+    const folder = await foldersRepo.createFolder({ name: 'Target' })
+    const first = await notesRepo.createNote({ title: 'first', folderId: folder.id })
+    const second = await notesRepo.createNote({ title: 'second', folderId: folder.id })
+    const incoming = await notesRepo.createNote({ title: 'incoming' })
+
+    // No neighbours given: a fixed step would collide with what is already
+    // there and leave the list in an arbitrary order.
+    await notesRepo.moveNote(incoming.id, folder.id, null, null)
+
+    const inFolder = await notesRepo.listByFolder(folder.id)
+    expect(inFolder.map((n) => n.title)).toEqual(['first', 'second', 'incoming'])
+    expect(inFolder[2]!.order).toBeGreaterThan(second.order)
+    expect(second.order).toBeGreaterThan(first.order)
+  })
+
+  it('places a moved note between two neighbours', async () => {
+    const folder = await foldersRepo.createFolder({ name: 'Target' })
+    const first = await notesRepo.createNote({ title: 'first', folderId: folder.id })
+    const second = await notesRepo.createNote({ title: 'second', folderId: folder.id })
+    const incoming = await notesRepo.createNote({ title: 'incoming' })
+
+    await notesRepo.moveNote(incoming.id, folder.id, first.id, second.id)
+
+    expect((await notesRepo.listByFolder(folder.id)).map((n) => n.title)).toEqual([
+      'first',
+      'incoming',
+      'second',
+    ])
+  })
+
   it('sorts pinned notes to the top', async () => {
     const shared = (await import('$lib/db/db')).db
     const plain = await notesRepo.createNote({ title: 'plain' })

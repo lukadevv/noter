@@ -15,6 +15,7 @@
     ondropfolder: (draggedId: string, targetId: string, position: DropPosition) => void
     ondropnote: (noteId: string, folderId: string) => void
     ondraghover: (id: string | null, position: DropPosition | null) => void
+    onnudge: (id: string, direction: -1 | 1) => void
   }
 
   let {
@@ -29,6 +30,7 @@
     ondropfolder,
     ondropnote,
     ondraghover,
+    onnudge,
   }: Props = $props()
 
   let renaming = $state(false)
@@ -71,21 +73,37 @@
     if (event.dataTransfer) event.dataTransfer.effectAllowed = 'move'
   }
 
-  /** Top and bottom eighths reorder; the middle drops the item into the folder. */
+  /**
+   * Where a drop lands: the top and bottom bands reorder, the middle nests.
+   *
+   * The bands are a share of the row with a pixel floor. At 30px a quarter of
+   * the row is a 7px target, which is far too small to hit on purpose — so in
+   * practice every reorder turned into a nest.
+   */
+  const EDGE_RATIO = 0.3
+  const MIN_EDGE_PX = 8
+
   function positionFor(event: DragEvent, element: HTMLElement): DropPosition {
     const rect = element.getBoundingClientRect()
-    const ratio = (event.clientY - rect.top) / rect.height
-    if (ratio < 0.25) return 'before'
-    if (ratio > 0.75) return 'after'
+    const edge = Math.max(MIN_EDGE_PX, rect.height * EDGE_RATIO)
+    const offset = event.clientY - rect.top
+
+    if (offset < edge) return 'before'
+    if (offset > rect.height - edge) return 'after'
     return 'inside'
   }
 
+  // Both handlers stop propagation: the tree container has its own drop target
+  // for unfiling to the root, and letting these events reach it would undo the
+  // row's decision a moment after it was made.
   function onDragOver(event: DragEvent) {
     const types = event.dataTransfer?.types ?? []
     const isFolder = types.includes('application/x-noter-folder')
     const isNote = types.includes('application/x-noter-note')
     if (!isFolder && !isNote) return
+
     event.preventDefault()
+    event.stopPropagation()
     if (event.dataTransfer) event.dataTransfer.dropEffect = 'move'
     ondraghover(node.id, isNote ? 'inside' : positionFor(event, event.currentTarget as HTMLElement))
   }
@@ -93,11 +111,38 @@
   function onDrop(event: DragEvent) {
     const folderId = event.dataTransfer?.getData('application/x-noter-folder')
     const noteId = event.dataTransfer?.getData('application/x-noter-note')
+
     event.preventDefault()
+    event.stopPropagation()
     ondraghover(null, null)
+
     if (noteId) ondropnote(noteId, node.id)
     else if (folderId && folderId !== node.id) {
       ondropfolder(folderId, node.id, positionFor(event, event.currentTarget as HTMLElement))
+    }
+  }
+
+  /**
+   * `dragleave` also fires when the pointer crosses into a child element, which
+   * would blink the drop indicator off while the pointer is still over the row.
+   * Only a move to something outside the row counts as leaving it.
+   */
+  function onDragLeave(event: DragEvent) {
+    const next = event.relatedTarget
+    if (next instanceof Node && (event.currentTarget as HTMLElement).contains(next)) return
+    ondraghover(null, null)
+  }
+
+  function onKeydown(event: KeyboardEvent) {
+    // Alt+Arrow reorders without a mouse; drag and drop is not reachable from a
+    // keyboard at all.
+    if (!event.altKey) return
+    if (event.key === 'ArrowUp') {
+      event.preventDefault()
+      onnudge(node.id, -1)
+    } else if (event.key === 'ArrowDown') {
+      event.preventDefault()
+      onnudge(node.id, 1)
     }
   }
 </script>
@@ -105,6 +150,7 @@
 <div
   class="row"
   data-testid="folder-row"
+  data-folder-id={node.id}
   class:row--active={active}
   class:row--inside={dropTarget === 'inside'}
   class:row--before={dropTarget === 'before'}
@@ -117,9 +163,10 @@
   aria-expanded={node.children.length > 0 ? !node.collapsed : undefined}
   ondragstart={onDragStart}
   ondragover={onDragOver}
-  ondragleave={() => ondraghover(null, null)}
+  ondragleave={onDragLeave}
   ondrop={onDrop}
   ondragend={() => ondraghover(null, null)}
+  onkeydown={onKeydown}
 >
   <button
     class="twisty"
@@ -210,6 +257,8 @@
     height: 2px;
     background: var(--accent);
     border-radius: 2px;
+    /* Above the neighbouring row's background, so the line is never clipped. */
+    z-index: 1;
   }
 
   .row--before::after {

@@ -122,12 +122,27 @@ export async function purgeExpiredTrash(retentionDays = TRASH_RETENTION_DAYS): P
   return expired.length
 }
 
+/**
+ * Moves a note into a folder, optionally between two of its notes.
+ *
+ * With no neighbours the note lands at the end of the target folder. That order
+ * is read from the folder's actual contents: a fixed step would collide with
+ * whatever is already there and leave the list in an arbitrary order.
+ */
 export async function moveNote(
   id: string,
   folderId: string,
   before: string | null,
   after: string | null,
 ): Promise<void> {
+  if (before === null && after === null) {
+    const siblings = (await db.notes.where('folderId').equals(folderId).toArray()).filter(
+      (n) => n.id !== id,
+    )
+    await updateNote(id, { folderId, order: orderAfterLast(siblings) })
+    return
+  }
+
   const ids = [before, after].filter((x): x is string => x !== null)
   const neighbours = await db.notes.bulkGet(ids)
   const byId = new Map(neighbours.filter((n): n is Note => !!n).map((n) => [n.id, n]))
