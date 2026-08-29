@@ -1,0 +1,126 @@
+import { expect, test } from '@playwright/test'
+import { createNoteWith, openApp, settleAutosave } from './helpers'
+
+/**
+ * The offline story is the one thing that cannot be checked any other way: the
+ * service worker, the precache manifest and the injected CSP only exist in a
+ * real production build served over HTTP.
+ */
+test.describe('offline and PWA', () => {
+  // The service worker is only registered in a production build.
+  test.skip(process.env.E2E_DEV === '1', 'requires the production build')
+
+  test('serves the app and its notes with the network cut', async ({ page, context }) => {
+    await openApp(page)
+    await createNoteWith(page, 'Written before going offline')
+
+    // Wait for the worker to take control, otherwise the reload races it.
+    await page.evaluate(() => navigator.serviceWorker.ready.then(() => undefined))
+
+    await context.setOffline(true)
+    await page.reload()
+
+    await expect(page.getByTestId('view-all')).toBeVisible()
+    await expect(page.getByTestId('note-item').first()).toContainText('Written before going offline')
+  })
+
+  test('keeps editing working while offline', async ({ page, context }) => {
+    await openApp(page)
+    await createNoteWith(page, 'Offline note')
+    await page.evaluate(() => navigator.serviceWorker.ready.then(() => undefined))
+
+    await context.setOffline(true)
+    await page.locator('.cm-content').click()
+    await page.keyboard.press('Control+End')
+    await page.keyboard.type(' edited with no network')
+
+    await settleAutosave(page, 'edited with no network')
+
+    await page.reload()
+    await page.getByTestId('note-item').first().click()
+    await expect(page.locator('.cm-content')).toContainText('edited with no network')
+  })
+
+  test('serves the manifest from the cache', async ({ page, context }) => {
+    await openApp(page)
+    await page.evaluate(() => navigator.serviceWorker.ready.then(() => undefined))
+    await context.setOffline(true)
+
+    const manifest = await page.evaluate(async () => {
+      const response = await fetch('/manifest.webmanifest')
+      return response.ok ? ((await response.json()) as { name: string; display: string }) : null
+    })
+
+    expect(manifest?.name).toBe('Noter')
+    expect(manifest?.display).toBe('standalone')
+  })
+
+  test('declares the share target and file handlers', async ({ page }) => {
+    await openApp(page)
+
+    const manifest = await page.evaluate(async () => {
+      const response = await fetch('/manifest.webmanifest')
+      return (await response.json()) as {
+        share_target?: { action: string; method: string }
+        file_handlers?: { action: string }[]
+        icons: { sizes: string; purpose?: string }[]
+      }
+    })
+
+    expect(manifest.share_target?.method).toBe('POST')
+    expect(manifest.file_handlers?.length).toBeGreaterThan(0)
+    // A maskable icon is what stops Android cropping the artwork badly.
+    expect(manifest.icons.some((icon) => icon.purpose === 'maskable')).toBe(true)
+  })
+
+  test('ships a Content-Security-Policy that blocks inline scripts', async ({ page }) => {
+    await openApp(page)
+
+    const csp = await page.evaluate(
+      () =>
+        document
+          .querySelector('meta[http-equiv="Content-Security-Policy"]')
+          ?.getAttribute('content') ?? '',
+    )
+
+    expect(csp).toContain("script-src 'self'")
+    expect(csp).not.toContain('unsafe-eval')
+    // frame-ancestors is header-only; shipping it in a meta tag would just warn.
+    expect(csp).not.toContain('frame-ancestors')
+  })
+
+  test('loads the editor from a separate chunk, not the initial bundle', async ({ page }) => {
+    const requested: string[] = []
+    page.on('request', (request) => {
+      if (request.url().endsWith('.js')) requested.push(request.url())
+    })
+
+    await openApp(page)
+    // Nothing has opened an editor yet, so CodeMirror must not have been fetched.
+    expect(requested.some((url) => /setup-.*\.js$/.test(url))).toBe(false)
+
+    await page.getByTestId('new-note-empty').click()
+    await expect(page.locator('.cm-content')).toBeVisible()
+    expect(requested.some((url) => /setup-.*\.js$/.test(url))).toBe(true)
+  })
+
+  test('does not download the icon catalogue until the picker is opened', async ({ page }) => {
+    const requested: string[] = []
+    page.on('request', (request) => {
+      if (request.url().endsWith('.js')) requested.push(request.url())
+    })
+
+    await openApp(page)
+    await page.getByTestId('new-folder').click()
+    expect(requested.some((url) => /lucide-.*\.js$/.test(url))).toBe(false)
+
+    const row = page.getByRole('tree').getByTestId('folder-row').first()
+    await row.hover()
+    await row.getByLabel('Folder actions').click()
+    await page.getByTestId('menu-item').filter({ hasText: 'Appearance' }).click()
+    await page.getByRole('button', { name: 'Change icon' }).click()
+
+    await expect(page.getByLabel('Search icons')).toHaveAttribute('placeholder', /Search \d{3,} icons/)
+    expect(requested.some((url) => /lucide-.*\.js$/.test(url))).toBe(true)
+  })
+})

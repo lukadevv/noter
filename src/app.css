@@ -1,0 +1,469 @@
+/*
+ * Global stylesheet: design tokens, reset and shared primitives.
+ *
+ * Every colour, radius and spacing value in the app resolves through a custom
+ * property declared here. Components must never hardcode a colour — that is the
+ * single rule that keeps runtime theming and per-folder accents working.
+ *
+ * The values below are only a fallback for the first paint; the real theme is
+ * written onto :root by src/lib/theme/apply.ts.
+ */
+
+:root {
+  color-scheme: dark;
+
+  --bg: #17171c;
+  --bg-2: #131317;
+  --surface: #1d1d23;
+  --surface-2: #24242b;
+  --surface-3: #2b2b33;
+
+  --text: #edecf2;
+  --text-dim: #a8a6b4;
+  --text-faint: #75737f;
+
+  --border: #32323b;
+  --border-strong: #45444f;
+
+  --accent: #8b8ce8;
+  --accent-hover: #9d9eef;
+  --accent-active: #7a7bd9;
+  --accent-soft: #24243a;
+  --accent-contrast: #000000;
+
+  --danger: #e06a5a;
+  --danger-soft: #33221f;
+  --warn: #d9a441;
+  --warn-soft: #322a1d;
+  --ok: #5cbf92;
+  --ok-soft: #1e2f28;
+
+  --overlay: rgba(0, 0, 0, 0.55);
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-2: 0 8px 24px rgba(0, 0, 0, 0.5), 0 2px 6px rgba(0, 0, 0, 0.35);
+
+  /* Shape and rhythm ------------------------------------------------------ */
+  --radius-scale: 1;
+  --radius-sm: calc(4px * var(--radius-scale));
+  --radius: calc(8px * var(--radius-scale));
+  --radius-lg: calc(14px * var(--radius-scale));
+  --radius-full: 999px;
+
+  --density: 1;
+  --space-1: calc(4px * var(--density));
+  --space-2: calc(8px * var(--density));
+  --space-3: calc(12px * var(--density));
+  --space-4: calc(16px * var(--density));
+  --space-5: calc(24px * var(--density));
+  --space-6: calc(32px * var(--density));
+
+  --font-ui: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+  --font-size: 14px;
+  --editor-font-size: 15px;
+  --line-height: 1.55;
+
+  --row-height: calc(30px * var(--density));
+  --transition: 120ms ease;
+}
+
+/* Reset ------------------------------------------------------------------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: var(--font-size);
+  line-height: var(--line-height);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overscroll-behavior: none;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+figure,
+blockquote {
+  margin: 0;
+}
+
+ul,
+ol {
+  margin: 0;
+  padding: 0;
+}
+
+img,
+svg,
+video,
+canvas {
+  display: block;
+  max-width: 100%;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* Scrollbars: thin and theme-aware, but only where the platform draws them. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border: 3px solid transparent;
+  background-clip: content-box;
+  border-radius: var(--radius-full);
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--text-faint);
+  background-clip: content-box;
+}
+
+/* Primitives -------------------------------------------------------------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: 0 var(--space-3);
+  height: calc(30px * var(--density));
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  color: var(--text);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--transition), border-color var(--transition);
+}
+
+.btn:hover {
+  background: var(--surface-3);
+  border-color: var(--border-strong);
+}
+
+.btn:active {
+  transform: translateY(0.5px);
+}
+
+.btn--primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-contrast);
+}
+
+.btn--primary:hover {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
+.btn--ghost {
+  background: transparent;
+  border-color: transparent;
+  color: var(--text-dim);
+}
+
+.btn--ghost:hover {
+  background: var(--surface-2);
+  border-color: transparent;
+  color: var(--text);
+}
+
+.btn--icon {
+  width: calc(30px * var(--density));
+  padding: 0;
+}
+
+.btn--danger:hover {
+  background: var(--danger-soft);
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.input {
+  width: 100%;
+  height: calc(30px * var(--density));
+  padding: 0 var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-2);
+  color: var(--text);
+  transition: border-color var(--transition);
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.input::placeholder {
+  color: var(--text-faint);
+}
+
+.muted {
+  color: var(--text-dim);
+}
+
+.faint {
+  color: var(--text-faint);
+}
+
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.divider {
+  height: 1px;
+  background: var(--border);
+  border: 0;
+  margin: var(--space-2) 0;
+}
+
+/* Users who ask the OS for less motion get none, and the settings toggle can
+   force the same state without touching component code. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+:root[data-reduce-motion='true'] *,
+:root[data-reduce-motion='true'] *::before,
+:root[data-reduce-motion='true'] *::after {
+  animation-duration: 0.01ms !important;
+  transition-duration: 0.01ms !important;
+}
+
+/* Reading view ------------------------------------------------------------
+ * These rules are global on purpose: the rendered markdown is injected as HTML,
+ * so component-scoped styles would never match it.
+ */
+
+.prose {
+  line-height: 1.65;
+}
+
+.prose > * + * {
+  margin-top: 0.85em;
+}
+
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4 {
+  line-height: 1.25;
+  font-weight: 680;
+  margin-top: 1.6em;
+}
+
+.prose h1 {
+  font-size: 1.6em;
+}
+
+.prose h2 {
+  font-size: 1.32em;
+}
+
+.prose h3 {
+  font-size: 1.14em;
+}
+
+.prose h4 {
+  font-size: 1em;
+}
+
+.prose ul,
+.prose ol {
+  padding-left: 1.4em;
+}
+
+.prose li + li {
+  margin-top: 0.25em;
+}
+
+.prose li::marker {
+  color: var(--text-faint);
+}
+
+.prose blockquote {
+  padding-left: var(--space-3);
+  border-left: 2px solid var(--border-strong);
+  color: var(--text-dim);
+}
+
+.prose code {
+  padding: 0.12em 0.36em;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+}
+
+.prose pre {
+  padding: var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-2);
+  overflow-x: auto;
+}
+
+.prose pre code {
+  padding: 0;
+  background: none;
+}
+
+.prose hr {
+  height: 1px;
+  border: none;
+  background: var(--border);
+  margin: var(--space-5) 0;
+}
+
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95em;
+}
+
+.prose th,
+.prose td {
+  padding: var(--space-2);
+  border: 1px solid var(--border);
+  text-align: left;
+}
+
+.prose th {
+  background: var(--surface-2);
+}
+
+.prose img {
+  border-radius: var(--radius);
+}
+
+/* Task lists lose their bullet: the checkbox is the marker. */
+.prose li.task-item {
+  list-style: none;
+  margin-left: -1.4em;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.prose li.task-item > p {
+  margin: 0;
+}
+
+.prose li.task-item--done {
+  color: var(--text-faint);
+  text-decoration: line-through;
+}
+
+.prose .task-checkbox {
+  flex: none;
+  margin-top: 0.32em;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+/* Images inside rendered markdown. */
+.prose img.asset {
+  cursor: zoom-in;
+  border: 1px solid var(--border);
+}
+
+/* Remote images are honest about being fragile: they leak the reader's IP to
+   the host and disappear when the URL rots. */
+.prose img[data-external] {
+  outline: 1px dashed var(--warn);
+  outline-offset: 2px;
+}
+
+.prose .missing-image {
+  display: inline-block;
+  padding: var(--space-1) var(--space-2);
+  border: 1px dashed var(--danger);
+  border-radius: var(--radius-sm);
+  color: var(--danger);
+  font-size: 0.85em;
+}
+
+/* Wiki links. A link to a note that does not exist yet is dimmed rather than
+   hidden: writing the link first and creating the note later is the point. */
+.prose .wikilink {
+  color: var(--accent);
+  border-bottom: 1px solid color-mix(in oklab, var(--accent) 40%, transparent);
+  cursor: pointer;
+}
+
+.prose .wikilink:hover {
+  text-decoration: none;
+  border-bottom-color: var(--accent);
+}
+
+.prose .wikilink[data-missing='true'] {
+  color: var(--text-faint);
+  border-bottom-style: dashed;
+}
