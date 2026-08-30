@@ -25,8 +25,30 @@ export interface ThemeSeed {
 
 /** Lightness ramps, ordered from page background to primary text. */
 const RAMP = {
-  dark: { bg: 0.17, bg2: 0.14, surface: 0.21, surface2: 0.25, surface3: 0.29, border: 0.31, borderStrong: 0.4, textFaint: 0.55, textDim: 0.72, text: 0.95 },
-  light: { bg: 0.975, bg2: 0.95, surface: 1, surface2: 0.965, surface3: 0.93, border: 0.9, borderStrong: 0.82, textFaint: 0.62, textDim: 0.48, text: 0.24 },
+  dark: {
+    bg: 0.17,
+    bg2: 0.14,
+    surface: 0.21,
+    surface2: 0.25,
+    surface3: 0.29,
+    border: 0.31,
+    borderStrong: 0.4,
+    textFaint: 0.55,
+    textDim: 0.72,
+    text: 0.95,
+  },
+  light: {
+    bg: 0.975,
+    bg2: 0.95,
+    surface: 1,
+    surface2: 0.965,
+    surface3: 0.93,
+    border: 0.9,
+    borderStrong: 0.82,
+    textFaint: 0.62,
+    textDim: 0.48,
+    text: 0.24,
+  },
 } as const
 
 const neutral = (seed: ThemeSeed, l: number): string =>
@@ -78,8 +100,7 @@ export function deriveTokens(seed: ThemeSeed): Tokens {
 
     /** Backdrop behind modals; alpha keeps the page readable underneath. */
     overlay: seed.mode === 'dark' ? 'rgba(0, 0, 0, 0.55)' : 'rgba(20, 20, 24, 0.35)',
-    'shadow-1':
-      seed.mode === 'dark' ? '0 1px 2px rgba(0,0,0,.4)' : '0 1px 2px rgba(16,18,24,.08)',
+    'shadow-1': seed.mode === 'dark' ? '0 1px 2px rgba(0,0,0,.4)' : '0 1px 2px rgba(16,18,24,.08)',
     'shadow-2':
       seed.mode === 'dark'
         ? '0 8px 24px rgba(0,0,0,.5), 0 2px 6px rgba(0,0,0,.35)'

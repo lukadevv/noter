@@ -48,6 +48,8 @@
   <Component {size} {strokeWidth} class={className} />
 {:else if svg}
   <!-- Built by iconToSvg from Lucide's own data; no user input reaches it. -->
+  <!-- Built by iconToSvg from Lucide's own icon data; no user input reaches it. -->
+  <!-- eslint-disable-next-line svelte/no-at-html-tags -->
   <span class="wrap {className}" aria-hidden="true">{@html svg}</span>
 {:else}
   <span class="fallback {className}" style="width: {size}px; height: {size}px" aria-hidden="true"></span>

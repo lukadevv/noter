@@ -1,6 +1,17 @@
 <script lang="ts">
   import Icon from './Icon.svelte'
-  import { addCard, addColumn, moveCard, parseBoard, removeCard, renameColumn, updateCardText } from '$lib/md/board'
+  import Menu from './Menu.svelte'
+  import type { MenuItem } from '$lib/ui-types'
+  import {
+    addCard,
+    addColumn,
+    moveCard,
+    parseBoard,
+    removeCard,
+    renameColumn,
+    updateCardText,
+  } from '$lib/md/board'
+  import { t } from '$lib/i18n/index.svelte'
 
   interface Props {
     body: string
@@ -14,6 +25,38 @@
   let drafts = $state<Record<number, string>>({})
   let dragging = $state<number | null>(null)
   let dropTarget = $state<{ column: number; index: number } | null>(null)
+  let menu = $state<{ x: number; y: number; items: MenuItem[] } | null>(null)
+
+  /**
+   * Cards can also be moved from a menu.
+   *
+   * Drag and drop is unavailable to keyboard users and does not exist at all on
+   * touch, so it cannot be the only way to move a card between columns.
+   */
+  function openCardMenu(event: MouseEvent, cardLine: number, fromColumn: number) {
+    const anchor = (event.currentTarget as HTMLElement).getBoundingClientRect()
+    menu = {
+      x: anchor.left,
+      y: anchor.bottom + 4,
+      items: [
+        ...columns
+          .map((column, index) => ({ column, index }))
+          .filter(({ index }) => index !== fromColumn)
+          .map(({ column, index }) => ({
+            label: t('board.moveTo', { column: column.title }),
+            icon: 'layout-grid',
+            run: () => onchange(moveCard(body, cardLine, index, column.cards.length)),
+          })),
+        {
+          label: t('board.deleteCard'),
+          icon: 'trash',
+          danger: true,
+          separatorBefore: true,
+          run: () => onchange(removeCard(body, cardLine)),
+        },
+      ],
+    }
+  }
 
   function submitCard(columnIndex: number) {
     const text = (drafts[columnIndex] ?? '').trim()
@@ -36,6 +79,7 @@
     <!-- svelte-ignore a11y_no_static_element_interactions -->
     <section
       class="column"
+      data-testid="board-column"
       class:column--target={dropTarget?.column === columnIndex}
       ondragover={(e) => {
         if (dragging === null) return
@@ -64,6 +108,7 @@
         {#each column.cards as card, cardIndex (card.line)}
           <article
             class="card"
+            data-testid="board-card"
             class:card--done={card.done}
             class:card--dragging={dragging === card.line}
             draggable={!readOnly}
@@ -95,8 +140,12 @@
               onchange={(e) => onchange(updateCardText(body, card.line, e.currentTarget.value))}
             />
             {#if !readOnly}
-              <button class="remove" aria-label="Delete card" onclick={() => onchange(removeCard(body, card.line))}>
-                <Icon name="x" size={12} />
+              <button
+                class="card-menu"
+                aria-label={t('board.cardActions')}
+                onclick={(event) => openCardMenu(event, card.line, columnIndex)}
+              >
+                <Icon name="more" size={13} />
               </button>
             {/if}
           </article>
@@ -113,26 +162,39 @@
         >
           <input
             class="new"
-            placeholder="Add a card"
+            placeholder={t('board.addCard')}
             value={drafts[columnIndex] ?? ''}
             oninput={(e) => (drafts = { ...drafts, [columnIndex]: e.currentTarget.value })}
           />
+          <!-- Enter still works; the button is what makes this reachable with a
+               mouse or on a phone. -->
+          <button
+            class="btn btn--primary add-button"
+            aria-label={t('common.add')}
+            disabled={!(drafts[columnIndex] ?? '').trim()}
+          >
+            <Icon name="plus" size={14} />
+          </button>
         </form>
       {/if}
     </section>
   {/each}
 
   {#if !readOnly}
-    <button class="column column--new" onclick={() => onchange(addColumn(body, 'New column'))}>
+    <button class="column column--new" onclick={() => onchange(addColumn(body, t('board.newColumn')))}>
       <Icon name="plus" size={16} />
-      Add column
+      {t('board.addColumn')}
     </button>
   {/if}
 
   {#if columns.length === 0 && readOnly}
-    <p class="faint">This note has no headings to use as columns.</p>
+    <p class="faint">{t('board.noHeadings')}</p>
   {/if}
 </div>
+
+{#if menu}
+  <Menu items={menu.items} x={menu.x} y={menu.y} onclose={() => (menu = null)} />
+{/if}
 
 <style>
   .board {
@@ -247,8 +309,7 @@
   .drop-line {
     position: absolute;
     top: -3px;
-    left: 0;
-    right: 0;
+    inset-inline: 0;
     height: 2px;
     background: var(--accent);
     border-radius: 2px;
@@ -269,7 +330,7 @@
     border-radius: var(--radius-sm);
   }
 
-  .remove {
+  .card-menu {
     display: flex;
     flex: none;
     padding: 4px;
@@ -278,24 +339,46 @@
     background: none;
     color: var(--text-faint);
     cursor: pointer;
-    opacity: 0;
   }
 
-  .card:hover .remove {
-    opacity: 1;
+  .card-menu:hover {
+    background: var(--surface-2);
+    color: var(--text);
   }
 
-  .remove:hover {
-    background: var(--danger-soft);
-    color: var(--danger);
+  /* Only hide it behind hover where hover exists; on touch it must stay put. */
+  @media (hover: hover) and (pointer: fine) {
+    .card-menu {
+      opacity: 0;
+    }
+
+    .card:hover .card-menu,
+    .card-menu:focus-visible {
+      opacity: 1;
+    }
   }
 
   .add {
+    display: flex;
+    gap: var(--space-1);
     padding-top: var(--space-1);
   }
 
+  .add-button {
+    flex: none;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+  }
+
+  .add-button:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+
   .new {
-    width: 100%;
+    flex: 1;
+    min-width: 0;
     height: 28px;
     padding: 0 var(--space-2);
     border: 1px solid transparent;

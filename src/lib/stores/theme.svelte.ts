@@ -1,6 +1,12 @@
 import { liveQuery, type Subscription } from 'dexie'
 import { applyChrome, applyTokens } from '$lib/theme/apply'
-import { DEFAULT_THEME_ID, PRESETS, PRESETS_BY_ID, presetTokens, systemPrefersDark } from '$lib/theme/presets'
+import {
+  DEFAULT_THEME_ID,
+  PRESETS,
+  PRESETS_BY_ID,
+  presetTokens,
+  systemPrefersDark,
+} from '$lib/theme/presets'
 import { deriveTokens, type ThemeSeed, type Tokens } from '$lib/theme/tokens'
 import * as themesRepo from '$lib/db/repo/themes'
 import type { Theme } from '$lib/db/schema'
@@ -57,7 +63,8 @@ class ThemeStore {
     this.#themeSub = liveQuery(() => themesRepo.allThemes()).subscribe((themes) => {
       this.custom = themes
       // A custom theme edited elsewhere should repaint this tab too.
-      if (themes.some((t) => t.id === this.settings.themeId)) this.applyThemeId(this.settings.themeId, false)
+      if (themes.some((t) => t.id === this.settings.themeId))
+        this.applyThemeId(this.settings.themeId, false)
     })
     this.applyAll()
   }

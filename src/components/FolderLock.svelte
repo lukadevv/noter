@@ -3,6 +3,7 @@
   import { decryptFolder, encryptFolder, keyring } from '$lib/crypto/keyring.svelte'
   import { ui } from '$lib/stores/ui.svelte'
   import type { Folder } from '$lib/db/schema'
+  import { t } from '$lib/i18n/index.svelte'
 
   interface Props {
     folder: Folder
@@ -18,9 +19,7 @@
   let error = $state('')
 
   let unlocked = $derived(keyring.unlocked.includes(folder.id))
-  let canEncrypt = $derived(
-    passphrase.length >= 8 && passphrase === confirmation && acknowledged && !busy,
-  )
+  let canEncrypt = $derived(passphrase.length >= 8 && passphrase === confirmation && acknowledged && !busy)
 
   async function encrypt() {
     if (!canEncrypt) return
@@ -28,10 +27,10 @@
     error = ''
     try {
       const count = await encryptFolder(folder.id, passphrase)
-      ui.toast(`${count} note(s) encrypted.`, 'ok')
+      ui.toast(t('toast.notesEncrypted', { count }), 'ok')
       onclose()
     } catch (cause) {
-      error = cause instanceof Error ? cause.message : 'Encryption failed.'
+      error = cause instanceof Error ? cause.message : t('lock.failed')
     } finally {
       busy = false
     }
@@ -41,10 +40,10 @@
     busy = true
     try {
       const count = await decryptFolder(folder.id)
-      ui.toast(`${count} note(s) decrypted.`, 'ok')
+      ui.toast(t('toast.notesDecrypted', { count }), 'ok')
       onclose()
     } catch {
-      error = 'Unlock the folder before removing its encryption.'
+      error = t('lock.unlockFirst')
     } finally {
       busy = false
     }
@@ -53,11 +52,11 @@
 
 <div class="backdrop" role="presentation" onpointerdown={onclose}></div>
 
-<div class="dialog" data-testid="folder-lock" role="dialog" aria-modal="true" aria-label="Folder encryption">
+<div class="dialog" data-testid="folder-lock" role="dialog" aria-modal="true" aria-label={t('lock.title')}>
   <header class="head">
     <Icon name="lock" size={16} />
     <span class="title truncate">{folder.name}</span>
-    <button class="btn btn--ghost btn--icon" aria-label="Close" onclick={onclose}>
+    <button class="btn btn--ghost btn--icon" aria-label={t('common.close')} onclick={onclose}>
       <Icon name="x" size={15} />
     </button>
   </header>
@@ -65,39 +64,51 @@
   <div class="content">
     {#if folder.encrypted}
       <p class="note">
-        This folder is encrypted. It is currently <strong>{unlocked ? 'unlocked' : 'locked'}</strong>.
+        {t('lock.isEncrypted', { state: t(unlocked ? 'lock.unlocked' : 'lock.locked') })}
       </p>
       <p class="note faint">
-        Unlocked folders re-lock automatically after 15 minutes of inactivity, and whenever the tab
-        is closed.
+        {t('lock.idleHint')}
       </p>
       <div class="row">
         {#if unlocked}
-          <button class="btn" onclick={() => keyring.lock(folder.id)}>Lock now</button>
-          <button class="btn btn--danger" disabled={busy} onclick={remove}>Remove encryption</button>
+          <button class="btn" onclick={() => keyring.lock(folder.id)}>{t('lock.lockNow')}</button>
+          <button class="btn btn--danger" disabled={busy} onclick={remove}>
+            {t('lock.removeEncryption')}
+          </button>
         {:else}
-          <p class="faint">Open a note inside it to unlock.</p>
+          <p class="faint">{t('lock.openToUnlock')}</p>
         {/if}
       </div>
     {:else}
       <p class="note">
-        Encrypting a folder rewrites every note inside it as ciphertext. Titles, bodies and tags all
-        become unreadable without the passphrase.
+        {t('lock.about')}
       </p>
 
       <div class="field">
-        <label for="pass">Passphrase</label>
-        <input id="pass" class="input" type="password" autocomplete="new-password" bind:value={passphrase} />
+        <label for="pass">{t('lock.passphrase')}</label>
+        <input
+          id="pass"
+          class="input"
+          type="password"
+          autocomplete="new-password"
+          bind:value={passphrase}
+        />
         {#if passphrase && passphrase.length < 8}
-          <span class="hint faint">At least 8 characters.</span>
+          <span class="hint faint">{t('lock.minLength')}</span>
         {/if}
       </div>
 
       <div class="field">
-        <label for="confirm">Repeat it</label>
-        <input id="confirm" class="input" type="password" autocomplete="new-password" bind:value={confirmation} />
+        <label for="confirm">{t('lock.repeat')}</label>
+        <input
+          id="confirm"
+          class="input"
+          type="password"
+          autocomplete="new-password"
+          bind:value={confirmation}
+        />
         {#if confirmation && passphrase !== confirmation}
-          <span class="hint danger">The two do not match.</span>
+          <span class="hint danger">{t('lock.mismatch')}</span>
         {/if}
       </div>
 
@@ -105,13 +116,13 @@
            than fine print. -->
       <label class="check">
         <input type="checkbox" data-testid="ack-no-recovery" bind:checked={acknowledged} />
-        I understand that if I forget this passphrase, these notes are gone for good.
+        {t('lock.acknowledge')}
       </label>
 
       <div class="row">
-        <button class="btn" onclick={onclose}>Cancel</button>
+        <button class="btn" onclick={onclose}>{t('common.cancel')}</button>
         <button class="btn btn--primary" disabled={!canEncrypt} onclick={encrypt}>
-          {busy ? 'Encrypting…' : 'Encrypt folder'}
+          {t(busy ? 'lock.encrypting' : 'lock.encrypt')}
         </button>
       </div>
     {/if}

@@ -5,6 +5,7 @@
   import { notes } from '$lib/stores/notes.svelte'
   import { ui } from '$lib/stores/ui.svelte'
   import type { Version } from '$lib/db/schema'
+  import { t } from '$lib/i18n/index.svelte'
 
   interface Props {
     noteId: string
@@ -34,18 +35,24 @@
   async function restore() {
     if (!selected) return
     notes.editBody(noteId, selected.body, selected.title)
-    ui.toast('Version restored. The previous text is still in history.', 'ok')
+    ui.toast(t('history.restoreNote'), 'ok')
     onclose()
   }
 </script>
 
 <div class="backdrop" role="presentation" onpointerdown={onclose}></div>
 
-<div class="dialog" data-testid="history-dialog" role="dialog" aria-modal="true" aria-label="Note history">
+<div
+  class="dialog"
+  data-testid="history-dialog"
+  role="dialog"
+  aria-modal="true"
+  aria-label={t('history.title')}
+>
   <header class="head">
     <Icon name="restore" size={16} />
-    <span class="title">History</span>
-    <button class="btn btn--ghost btn--icon" aria-label="Close" onclick={onclose}>
+    <span class="title">{t('history.title')}</span>
+    <button class="btn btn--ghost btn--icon" aria-label={t('common.close')} onclick={onclose}>
       <Icon name="x" size={15} />
     </button>
   </header>
@@ -53,10 +60,10 @@
   <div class="body">
     <aside class="list">
       {#if loading}
-        <p class="empty faint">Loading…</p>
+        <p class="empty faint">{t('common.loading')}</p>
       {:else if versions.length === 0}
         <p class="empty faint">
-          No earlier versions yet. Snapshots are taken while you edit and when you leave a note.
+          {t('history.empty')}
         </p>
       {:else}
         {#each versions as version (version.id)}
@@ -66,7 +73,7 @@
             class:entry--active={selected?.id === version.id}
             onclick={() => (selected = version)}
           >
-            <span class="when">{relativeTime(version.createdAt)}</span>
+            <span class="when">{relativeTime(version.createdAt, Date.now(), t)}</span>
             <span class="stamp faint">{new Date(version.createdAt).toLocaleString()}</span>
           </button>
         {/each}
@@ -76,8 +83,8 @@
     <div class="diff">
       {#if selected}
         <div class="diff-head">
-          <span class="faint">Compared with the current text</span>
-          <span class="counts">
+          <span class="faint">{t('history.comparedWith')}</span>
+          <span class="counts numeric">
             <span class="added">+{summary.added}</span>
             <span class="removed">−{summary.removed}</span>
           </span>
@@ -85,26 +92,27 @@
 
         {#if selected.title !== currentTitle}
           <p class="title-change faint">
-            Title: <span class="removed">{selected.title || '(untitled)'}</span> →
-            <span class="added">{currentTitle || '(untitled)'}</span>
+            {t('history.titleChange')}
+            <span class="removed">{selected.title || t('common.untitled')}</span> →
+            <span class="added">{currentTitle || t('common.untitled')}</span>
           </p>
         {/if}
 
-        <pre class="lines">{#each lines as line, index (index)}<span
-              class="line line--{line.kind}">{line.kind === 'added' ? '+' : line.kind === 'removed' ? '−' : ' '} {line.text}
+        <pre class="lines">{#each lines as line, index (index)}<span class="line line--{line.kind}"
+              >{line.kind === 'added' ? '+' : line.kind === 'removed' ? '−' : ' '} {line.text}
 </span>{/each}</pre>
       {:else}
-        <p class="empty faint">Select a version to see what changed.</p>
+        <p class="empty faint">{t('history.selectVersion')}</p>
       {/if}
     </div>
   </div>
 
   <footer class="foot">
-    <span class="faint">Restoring does not lose the current text — it is snapshotted first.</span>
+    <span class="faint">{t('history.restoreNote')}</span>
     <div class="spacer"></div>
-    <button class="btn" data-testid="history-close" onclick={onclose}>Close</button>
+    <button class="btn" data-testid="history-close" onclick={onclose}>{t('common.close')}</button>
     <button class="btn btn--primary" data-testid="history-restore" disabled={!selected} onclick={restore}>
-      Restore this version
+      {t('history.restoreVersion')}
     </button>
   </footer>
 </div>
@@ -168,7 +176,7 @@
   }
 
   .list {
-    border-right: 1px solid var(--border);
+    border-inline-end: 1px solid var(--border);
     overflow-y: auto;
     padding: var(--space-1);
   }
@@ -182,7 +190,7 @@
     border: none;
     border-radius: var(--radius);
     background: none;
-    text-align: left;
+    text-align: start;
     cursor: pointer;
   }
 
@@ -280,7 +288,7 @@
     }
 
     .list {
-      border-right: none;
+      border-inline-end: none;
       border-bottom: 1px solid var(--border);
     }
   }

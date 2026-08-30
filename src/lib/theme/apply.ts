@@ -9,8 +9,7 @@ const DENSITY_SCALE: Record<Density, string> = {
 }
 
 const FONT_STACKS: Record<FontChoice, string> = {
-  system:
-    'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif',
+  system: 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif',
   sans: 'Inter, "Segoe UI", system-ui, -apple-system, Roboto, sans-serif',
   serif: '"Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif',
   mono: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace',

@@ -7,6 +7,7 @@
   import { notes } from '$lib/stores/notes.svelte'
   import { ui } from '$lib/stores/ui.svelte'
   import { navigate, HOME } from '../routes/router'
+  import { t } from '$lib/i18n/index.svelte'
 
   interface Props {
     payload: string
@@ -35,19 +36,19 @@
     })
     notes.select(note.id)
     navigate(HOME)
-    ui.toast('Saved to your notes. Shared links do not carry images.', 'ok')
+    ui.toast(t('toast.savedFromLink'), 'ok')
   }
 </script>
 
 <div class="shared">
   <header class="bar">
     <Icon name="link" size={16} />
-    <span class="label">Shared note</span>
+    <span class="label">{t('share.sharedNote')}</span>
     <div class="spacer"></div>
-    <button class="btn" onclick={() => navigate(HOME)}>Open Noter</button>
+    <button class="btn" onclick={() => navigate(HOME)}>{t('share.openApp')}</button>
     <button class="btn btn--primary" disabled={!shared} onclick={keep}>
       <Icon name="plus" size={14} />
-      Save to my notes
+      {t('share.saveToNotes')}
     </button>
   </header>
 
@@ -55,10 +56,9 @@
     {#if failed}
       <div class="error">
         <Icon name="x" size={22} />
-        <h1>This link could not be read</h1>
+        <h1>{t('share.unreadable')}</h1>
         <p class="faint">
-          It may have been truncated when it was copied. Shared notes travel entirely inside the
-          link, so a single missing character breaks it.
+          {t('share.unreadableBody')}
         </p>
       </div>
     {:else if shared}

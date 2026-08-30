@@ -24,11 +24,29 @@ const MIN = 60_000
 const HOUR = 60 * MIN
 const DAY = 24 * HOUR
 
-export function relativeTime(ts: number, now = Date.now()): string {
+/**
+ * A short "how long ago" label.
+ *
+ * The translator is injected rather than imported so this module stays pure and
+ * testable; callers in the app pass the i18n one.
+ */
+export type Translate = (key: string, params?: Record<string, string | number>) => string
+
+const DEFAULTS: Record<string, string> = {
+  'common.justNow': 'just now',
+  'common.minutesAgo': '{count}m ago',
+  'common.hoursAgo': '{count}h ago',
+  'common.daysAgo': '{count}d ago',
+}
+
+const fallback: Translate = (key, params) =>
+  (DEFAULTS[key] ?? key).replace(/\{(\w+)\}/g, (_, name: string) => String(params?.[name] ?? ''))
+
+export function relativeTime(ts: number, now = Date.now(), translate: Translate = fallback): string {
   const diff = now - ts
-  if (diff < MIN) return 'just now'
-  if (diff < HOUR) return `${Math.floor(diff / MIN)}m ago`
-  if (diff < DAY) return `${Math.floor(diff / HOUR)}h ago`
-  if (diff < 7 * DAY) return `${Math.floor(diff / DAY)}d ago`
+  if (diff < MIN) return translate('common.justNow')
+  if (diff < HOUR) return translate('common.minutesAgo', { count: Math.floor(diff / MIN) })
+  if (diff < DAY) return translate('common.hoursAgo', { count: Math.floor(diff / HOUR) })
+  if (diff < 7 * DAY) return translate('common.daysAgo', { count: Math.floor(diff / DAY) })
   return new Date(ts).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })
 }

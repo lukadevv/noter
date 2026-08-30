@@ -2,6 +2,7 @@
   import Icon from './Icon.svelte'
   import { keyring } from '$lib/crypto/keyring.svelte'
   import { notes } from '$lib/stores/notes.svelte'
+  import { t } from '$lib/i18n/index.svelte'
 
   interface Props {
     folderId: string
@@ -13,7 +14,7 @@
   let error = $state('')
   let busy = $state(false)
 
-  let folderName = $derived(notes.folders.find((f) => f.id === folderId)?.name ?? 'This folder')
+  let folderName = $derived(notes.folders.find((f) => f.id === folderId)?.name ?? t('sidebar.newFolder'))
 
   async function unlock(event: SubmitEvent) {
     event.preventDefault()
@@ -25,15 +26,15 @@
     const ok = await keyring.unlock(folderId, passphrase)
     busy = false
     if (ok) passphrase = ''
-    else error = 'That passphrase does not open this folder.'
+    else error = t('lock.wrongPassphrase')
   }
 </script>
 
 <div class="lock" data-testid="lock-prompt">
   <Icon name="lock" size={26} />
-  <h2>{folderName} is locked</h2>
+  <h2>{t('lock.lockedHeading', { name: folderName })}</h2>
   <p class="faint">
-    Its notes are encrypted on this device. The passphrase is never stored, so it cannot be recovered.
+    {t('lock.lockedBody')}
   </p>
 
   <form onsubmit={unlock}>
@@ -42,13 +43,13 @@
       class="input"
       type="password"
       autocomplete="current-password"
-      placeholder="Passphrase"
-      aria-label="Folder passphrase"
+      placeholder={t('lock.passphrase')}
+      aria-label={t('lock.folderPassphrase')}
       autofocus
       bind:value={passphrase}
     />
     <button class="btn btn--primary" disabled={busy || !passphrase}>
-      {busy ? 'Unlocking…' : 'Unlock'}
+      {t(busy ? 'lock.unlocking' : 'lock.unlock')}
     </button>
   </form>
 

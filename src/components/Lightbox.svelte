@@ -4,6 +4,7 @@
   import { assetUrl } from '$lib/images/urls'
   import { getAsset } from '$lib/db/repo/assets'
   import { ui } from '$lib/stores/ui.svelte'
+  import { t } from '$lib/i18n/index.svelte'
 
   let url = $state<string | null>(null)
   let zoom = $state(1)
@@ -64,9 +65,9 @@
       const asset = await getAsset(id)
       if (!asset) return
       await navigator.clipboard.write([new ClipboardItem({ [asset.blob.type]: asset.blob })])
-      ui.toast('Image copied.', 'ok')
+      ui.toast(t('toast.imageCopied'), 'ok')
     } catch {
-      ui.toast('This browser will not let the page copy images.', 'warn')
+      ui.toast(t('toast.copyDenied'), 'warn')
     }
   }
 </script>
@@ -74,14 +75,24 @@
 <svelte:window onkeydown={onKeydown} />
 
 {#if lightbox.open}
-  <div class="backdrop" data-testid="lightbox" role="dialog" aria-modal="true" aria-label="Image viewer">
+  <div
+    class="backdrop"
+    data-testid="lightbox"
+    role="dialog"
+    aria-modal="true"
+    aria-label={t('lightbox.viewer')}
+  >
     <div class="bar">
-      <span class="counter faint">{lightbox.index + 1} / {lightbox.ids.length}</span>
+      <span class="counter faint numeric">{lightbox.index + 1} / {lightbox.ids.length}</span>
       <div class="spacer"></div>
-      <button class="btn btn--ghost btn--icon" aria-label="Copy image" onclick={copyImage}>
+      <button class="btn btn--ghost btn--icon" aria-label={t('lightbox.copyImage')} onclick={copyImage}>
         <Icon name="copy" size={16} />
       </button>
-      <button class="btn btn--ghost btn--icon" aria-label="Close viewer" onclick={() => lightbox.close()}>
+      <button
+        class="btn btn--ghost btn--icon"
+        aria-label={t('lightbox.closeViewer')}
+        onclick={() => lightbox.close()}
+      >
         <Icon name="x" size={16} />
       </button>
     </div>
@@ -96,10 +107,14 @@
       onwheel={onWheel}
     >
       {#if lightbox.ids.length > 1}
-        <button class="nav nav--prev" aria-label="Previous image" onclick={() => lightbox.previous()}>
+        <button
+          class="nav nav--prev"
+          aria-label={t('lightbox.previousImage')}
+          onclick={() => lightbox.previous()}
+        >
           <Icon name="chevron-right" size={20} />
         </button>
-        <button class="nav nav--next" aria-label="Next image" onclick={() => lightbox.next()}>
+        <button class="nav nav--next" aria-label={t('lightbox.nextImage')} onclick={() => lightbox.next()}>
           <Icon name="chevron-right" size={20} />
         </button>
       {/if}
@@ -123,7 +138,7 @@
           }}
         />
       {:else}
-        <p class="faint">Loading…</p>
+        <p class="faint">{t('common.loading')}</p>
       {/if}
     </div>
   </div>
@@ -208,12 +223,22 @@
     opacity: 1;
   }
 
+  /* The arrows follow the reading direction: "previous" is always on the side
+     text comes from. */
   .nav--prev {
-    left: var(--space-3);
+    inset-inline-start: var(--space-3);
     rotate: 180deg;
   }
 
+  :global([dir='rtl']) .nav--prev {
+    rotate: 0deg;
+  }
+
   .nav--next {
-    right: var(--space-3);
+    inset-inline-end: var(--space-3);
+  }
+
+  :global([dir='rtl']) .nav--next {
+    rotate: 180deg;
   }
 </style>

@@ -5,6 +5,7 @@
   import { oklchToHex } from '$lib/theme/oklch'
   import type { Folder, IconRef } from '$lib/db/schema'
   import { untrack } from 'svelte'
+  import { t } from '$lib/i18n/index.svelte'
 
   interface Props {
     folder: Folder
@@ -31,36 +32,36 @@
 
 <div class="backdrop" role="presentation" onpointerdown={onclose}></div>
 
-<div class="dialog" role="dialog" aria-modal="true" aria-label="Folder appearance">
+<div class="dialog" role="dialog" aria-modal="true" aria-label={t('folderStyle.title')}>
   <header class="head">
     <span class="preview" style={color ? `color: ${color}` : ''}>
       <Icon name={icon} size={18} />
     </span>
     <span class="title truncate">{folder.name}</span>
-    <button class="btn btn--ghost btn--icon" aria-label="Close" onclick={onclose}>
+    <button class="btn btn--ghost btn--icon" aria-label={t('common.close')} onclick={onclose}>
       <Icon name="x" size={15} />
     </button>
   </header>
 
   <div class="content">
     <div class="field">
-      <span class="label">Icon</span>
+      <span class="label">{t('folderStyle.icon')}</span>
       <button class="btn" onclick={() => (pickerOpen = true)}>
         <Icon name={icon} size={15} />
-        Change icon
+        {t('icons.changeIcon')}
       </button>
     </div>
 
     <div class="field">
-      <span class="label">Accent</span>
+      <span class="label">{t('folderStyle.accent')}</span>
       <p class="hint faint">
-        The folder's accent tints the interface while you are inside it, without changing your theme.
+        {t('folderStyle.accentHint')}
       </p>
       <div class="swatches">
         <button
           class="swatch swatch--none"
           class:swatch--active={color === null}
-          aria-label="No accent"
+          aria-label={t('folderStyle.noAccent')}
           onclick={() => (color = null)}
         >
           <Icon name="x" size={12} />
@@ -82,8 +83,8 @@
   </div>
 
   <footer class="foot">
-    <button class="btn" onclick={onclose}>Cancel</button>
-    <button class="btn btn--primary" onclick={apply}>Apply</button>
+    <button class="btn" onclick={onclose}>{t('common.cancel')}</button>
+    <button class="btn btn--primary" onclick={apply}>{t('common.apply')}</button>
   </footer>
 </div>
 

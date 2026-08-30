@@ -3,6 +3,7 @@
   import { encodeNote, shareUrl, MAX_URL_LENGTH } from '$lib/share/encode'
   import { ui } from '$lib/stores/ui.svelte'
   import type { Note } from '$lib/db/schema'
+  import { t } from '$lib/i18n/index.svelte'
 
   interface Props {
     note: Note
@@ -21,20 +22,26 @@
   async function copy() {
     try {
       await navigator.clipboard.writeText(url)
-      ui.toast('Link copied.', 'ok')
+      ui.toast(t('toast.linkCopied'), 'ok')
     } catch {
-      ui.toast('Clipboard access was denied. Select the link and copy it manually.', 'warn')
+      ui.toast(t('toast.linkCopyDenied'), 'warn')
     }
   }
 </script>
 
 <div class="backdrop" role="presentation" onpointerdown={onclose}></div>
 
-<div class="dialog" data-testid="share-dialog" role="dialog" aria-modal="true" aria-label="Share note">
+<div
+  class="dialog"
+  data-testid="share-dialog"
+  role="dialog"
+  aria-modal="true"
+  aria-label={t('share.title')}
+>
   <header class="head">
     <Icon name="link" size={16} />
-    <span class="title">Share a copy</span>
-    <button class="btn btn--ghost btn--icon" aria-label="Close" onclick={onclose}>
+    <span class="title">{t('share.title')}</span>
+    <button class="btn btn--ghost btn--icon" aria-label={t('common.close')} onclick={onclose}>
       <Icon name="x" size={15} />
     </button>
   </header>
@@ -43,17 +50,16 @@
     <!-- The note travels inside the URL fragment, which browsers never send to a
          server — so this genuinely involves no backend. -->
     <p class="note faint">
-      The whole note is packed into the link itself. Nothing is uploaded anywhere: whoever opens the
-      link decodes it in their own browser.
+      {t('share.about')}
     </p>
 
     <p class="callout">
       <Icon name="image" size={14} />
       <span>
-        <strong>Images are not shared.</strong> The link carries the note's text only.
+        <strong>{t('share.noImages')}</strong>
+        {t('share.noImagesBody')}
         {#if encoded.imagesOmitted > 0}
-          This note has {encoded.imagesOmitted}
-          {encoded.imagesOmitted === 1 ? 'image' : 'images'}, which the recipient will not see.
+          {t('share.imageCount', { count: encoded.imagesOmitted })}
         {/if}
       </span>
     </p>
@@ -61,24 +67,22 @@
     <textarea class="url" data-testid="share-url" readonly value={url} rows="4"></textarea>
 
     <div class="meta faint">
-      <span>{encoded.length.toLocaleString()} characters</span>
+      <span>{t('share.characters', { count: encoded.length.toLocaleString() })}</span>
       {#if encoded.tooLong}
         <span class="warn">
-          Longer than {MAX_URL_LENGTH.toLocaleString()} — some apps will truncate it.
+          {t('share.tooLong', { max: MAX_URL_LENGTH.toLocaleString() })}
         </span>
       {/if}
     </div>
 
-    <p class="note faint">
-      Anyone with the link can read this note. Treat it like the note itself.
-    </p>
+    <p class="note faint">{t('share.warning')}</p>
   </div>
 
   <footer class="foot">
-    <button class="btn" data-testid="share-close" onclick={onclose}>Close</button>
+    <button class="btn" data-testid="share-close" onclick={onclose}>{t('common.close')}</button>
     <button class="btn btn--primary" onclick={copy}>
       <Icon name="copy" size={14} />
-      Copy link
+      {t('share.copyLink')}
     </button>
   </footer>
 </div>

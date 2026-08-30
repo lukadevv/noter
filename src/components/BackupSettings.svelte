@@ -2,8 +2,20 @@
   import Icon from './Icon.svelte'
   import { ui } from '$lib/stores/ui.svelte'
   import { notes } from '$lib/stores/notes.svelte'
-  import { archiveFileName, download, exportMarkdownArchive, importMarkdownArchive } from '$lib/backup/archive'
-  import { describeVault, exportVault, importVault, vaultFileName, VaultFileError } from '$lib/backup/vault-file'
+  import { t } from '$lib/i18n/index.svelte'
+  import {
+    archiveFileName,
+    download,
+    exportMarkdownArchive,
+    importMarkdownArchive,
+  } from '$lib/backup/archive'
+  import {
+    describeVault,
+    exportVault,
+    importVault,
+    vaultFileName,
+    VaultFileError,
+  } from '$lib/backup/vault-file'
   import type { ImportMode, VaultHeader } from '$lib/backup/vault-file'
   import {
     chooseDirectory,
@@ -53,7 +65,7 @@
       const blob = await exportVault(vaultPassphrase ? { passphrase: vaultPassphrase } : {})
       download(blob, vaultFileName())
       ui.toast(
-        vaultPassphrase ? 'Encrypted backup downloaded.' : 'Backup downloaded (not encrypted).',
+        t(vaultPassphrase ? 'toast.vaultEncrypted' : 'toast.vaultPlain'),
         vaultPassphrase ? 'ok' : 'warn',
       )
       vaultPassphrase = ''
@@ -67,7 +79,7 @@
     try {
       await notes.flushPending()
       download(await exportMarkdownArchive(), archiveFileName())
-      ui.toast('Markdown archive downloaded.', 'ok')
+      ui.toast(t('toast.archiveDownloaded'), 'ok')
     } finally {
       busy = ''
     }
@@ -90,7 +102,7 @@
       try {
         pending = { file, header: await describeVault(file) }
       } catch (cause) {
-        importError = cause instanceof VaultFileError ? cause.message : 'That file could not be read.'
+        importError = cause instanceof VaultFileError ? cause.message : t('toast.fileUnreadable')
       }
     })
   }
@@ -102,13 +114,17 @@
     try {
       const result = await importVault(pending.file, importMode, importPassphrase || undefined)
       ui.toast(
-        `Restored ${result.notes} note(s) and ${result.assets} image(s); ${result.skipped} already current.`,
+        t('toast.vaultRestored', {
+          notes: result.notes,
+          assets: result.assets,
+          skipped: result.skipped,
+        }),
         'ok',
       )
       pending = null
       importPassphrase = ''
     } catch (cause) {
-      importError = cause instanceof VaultFileError ? cause.message : 'The backup could not be restored.'
+      importError = cause instanceof VaultFileError ? cause.message : t('toast.vaultUnreadable')
     } finally {
       busy = ''
     }
@@ -120,11 +136,15 @@
       try {
         const summary = await importMarkdownArchive(file)
         ui.toast(
-          `Imported ${summary.notes} note(s) into ${summary.folders} new folder(s); ${summary.skipped} already current.`,
+          t('toast.zipImported', {
+            notes: summary.notes,
+            folders: summary.folders,
+            skipped: summary.skipped,
+          }),
           'ok',
         )
       } catch {
-        ui.toast('That zip could not be read as a Noter export.', 'warn')
+        ui.toast(t('toast.zipUnreadable'), 'warn')
       } finally {
         busy = ''
       }
@@ -136,7 +156,7 @@
     if (name) {
       folder = name
       await update({ frequency: backup?.frequency === 'off' ? 'daily' : (backup?.frequency ?? 'daily') })
-      ui.toast(`Backups will be written to “${name}”.`, 'ok')
+      ui.toast(t('toast.backupFolderSet', { name }), 'ok')
     }
   }
 
@@ -145,12 +165,15 @@
     try {
       await notes.flushPending()
       if (!(await ensurePermission())) {
-        ui.toast('Permission to that folder was declined.', 'warn')
+        ui.toast(t('toast.backupDenied'), 'warn')
         return
       }
       const result = await runBackup(backup?.encrypt ? vaultPassphrase || undefined : undefined)
       backup = await loadBackupState()
-      ui.toast(result.ok ? `Wrote ${result.files.join(' and ')}.` : (result.error ?? 'Backup failed.'), result.ok ? 'ok' : 'danger')
+      ui.toast(
+        result.ok ? `Wrote ${result.files.join(' and ')}.` : (result.error ?? t('toast.backupFailed')),
+        result.ok ? 'ok' : 'danger',
+      )
     } finally {
       busy = ''
     }
@@ -165,51 +188,50 @@
 </script>
 
 <section>
-  <h3>Backup and transfer</h3>
+  <h3>{t('settings.backup.title')}</h3>
 
   {#if staleDays !== null && staleDays > 14}
     <p class="warning">
       <Icon name="archive" size={14} />
-      Your last backup was {staleDays} days ago.
+      {t('settings.backup.stale', { count: staleDays })}
     </p>
   {/if}
 
   <p class="note faint">
-    A <strong>vault file</strong> holds everything — notes, folders, images, themes and settings —
-    in one file, for moving between computers. The <strong>Markdown archive</strong> is a zip of
-    readable <code>.md</code> files that opens in any editor.
+    {t('settings.backup.about')}
   </p>
 
   <div class="field">
-    <label for="vault-pass">Vault passphrase (optional)</label>
+    <label for="vault-pass">{t('settings.backup.passphrase')}</label>
     <input
       id="vault-pass"
       class="input"
       type="password"
       autocomplete="new-password"
-      placeholder="Leave empty for an unencrypted file"
+      placeholder={t('settings.backup.passphrasePlaceholder')}
       bind:value={vaultPassphrase}
     />
     <span class="hint faint">
-      With a passphrase the file is encrypted with AES-GCM. Without one it is still binary and
-      compressed, but that is obfuscation, not security.
+      {t('settings.backup.passphraseHint')}
     </span>
   </div>
 
   <div class="row">
     <button class="btn btn--primary" disabled={busy === 'vault'} onclick={exportVaultFile}>
       <Icon name="archive" size={14} />
-      {busy === 'vault' ? 'Preparing…' : 'Export vault'}
+      {t(busy === 'vault' ? 'settings.backup.preparing' : 'settings.backup.exportVault')}
     </button>
-    <button class="btn" onclick={chooseVaultFile}>Import vault…</button>
+    <button class="btn" onclick={chooseVaultFile}>{t('settings.backup.importVault')}</button>
   </div>
 
   <div class="row spaced">
     <button class="btn" disabled={busy === 'archive'} onclick={exportArchive}>
       <Icon name="file-text" size={14} />
-      Export Markdown zip
+      {t('settings.backup.exportMarkdown')}
     </button>
-    <button class="btn" disabled={busy === 'import-zip'} onclick={importArchive}>Import Markdown zip…</button>
+    <button class="btn" disabled={busy === 'import-zip'} onclick={importArchive}>
+      {t('settings.backup.importMarkdown')}
+    </button>
   </div>
 
   {#if importError}
@@ -218,12 +240,15 @@
 
   {#if pending}
     <div class="pending" data-testid="restore-preview">
-      <h4>Restore this backup?</h4>
+      <h4>{t('settings.backup.restoreTitle')}</h4>
       <p class="faint">
-        {pending.header.counts.notes} notes · {pending.header.counts.folders} folders ·
-        {pending.header.counts.assets} images · written
-        {new Date(pending.header.createdAt).toLocaleString()}
-        {pending.header.encrypted ? '· encrypted' : ''}
+        {t('settings.backup.restoreSummary', {
+          notes: pending.header.counts.notes,
+          folders: pending.header.counts.folders,
+          assets: pending.header.counts.assets,
+          date: new Date(pending.header.createdAt).toLocaleString(),
+        })}
+        {pending.header.encrypted ? t('settings.backup.encryptedSuffix') : ''}
       </p>
 
       {#if pending.header.encrypted}
@@ -231,34 +256,36 @@
           class="input"
           type="password"
           autocomplete="current-password"
-          placeholder="Backup passphrase"
+          placeholder={t('settings.backup.backupPassphrase')}
           aria-label="Backup passphrase"
           bind:value={importPassphrase}
         />
       {/if}
 
       <div class="segmented">
-        {#each [['merge', 'Merge'], ['replace', 'Replace everything']] as const as [id, label] (id)}
-          <button class="segment" class:segment--active={importMode === id} onclick={() => (importMode = id)}>
-            {label}
+        {#each ['merge', 'replace'] as const as id (id)}
+          <button
+            class="segment"
+            class:segment--active={importMode === id}
+            onclick={() => (importMode = id)}
+          >
+            {t(`settings.backup.${id}`)}
           </button>
         {/each}
       </div>
       <span class="hint faint">
-        {importMode === 'merge'
-          ? 'Keeps whichever copy of each note was edited most recently. Safe to run repeatedly.'
-          : 'Deletes everything here first, then restores the backup exactly.'}
+        {importMode === 'merge' ? t('settings.backup.mergeHint') : t('settings.backup.replaceHint')}
       </span>
 
       <div class="row">
-        <button class="btn" onclick={() => (pending = null)}>Cancel</button>
+        <button class="btn" onclick={() => (pending = null)}>{t('common.cancel')}</button>
         <button
           class="btn btn--primary"
           data-testid="confirm-restore"
           disabled={busy === 'import'}
           onclick={confirmImport}
         >
-          {busy === 'import' ? 'Restoring…' : 'Restore'}
+          {t(busy === 'import' ? 'settings.backup.restoring' : 'settings.backup.restore')}
         </button>
       </div>
     </div>
@@ -266,22 +293,21 @@
 </section>
 
 <section>
-  <h3>Automatic backups</h3>
+  <h3>{t('settings.auto.title')}</h3>
 
   {#if supportsDirectoryAccess()}
     <p class="note faint">
-      Choose a folder once and Noter writes both formats into it. Because browsers can clear their
-      own storage, this is the copy that actually keeps your notes safe.
+      {t('settings.auto.about')}
     </p>
 
     <div class="row">
       <button class="btn" onclick={pickFolder}>
         <Icon name="folder" size={14} />
-        {folder ? `Folder: ${folder}` : 'Choose a folder'}
+        {folder ? t('settings.auto.folderNamed', { name: folder }) : t('settings.auto.chooseFolder')}
       </button>
       {#if folder}
         <button class="btn" disabled={busy === 'backup'} onclick={backupNow}>
-          {busy === 'backup' ? 'Writing…' : 'Back up now'}
+          {t(busy === 'backup' ? 'settings.auto.writing' : 'settings.auto.backupNow')}
         </button>
         <button
           class="btn btn--ghost btn--danger"
@@ -291,14 +317,14 @@
             await update({ frequency: 'off' })
           }}
         >
-          Forget
+          {t('settings.auto.forget')}
         </button>
       {/if}
     </div>
 
     {#if folder && backup}
       <div class="field spaced">
-        <span class="label">Frequency</span>
+        <span class="label">{t('settings.auto.frequency')}</span>
         <div class="segmented">
           {#each FREQUENCIES as option (option.id)}
             <button
@@ -306,7 +332,7 @@
               class:segment--active={backup.frequency === option.id}
               onclick={() => void update({ frequency: option.id })}
             >
-              {option.label}
+              {t(`settings.auto.frequencies.${option.id}`)}
             </button>
           {/each}
         </div>
@@ -314,9 +340,9 @@
 
       <p class="note faint">
         {#if backup.lastRunAt}
-          Last backup {new Date(backup.lastRunAt).toLocaleString()}.
+          {t('settings.auto.lastBackup', { date: new Date(backup.lastRunAt).toLocaleString() })}
         {:else}
-          No backup written yet.
+          {t('settings.auto.never')}
         {/if}
         {#if backup.lastError}
           <span class="error">{backup.lastError}</span>
@@ -325,9 +351,9 @@
     {/if}
   {:else}
     <p class="note faint">
-      This browser cannot write to a folder directly (only Chrome and Edge implement it). Use
-      <strong>Export vault</strong> above and save the file somewhere safe — a reminder appears here
-      once a backup is more than two weeks old.
+      {t('settings.auto.unsupported')}
+      <strong>Export vault</strong> above and save the file somewhere safe — a reminder appears here once a backup
+      is more than two weeks old.
     </p>
   {/if}
 </section>
@@ -432,13 +458,5 @@
   .segment--active {
     background: var(--accent);
     color: var(--accent-contrast);
-  }
-
-  code {
-    padding: 1px 4px;
-    border-radius: var(--radius-sm);
-    background: var(--surface-2);
-    font-family: var(--font-mono);
-    font-size: 0.92em;
   }
 </style>

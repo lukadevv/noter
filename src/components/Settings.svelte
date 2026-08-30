@@ -11,6 +11,7 @@
   import { formatDailyTitle, todayKey } from '$lib/db/repo/daily'
   import { ROOT } from '$lib/db/schema'
   import type { Density, FontChoice } from '$lib/db/repo/settings'
+  import { i18n, LOCALES, LOCALE_INFO, t, type Locale } from '$lib/i18n/index.svelte'
 
   interface Props {
     onclose: () => void
@@ -47,12 +48,7 @@
   async function enablePersistence() {
     const granted = await requestPersistence()
     storage = await storageInfo()
-    ui.toast(
-      granted
-        ? 'Storage marked as persistent.'
-        : 'The browser declined. Keep exporting backups to be safe.',
-      granted ? 'ok' : 'warn',
-    )
+    ui.toast(t(granted ? 'toast.persistGranted' : 'toast.persistDenied'), granted ? 'ok' : 'warn')
   }
 </script>
 
@@ -62,20 +58,47 @@
   <ThemeEditor baseId={editingTheme} onclose={() => (editingTheme = null)} />
 {/if}
 
-<div class="dialog" data-testid="settings-dialog" role="dialog" aria-modal="true" aria-label="Settings">
+<div
+  class="dialog"
+  data-testid="settings-dialog"
+  role="dialog"
+  aria-modal="true"
+  aria-label={t('settings.title')}
+>
   <header class="head">
-    <h2>Settings</h2>
-    <button class="btn btn--ghost btn--icon" aria-label="Close settings" onclick={onclose}>
+    <h2>{t('settings.title')}</h2>
+    <button class="btn btn--ghost btn--icon" aria-label={t('settings.close')} onclick={onclose}>
       <Icon name="x" size={16} />
     </button>
   </header>
 
   <div class="content">
+    <!-- Language comes first: someone who cannot read the interface needs to
+         find this without reading anything else. -->
     <section>
-      <h3>Appearance</h3>
+      <h3>{t('settings.language')}</h3>
+      <div class="field">
+        <label for="language-select">{t('settings.language')}</label>
+        <select
+          id="language-select"
+          class="input"
+          data-testid="language-select"
+          value={i18n.locale}
+          onchange={(e) => void i18n.setLocale(e.currentTarget.value as Locale)}
+        >
+          {#each LOCALES as locale (locale)}
+            <option value={locale}>{LOCALE_INFO[locale].name}</option>
+          {/each}
+        </select>
+        <span class="hint faint">{t('settings.languageHint')}</span>
+      </div>
+    </section>
+
+    <section>
+      <h3>{t('settings.appearance')}</h3>
 
       <div class="field">
-        <label for="theme-select">Theme</label>
+        <label for="theme-select">{t('settings.theme')}</label>
         <div class="row">
           <select
             id="theme-select"
@@ -84,21 +107,23 @@
             onchange={(e) => theme.applyThemeId(e.currentTarget.value)}
           >
             {#each theme.available as option (option.id)}
-              <option value={option.id}>{option.name}{option.builtin ? '' : ' (custom)'}</option>
+              <option value={option.id}
+                >{option.name}{option.builtin ? '' : ` ${t('settings.custom')}`}</option
+              >
             {/each}
           </select>
           <button class="btn" onclick={() => (editingTheme = theme.settings.themeId)}>
             <Icon name="pencil" size={14} />
-            Customise
+            {t('settings.customise')}
           </button>
         </div>
         <span class="hint faint">
-          Customising a built-in theme saves a copy, so the original stays available.
+          {t('settings.customThemeHint')}
         </span>
       </div>
 
       <div class="field">
-        <span class="label">Density</span>
+        <span class="label">{t('settings.density')}</span>
         <div class="segmented">
           {#each DENSITIES as density (density)}
             <button
@@ -106,14 +131,14 @@
               class:segment--active={theme.settings.density === density}
               onclick={() => theme.update({ density })}
             >
-              {density}
+              {t(`settings.densities.${density}`)}
             </button>
           {/each}
         </div>
       </div>
 
       <div class="field">
-        <span class="label">Interface font</span>
+        <span class="label">{t('settings.font')}</span>
         <div class="segmented">
           {#each FONTS as font (font)}
             <button
@@ -121,14 +146,16 @@
               class:segment--active={theme.settings.font === font}
               onclick={() => theme.update({ font })}
             >
-              {font}
+              {t(`settings.fonts.${font}`)}
             </button>
           {/each}
         </div>
       </div>
 
       <div class="field">
-        <label for="font-size">Editor text size · {theme.settings.editorFontSize}px</label>
+        <label for="font-size"
+          >{t('settings.editorTextSize', { size: theme.settings.editorFontSize })}</label
+        >
         <input
           id="font-size"
           type="range"
@@ -141,7 +168,7 @@
       </div>
 
       <div class="field">
-        <label for="radius">Corner roundness</label>
+        <label for="radius">{t('settings.cornerRoundness')}</label>
         <input
           id="radius"
           type="range"
@@ -159,7 +186,7 @@
           checked={theme.settings.reduceMotion}
           onchange={(e) => theme.update({ reduceMotion: e.currentTarget.checked })}
         />
-        Reduce motion
+        {t('settings.reduceMotion')}
       </label>
 
       <label class="check">
@@ -168,37 +195,35 @@
           checked={theme.settings.showLineNumbers}
           onchange={(e) => theme.update({ showLineNumbers: e.currentTarget.checked })}
         />
-        Show line numbers in the editor
+        {t('settings.lineNumbers')}
       </label>
     </section>
 
     <section>
-      <h3>Daily notes</h3>
+      <h3>{t('settings.daily.title')}</h3>
       <p class="note faint">
-        A note per day, created only when you open it. If you leave today's note empty, it is
-        removed again — nothing accumulates unless you write in it.
+        {t('settings.daily.about')}
       </p>
 
       <label class="check">
         <input
           type="checkbox"
           checked={daily.enabled}
-          onchange={(e) =>
-            theme.update({ dailyNotes: { ...daily, enabled: e.currentTarget.checked } })}
+          onchange={(e) => theme.update({ dailyNotes: { ...daily, enabled: e.currentTarget.checked } })}
         />
-        Enable daily notes
+        {t('settings.daily.enable')}
       </label>
 
       {#if daily.enabled}
         <div class="field">
-          <label for="daily-folder">Folder</label>
+          <label for="daily-folder">{t('settings.daily.folder')}</label>
           <select
             id="daily-folder"
             class="input"
             value={daily.folderId}
             onchange={(e) => theme.update({ dailyNotes: { ...daily, folderId: e.currentTarget.value } })}
           >
-            <option value={ROOT}>No folder</option>
+            <option value={ROOT}>{t('settings.daily.noFolder')}</option>
             {#each notes.visibleFolders as folder (folder.id)}
               <option value={folder.id}>{'\u00a0'.repeat(folder.depth * 2)}{folder.name}</option>
             {/each}
@@ -207,7 +232,9 @@
 
         <div class="field">
           <label for="daily-format">
-            Title format · preview: {formatDailyTitle(todayKey(), daily.titleFormat)}
+            {t('settings.daily.titleFormat', {
+              preview: formatDailyTitle(todayKey(), daily.titleFormat),
+            })}
           </label>
           <input
             id="daily-format"
@@ -215,12 +242,12 @@
             value={daily.titleFormat}
             onchange={(e) => theme.update({ dailyNotes: { ...daily, titleFormat: e.currentTarget.value } })}
           />
-          <span class="hint faint">YYYY, MM, DD, MMM, MMMM, DDD, DDDD</span>
+          <span class="hint faint">{t('settings.daily.formatTokens')}</span>
         </div>
 
         {#if notes.templates.length > 0}
           <div class="field">
-            <label for="daily-template">Template</label>
+            <label for="daily-template">{t('settings.daily.template')}</label>
             <select
               id="daily-template"
               class="input"
@@ -230,7 +257,7 @@
                   dailyNotes: { ...daily, templateId: e.currentTarget.value || null },
                 })}
             >
-              <option value="">None</option>
+              <option value="">{t('common.none')}</option>
               {#each notes.templates as template (template.id)}
                 <option value={template.id}>{derivedTitle(template)}</option>
               {/each}
@@ -238,33 +265,39 @@
           </div>
         {/if}
 
-        <p class="note faint">Open today's note with <kbd>Ctrl+Shift+D</kbd>.</p>
+        <p class="note faint">{t('settings.daily.shortcut', { shortcut: 'Ctrl+Shift+D' })}</p>
       {/if}
     </section>
 
     <Lazy load={() => import('./BackupSettings.svelte')} />
 
     <section>
-      <h3>Storage</h3>
+      <h3>{t('settings.storage.title')}</h3>
       {#if storage?.supported}
         <p class="stat">
-          {formatBytes(storage.usage)} used
-          {#if storage.quota > 0}· {formatBytes(storage.quota)} available{/if}
+          {t('settings.storage.used', { used: formatBytes(storage.usage) })}
+          {#if storage.quota > 0}{t('settings.storage.available', {
+              total: formatBytes(storage.quota),
+            })}{/if}
         </p>
         <p class="note faint">
           {#if storage.persisted}
-            Storage is persistent: the browser will not evict your notes to reclaim space.
+            {t('settings.storage.persistent')}
           {:else}
-            Storage is <strong>not</strong> persistent. Browsers may clear it when disk space runs low,
-            and Safari clears it after seven days without a visit. Export backups regularly.
+            Storage is <strong>not</strong> persistent. Browsers may clear it when disk space runs low, and Safari
+            clears it after seven days without a visit. Export backups regularly.
           {/if}
         </p>
         {#if assets}
-          <p class="stat">{assets.count} image(s) · {formatBytes(assets.bytes)}</p>
+          <p class="stat">
+            {t('settings.storage.images', { count: assets.count, size: formatBytes(assets.bytes) })}
+          </p>
         {/if}
         <div class="row">
           {#if !storage.persisted}
-            <button class="btn" onclick={enablePersistence}>Request persistent storage</button>
+            <button class="btn" onclick={enablePersistence}>
+              {t('settings.storage.requestPersistent')}
+            </button>
           {/if}
           <button
             class="btn"
@@ -272,16 +305,18 @@
               const removed = await purgeOrphanAssets()
               assets = await assetStorageUsed()
               ui.toast(
-                removed === 0 ? 'No unused images to clean up.' : `${removed} unused image(s) removed.`,
+                removed === 0
+                  ? t('toast.noOrphanImages')
+                  : t('toast.orphanImagesRemoved', { count: removed }),
                 'ok',
               )
             }}
           >
-            Clean up unused images
+            {t('settings.storage.cleanUp')}
           </button>
         </div>
       {:else}
-        <p class="note faint">This browser does not report storage usage.</p>
+        <p class="note faint">{t('settings.storage.unsupported')}</p>
       {/if}
     </section>
   </div>
@@ -422,14 +457,5 @@
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-2);
-  }
-
-  kbd {
-    padding: 1px 5px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    background: var(--surface-2);
-    font-family: var(--font-mono);
-    font-size: 10px;
   }
 </style>

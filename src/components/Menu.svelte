@@ -52,7 +52,9 @@
   bind:this={element}
   role="menu"
   tabindex="-1"
-  style="left: {position?.x ?? x}px; top: {position?.y ?? y}px; visibility: {position ? 'visible' : 'hidden'}"
+  style="left: {position?.x ?? x}px; top: {position?.y ?? y}px; visibility: {position
+    ? 'visible'
+    : 'hidden'}"
   onkeydown={onKeydown}
 >
   {#each items as item (item.label)}
@@ -107,7 +109,7 @@
     border-radius: var(--radius-sm);
     background: none;
     color: var(--text);
-    text-align: left;
+    text-align: start;
     cursor: pointer;
   }
 

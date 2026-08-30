@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onDestroy, untrack } from 'svelte'
+  import { t } from '$lib/i18n/index.svelte'
   import type { EditorView } from '@codemirror/view'
 
   interface Props {
@@ -21,7 +22,7 @@
   let {
     noteId,
     body,
-    placeholder = 'Start writing…',
+    placeholder = undefined,
     lineNumbers = false,
     onchange,
     onflush,
@@ -48,7 +49,7 @@
       if (disposed || !host) return
       view = createEditor(element, {
         doc: untrack(() => body),
-        placeholder,
+        placeholder: placeholder ?? t('note.placeholder'),
         lineNumbers,
         onChange: (doc) => onchange(doc),
         onFlush: () => onflush(),
@@ -69,7 +70,11 @@
     if (!view || !ready) return
     void (async () => {
       const { setDoc } = await import('$lib/editor/cm/setup')
-      if (view) setDoc(view, untrack(() => body))
+      if (view)
+        setDoc(
+          view,
+          untrack(() => body),
+        )
     })()
   })
 
@@ -83,7 +88,7 @@
 
 <div class="editor" bind:this={host}></div>
 {#if !ready}
-  <div class="loading faint">Loading editor…</div>
+  <div class="loading faint">{t('note.loadingEditor')}</div>
 {/if}
 
 <style>

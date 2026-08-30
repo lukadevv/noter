@@ -80,7 +80,6 @@ md.renderer.rules.noter_wiki_link = (tokens, idx, _options, _env, self) => {
   return `<a class="wikilink" ${self.renderAttrs(token)}>${md.utils.escapeHtml(token.content)}</a>`
 }
 
-
 /** Rewrites `[ ] text` at the start of a list item into a checkbox element. */
 md.core.ruler.after('inline', 'noter_tasklist', (state) => {
   const tokens = state.tokens

@@ -10,6 +10,7 @@
   import { ROOT } from '$lib/db/schema'
   import { moveFolder, neighboursFor, nudgeFolder } from '$lib/db/repo/folders'
   import { moveNote } from '$lib/db/repo/notes'
+  import { t } from '$lib/i18n/index.svelte'
 
   interface Props {
     onopensettings: () => void
@@ -39,15 +40,24 @@
       x: rect.left,
       y: rect.bottom + 4,
       items: [
-        { label: 'Appearance…', icon: 'image', run: () => (styling = id) },
+        // Reordering by menu as well as by drag: dragging is unavailable on
+        // touch and awkward for anyone who finds fine pointer work hard.
+        { label: t('sidebar.moveUp'), icon: 'chevron-right', run: () => void nudge(id, -1) },
+        { label: t('sidebar.moveDown'), icon: 'chevron-right', run: () => void nudge(id, 1) },
+        { label: t('sidebar.appearance'), icon: 'image', separatorBefore: true, run: () => (styling = id) },
         {
-          label: folder?.encrypted ? 'Encryption…' : 'Encrypt folder…',
+          label: t(folder?.encrypted ? 'sidebar.encryption' : 'sidebar.encryptFolder'),
           icon: 'lock',
           run: () => (locking = id),
         },
-        { label: 'New subfolder', icon: 'folder-plus', separatorBefore: true, run: () => void notes.newFolder(id) },
         {
-          label: 'New note here',
+          label: t('sidebar.newSubfolder'),
+          icon: 'folder-plus',
+          separatorBefore: true,
+          run: () => void notes.newFolder(id),
+        },
+        {
+          label: t('sidebar.newNoteHere'),
           icon: 'plus',
           run: () => {
             notes.setScope({ kind: 'folder', id })
@@ -55,13 +65,13 @@
           },
         },
         {
-          label: folder?.collapsed ? 'Expand' : 'Collapse',
+          label: t(folder?.collapsed ? 'sidebar.expand' : 'sidebar.collapse'),
           icon: 'chevron-right',
           separatorBefore: true,
           run: () => void notes.toggleCollapsed(id),
         },
         {
-          label: 'Delete folder',
+          label: t('sidebar.deleteFolder'),
           icon: 'trash',
           danger: true,
           separatorBefore: true,
@@ -69,7 +79,7 @@
             const count = notes.counts.get(id) ?? 0
             void notes.deleteFolder(id)
             ui.toast(
-              count > 0 ? `Folder deleted. ${count} note(s) moved to trash.` : 'Folder deleted.',
+              count > 0 ? t('toast.folderDeletedWithNotes', { count }) : t('toast.folderDeleted'),
               'info',
             )
           },
@@ -81,7 +91,7 @@
   async function handleFolderDrop(draggedId: string, targetId: string, position: DropPosition) {
     if (position === 'inside') {
       const ok = await moveFolder(draggedId, targetId, null, null)
-      if (!ok) ui.toast('A folder cannot be moved inside itself.', 'warn')
+      if (!ok) ui.toast(t('toast.cannotNestInSelf'), 'warn')
       return
     }
 
@@ -89,7 +99,7 @@
     if (!neighbours) return
 
     const ok = await moveFolder(draggedId, neighbours.parentId, neighbours.before, neighbours.after)
-    if (!ok) ui.toast('A folder cannot be moved inside itself.', 'warn')
+    if (!ok) ui.toast(t('toast.cannotNestInSelf'), 'warn')
   }
 
   /** Keyboard reordering, one slot at a time. */
@@ -105,16 +115,16 @@
 
   async function saveCurrentSearch() {
     if (scope.kind !== 'search') return
-    const name = prompt('Name this saved search', scope.query)
+    const name = prompt(t('sidebar.savedSearchName'), scope.query)
     if (!name) return
     const smart = await notes.newSmartFolder(name, scope.query)
     notes.setScope({ kind: 'smart', id: smart.id })
-    ui.toast('Search saved.', 'ok')
+    ui.toast(t('toast.searchSaved'), 'ok')
   }
 
   async function handleNoteDrop(noteId: string, folderId: string) {
     await moveNote(noteId, folderId, null, null)
-    ui.toast('Note moved.', 'ok')
+    ui.toast(t('toast.noteMoved'), 'ok')
   }
 
   function onRootDragOver(event: DragEvent) {
@@ -139,11 +149,11 @@
       <!-- The product mark, not a generic icon: this is the one place the app
            names itself. Served from public/ so it is precached for offline. -->
       <img class="mark" src="/icons/logo-64.png" alt="" width="18" height="18" />
-      <span>Noter</span>
+      <span>{t('app.name')}</span>
     </div>
     <button
       class="btn btn--ghost btn--icon"
-      aria-label="New folder"
+      aria-label={t('sidebar.newFolder')}
       data-testid="new-folder"
       onclick={() => void notes.newFolder()}
     >
@@ -153,7 +163,7 @@
 
   <button class="search" data-testid="open-search" onclick={onopenpalette}>
     <Icon name="search" size={15} />
-    <span class="truncate">Search</span>
+    <span class="truncate">{t('sidebar.search')}</span>
     <kbd>Ctrl K</kbd>
   </button>
 
@@ -165,7 +175,7 @@
       onclick={() => selectFolder(null)}
     >
       <Icon name="file-text" size={15} />
-      <span class="truncate">All notes</span>
+      <span class="truncate">{t('sidebar.allNotes')}</span>
       <span class="count">{notes.notes.length}</span>
     </button>
     <button
@@ -175,7 +185,7 @@
       onclick={() => notes.setScope({ kind: 'archive' })}
     >
       <Icon name="archive" size={15} />
-      <span class="truncate">Archive</span>
+      <span class="truncate">{t('sidebar.archive')}</span>
       <span class="count" class:count--hidden={notes.archived.length === 0}>{notes.archived.length}</span>
     </button>
     <button
@@ -185,7 +195,7 @@
       onclick={() => notes.setScope({ kind: 'trash' })}
     >
       <Icon name="trash" size={15} />
-      <span class="truncate">Trash</span>
+      <span class="truncate">{t('sidebar.trash')}</span>
       <span class="count" class:count--hidden={notes.trashed.length === 0}>{notes.trashed.length}</span>
     </button>
   </nav>
@@ -196,7 +206,7 @@
   <div
     class="tree"
     role="tree"
-    aria-label="Folders"
+    aria-label={t('sidebar.tags')}
     tabindex="-1"
     ondragover={onRootDragOver}
     ondrop={onRootDrop}
@@ -220,7 +230,7 @@
 
     {#if notes.folders.length === 0 && !notes.loading}
       <p class="empty faint">
-        No folders yet. Create one to group related notes — or just keep writing in All notes.
+        {t('sidebar.noFolders')}
       </p>
     {/if}
   </div>
@@ -244,7 +254,7 @@
               y: e.clientY,
               items: [
                 {
-                  label: 'Delete saved search',
+                  label: t('sidebar.deleteSavedSearch'),
                   icon: 'trash',
                   danger: true,
                   run: () => void notes.deleteSmartFolder(smart.id),
@@ -261,7 +271,7 @@
       {#if scope.kind === 'search'}
         <button class="view view--dashed" data-testid="save-search" onclick={saveCurrentSearch}>
           <Icon name="plus" size={15} />
-          <span class="truncate">Save this search</span>
+          <span class="truncate">{t('sidebar.saveSearch')}</span>
         </button>
       {/if}
     </nav>
@@ -271,7 +281,7 @@
     <hr class="divider" />
     <button class="section" onclick={() => (tagsOpen = !tagsOpen)} aria-expanded={tagsOpen}>
       <Icon name="chevron-right" size={12} class={tagsOpen ? 'rotated' : ''} />
-      <span>Tags</span>
+      <span>{t('sidebar.tags')}</span>
       <span class="count">{notes.tagCounts.size}</span>
     </button>
     {#if tagsOpen}
@@ -297,7 +307,7 @@
   <footer class="foot">
     <button class="view" data-testid="open-settings" onclick={onopensettings}>
       <Icon name="settings" size={15} />
-      <span class="truncate">Settings</span>
+      <span class="truncate">{t('sidebar.settings')}</span>
     </button>
   </footer>
 </aside>
@@ -328,7 +338,7 @@
     min-height: 0;
     padding: var(--space-2);
     background: var(--bg-2);
-    border-right: 1px solid var(--border);
+    border-inline-end: 1px solid var(--border);
   }
 
   .head {
@@ -367,7 +377,7 @@
     background: var(--bg);
     color: var(--text-faint);
     cursor: pointer;
-    text-align: left;
+    text-align: start;
   }
 
   .search:hover {
@@ -406,7 +416,7 @@
 
   .section span:first-of-type {
     flex: 1;
-    text-align: left;
+    text-align: start;
   }
 
   .section :global(.rotated) {
@@ -469,7 +479,7 @@
     border-radius: var(--radius);
     background: none;
     color: var(--text-dim);
-    text-align: left;
+    text-align: start;
     cursor: pointer;
   }
 

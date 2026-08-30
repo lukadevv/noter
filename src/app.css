@@ -179,7 +179,9 @@ a:hover {
   color: var(--text);
   cursor: pointer;
   white-space: nowrap;
-  transition: background var(--transition), border-color var(--transition);
+  transition:
+    background var(--transition),
+    border-color var(--transition);
 }
 
 .btn:hover {
@@ -337,7 +339,7 @@ a:hover {
 
 .prose ul,
 .prose ol {
-  padding-left: 1.4em;
+  padding-inline-start: 1.4em;
 }
 
 .prose li + li {
@@ -349,8 +351,8 @@ a:hover {
 }
 
 .prose blockquote {
-  padding-left: var(--space-3);
-  border-left: 2px solid var(--border-strong);
+  padding-inline-start: var(--space-3);
+  border-inline-start: 2px solid var(--border-strong);
   color: var(--text-dim);
 }
 
@@ -392,7 +394,7 @@ a:hover {
 .prose td {
   padding: var(--space-2);
   border: 1px solid var(--border);
-  text-align: left;
+  text-align: start;
 }
 
 .prose th {
@@ -406,7 +408,7 @@ a:hover {
 /* Task lists lose their bullet: the checkbox is the marker. */
 .prose li.task-item {
   list-style: none;
-  margin-left: -1.4em;
+  margin-inline-start: -1.4em;
   display: flex;
   align-items: flex-start;
   gap: var(--space-2);
@@ -473,4 +475,43 @@ a:hover {
 .prose .wikilink[data-missing='true'] {
   color: var(--text-faint);
   border-bottom-style: dashed;
+}
+
+/*
+ * Numbers that read as a unit — "0 / 12", "+3 −1", "1 / 5" — are sequences of
+ * digits separated by neutral characters, which the bidi algorithm reorders in
+ * a right-to-left paragraph: "0 / 12" comes out as "12 / 0". Isolating them and
+ * forcing left-to-right keeps the pair in the order it was written, which is
+ * what these mean in every language.
+ */
+.numeric {
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+/* Right-to-left ---------------------------------------------------------- */
+
+/*
+ * Icons that point along the reading direction have to mirror; icons that mean
+ * something absolute (a pin, a trash can) must not. Only the directional ones
+ * are listed here.
+ */
+[dir='rtl'] .flip,
+[dir='rtl'] .rotated {
+  transform: scaleX(-1);
+}
+
+[dir='rtl'] .twisty :global(svg) {
+  transform: scaleX(-1);
+}
+
+[dir='rtl'] .twisty :global(.rotated) {
+  transform: rotate(90deg);
+}
+
+/* The editor and rendered markdown follow the interface direction, so an Arabic
+   note reads correctly without any per-note setting. */
+[dir='rtl'] .prose,
+[dir='rtl'] .cm-content {
+  text-align: start;
 }

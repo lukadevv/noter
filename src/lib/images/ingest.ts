@@ -1,5 +1,6 @@
 import { storeImage } from '$lib/db/repo/assets'
 import type { Asset } from '$lib/db/schema'
+import { t } from '$lib/i18n/index.svelte'
 
 export type IngestResult =
   | { kind: 'stored'; asset: Asset; markdown: string }
@@ -14,19 +15,26 @@ export function imageMarkdown(assetId: string): string {
 /** Refuses absurd inputs early, before a multi-hundred-megabyte decode. */
 const MAX_SOURCE_BYTES = 40 * 1024 * 1024
 
-export async function ingestBlob(blob: Blob, origin: Asset['origin'], sourceUrl?: string): Promise<IngestResult> {
+export async function ingestBlob(
+  blob: Blob,
+  origin: Asset['origin'],
+  sourceUrl?: string,
+): Promise<IngestResult> {
   if (!blob.type.startsWith('image/')) {
-    return { kind: 'skipped', reason: 'Not an image.' }
+    return { kind: 'skipped', reason: t('toast.notAnImage') }
   }
   if (blob.size > MAX_SOURCE_BYTES) {
-    return { kind: 'skipped', reason: 'Image is larger than 40 MB.' }
+    return { kind: 'skipped', reason: t('toast.imageTooLarge') }
   }
 
   const asset = await storeImage(blob, { origin, sourceUrl: sourceUrl ?? null })
   return { kind: 'stored', asset, markdown: imageMarkdown(asset.id) }
 }
 
-export async function ingestFiles(files: Iterable<File>, origin: Asset['origin'] = 'file'): Promise<IngestResult[]> {
+export async function ingestFiles(
+  files: Iterable<File>,
+  origin: Asset['origin'] = 'file',
+): Promise<IngestResult[]> {
   const results: IngestResult[] = []
   for (const file of files) {
     results.push(await ingestBlob(file, origin))
@@ -55,10 +63,10 @@ export async function ingestUrl(url: string): Promise<IngestResult> {
   try {
     parsed = new URL(trimmed)
   } catch {
-    return { kind: 'skipped', reason: 'Not a valid URL.' }
+    return { kind: 'skipped', reason: t('toast.invalidUrl') }
   }
   if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
-    return { kind: 'skipped', reason: 'Only http(s) URLs can be fetched.' }
+    return { kind: 'skipped', reason: t('toast.onlyHttp') }
   }
 
   try {
@@ -67,7 +75,7 @@ export async function ingestUrl(url: string): Promise<IngestResult> {
 
     const blob = await response.blob()
     if (!blob.type.startsWith('image/')) {
-      return { kind: 'skipped', reason: 'That URL is not an image.' }
+      return { kind: 'skipped', reason: t('toast.notAnImageUrl') }
     }
     return ingestBlob(blob, 'url', trimmed)
   } catch (error) {
@@ -76,7 +84,7 @@ export async function ingestUrl(url: string): Promise<IngestResult> {
       kind: 'external',
       url: trimmed,
       markdown: `![](${trimmed})`,
-      reason: `Could not download the image (${reason}); linking to it instead.`,
+      reason: t('toast.downloadFailed', { reason }),
     }
   }
 }

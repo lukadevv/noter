@@ -3,6 +3,7 @@
   import { referencedAssetIds } from '$lib/db/repo/assets'
   import { assetUrl } from '$lib/images/urls'
   import { lightbox } from '$lib/stores/lightbox.svelte'
+  import { t } from '$lib/i18n/index.svelte'
 
   interface Props {
     body: string
@@ -35,13 +36,13 @@
   {#if ids.length === 0}
     <div class="empty">
       <Icon name="image" size={22} />
-      <p class="faint">No images in this note yet.</p>
+      <p class="faint">{t('gallery.empty')}</p>
       {#if !readOnly && onadd}
         <button class="btn" onclick={onadd}>
           <Icon name="plus" size={15} />
-          Add images
+          {t('gallery.add')}
         </button>
-        <p class="hint faint">You can also paste a screenshot, drop a file, or paste an image URL.</p>
+        <p class="hint faint">{t('gallery.hint')}</p>
       {/if}
     </div>
   {:else}
@@ -51,7 +52,7 @@
           class="tile"
           data-testid="gallery-tile"
           onclick={() => lightbox.show(ids, id)}
-          aria-label="Open image"
+          aria-label={t('gallery.openImage')}
         >
           {#if urls[id]}
             <img src={urls[id]} alt="" loading="lazy" />
@@ -61,7 +62,7 @@
         </button>
       {/each}
       {#if !readOnly && onadd}
-        <button class="tile tile--add" onclick={onadd} aria-label="Add images">
+        <button class="tile tile--add" onclick={onadd} aria-label={t('gallery.add')}>
           <Icon name="plus" size={20} />
         </button>
       {/if}

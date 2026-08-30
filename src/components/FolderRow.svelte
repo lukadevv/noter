@@ -2,6 +2,7 @@
   import Icon from './Icon.svelte'
   import type { FolderNode } from '$lib/db/repo/folders'
   import type { DropPosition } from '$lib/ui-types'
+  import { t } from '$lib/i18n/index.svelte'
 
   interface Props {
     node: FolderNode
@@ -171,7 +172,7 @@
   <button
     class="twisty"
     class:twisty--hidden={node.children.length === 0}
-    aria-label={node.collapsed ? 'Expand folder' : 'Collapse folder'}
+    aria-label={t(node.collapsed ? 'sidebar.expandFolder' : 'sidebar.collapseFolder')}
     onclick={(e) => {
       e.stopPropagation()
       ontoggle(node.id)
@@ -201,7 +202,7 @@
     {:else}
       <span class="name truncate">{node.name}</span>
       {#if node.encrypted}
-        <span class="lock" title="Encrypted folder"><Icon name="lock" size={11} /></span>
+        <span class="lock" title={t('sidebar.encryptedFolder')}><Icon name="lock" size={11} /></span>
       {/if}
     {/if}
   </button>
@@ -211,7 +212,7 @@
     <button
       class="menu"
       bind:this={menuButton}
-      aria-label="Folder actions"
+      aria-label={t('sidebar.folderActions')}
       onclick={(e) => {
         e.stopPropagation()
         if (menuButton) onmenu(node.id, menuButton)
@@ -252,8 +253,9 @@
   .row--after::after {
     content: '';
     position: absolute;
-    left: calc(var(--depth) * 14px);
-    right: 0;
+    /* Logical, so the indent guide stays on the reading side in RTL. */
+    inset-inline-start: calc(var(--depth) * 14px);
+    inset-inline-end: 0;
     height: 2px;
     background: var(--accent);
     border-radius: 2px;
@@ -307,7 +309,7 @@
     border: none;
     background: none;
     color: inherit;
-    text-align: left;
+    text-align: start;
     cursor: pointer;
   }
 
@@ -370,12 +372,19 @@
     background: none;
     color: var(--text-faint);
     cursor: pointer;
-    opacity: 0;
   }
 
-  .row:hover .menu,
-  .menu:focus-visible {
-    opacity: 1;
+  /* Revealed on hover only where hover exists. On a touch screen this is the
+     single entry point to every folder action, so it has to stay visible. */
+  @media (hover: hover) and (pointer: fine) {
+    .menu {
+      opacity: 0;
+    }
+
+    .row:hover .menu,
+    .menu:focus-visible {
+      opacity: 1;
+    }
   }
 
   .menu:hover {

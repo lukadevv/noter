@@ -157,7 +157,10 @@ export async function moveNote(
 export function derivedTitle(note: Pick<Note, 'title' | 'body'>): string {
   if (note.title.trim()) return note.title.trim()
   for (const line of note.body.split('\n')) {
-    const text = line.replace(/^#{1,6}\s+/, '').replace(/^[-*+]\s+(\[[ xX]\]\s+)?/, '').trim()
+    const text = line
+      .replace(/^#{1,6}\s+/, '')
+      .replace(/^[-*+]\s+(\[[ xX]\]\s+)?/, '')
+      .trim()
     if (text) return text.slice(0, 120)
   }
   return 'Untitled'

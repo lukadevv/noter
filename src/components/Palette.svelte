@@ -7,6 +7,7 @@
   import { derivedTitle, preview } from '$lib/db/repo/notes'
   import { searchIndex } from '$lib/search/index'
   import { parseQuery } from '$lib/search/query'
+  import { t } from '$lib/i18n/index.svelte'
 
   interface Props {
     onclose: () => void
@@ -136,7 +137,7 @@
 
 <div class="backdrop" role="presentation" onpointerdown={onclose}></div>
 
-<div class="palette" data-testid="palette" role="dialog" aria-modal="true" aria-label="Command palette">
+<div class="palette" data-testid="palette" role="dialog" aria-modal="true" aria-label={t('palette.label')}>
   <div class="field">
     <Icon name="search" size={16} />
     <input
@@ -144,14 +145,14 @@
       bind:value={query}
       class="input-bare"
       data-testid="palette-input"
-      placeholder="Search notes, or type > for commands and # for tags"
-      aria-label="Search or run a command"
+      placeholder={t('palette.placeholder')}
+      aria-label={t('palette.searchOrRun')}
       onkeydown={onKeydown}
     />
     <kbd>Esc</kbd>
   </div>
 
-  <div class="results" bind:this={listElement} role="listbox" aria-label="Results">
+  <div class="results" bind:this={listElement} role="listbox" aria-label={t('palette.results')}>
     {#each rows as row, index (row.kind + (row.kind === 'action' ? row.action.id : row.kind === 'note' ? row.id : row.kind === 'tag' ? row.tag : row.query))}
       <button
         class="row"
@@ -166,7 +167,7 @@
         {#if row.kind === 'action'}
           <Icon name={row.action.icon ?? 'chevron-right'} size={15} />
           <span class="label truncate">{row.action.label}</span>
-          <span class="meta faint">{row.action.hint ?? row.action.group}</span>
+          <span class="meta faint">{row.action.hint ?? t(`actions.groups.${row.action.group}`)}</span>
         {:else if row.kind === 'note'}
           <Icon name="file-text" size={15} />
           <span class="label truncate">{row.title}</span>
@@ -177,24 +178,24 @@
           <span class="meta faint">{row.count}</span>
         {:else}
           <Icon name="search" size={15} />
-          <span class="label truncate">Search for “{row.query}”</span>
-          <span class="meta faint">All matches</span>
+          <span class="label truncate">{t('palette.searchFor', { query: row.query })}</span>
+          <span class="meta faint">{t('palette.allMatches')}</span>
         {/if}
       </button>
     {/each}
 
     {#if rows.length === 0}
       <p class="empty faint">
-        {#if term}No matches for “{term}”.{:else}Type to search.{/if}
+        {#if term}{t('palette.noMatches', { term })}{:else}{t('palette.typeToSearch')}{/if}
       </p>
     {/if}
   </div>
 
   <footer class="hints faint">
-    <span><kbd>↑</kbd><kbd>↓</kbd> navigate</span>
-    <span><kbd>↵</kbd> open</span>
-    <span><kbd>&gt;</kbd> commands</span>
-    <span><kbd>#</kbd> tags</span>
+    <span><kbd>↑</kbd><kbd>↓</kbd> {t('palette.navigate')}</span>
+    <span><kbd>↵</kbd> {t('palette.open')}</span>
+    <span><kbd>&gt;</kbd> {t('palette.commands')}</span>
+    <span><kbd>#</kbd> {t('palette.tagsHint')}</span>
   </footer>
 </div>
 
@@ -266,7 +267,7 @@
     border-radius: var(--radius);
     background: none;
     color: var(--text-dim);
-    text-align: left;
+    text-align: start;
     cursor: pointer;
   }
 

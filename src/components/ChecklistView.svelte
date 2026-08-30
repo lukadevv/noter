@@ -1,6 +1,7 @@
 <script lang="ts">
   import Icon from './Icon.svelte'
   import { findTasks, removeCompletedTasks, toggleTaskAtLine } from '$lib/md/tasks'
+  import { t } from '$lib/i18n/index.svelte'
 
   interface Props {
     body: string
@@ -56,14 +57,14 @@
     <div class="bar" role="progressbar" aria-valuenow={percent} aria-valuemin="0" aria-valuemax="100">
       <div class="fill" style="width: {percent}%"></div>
     </div>
-    <span class="stat faint">{done} / {tasks.length}</span>
+    <span class="stat faint numeric">{done} / {tasks.length}</span>
     {#if done > 0}
       <button class="btn btn--ghost" onclick={() => (hideDone = !hideDone)}>
-        {hideDone ? 'Show done' : 'Hide done'}
+        {t(hideDone ? 'checklist.showDone' : 'checklist.hideDone')}
       </button>
       {#if !readOnly}
         <button class="btn btn--ghost btn--danger" onclick={() => onchange(removeCompletedTasks(body))}>
-          Clear done
+          {t('checklist.clearDone')}
         </button>
       {/if}
     {/if}
@@ -81,18 +82,22 @@
             type="checkbox"
             checked={task.done}
             disabled={readOnly}
-            aria-label={task.text || 'Task'}
+            aria-label={task.text || t('checklist.task')}
             onchange={() => onchange(toggleTaskAtLine(body, task.line))}
           />
           <input
             class="text"
             value={task.text}
             disabled={readOnly}
-            placeholder="Empty task"
+            placeholder={t('checklist.emptyTask')}
             onchange={(e) => editTask(task.line, e.currentTarget.value)}
           />
           {#if !readOnly}
-            <button class="remove" aria-label="Delete task" onclick={() => removeTask(task.line)}>
+            <button
+              class="remove"
+              aria-label={t('checklist.deleteTask')}
+              onclick={() => removeTask(task.line)}
+            >
               <Icon name="x" size={13} />
             </button>
           {/if}
@@ -101,10 +106,14 @@
     </ul>
 
     {#if tasks.length === 0}
-      <p class="empty faint">No tasks yet. Add one below, or switch to the document view to write freely.</p>
+      <p class="empty faint">
+        {t('checklist.empty')}
+      </p>
     {/if}
 
     {#if !readOnly}
+      <!-- The button is the point: Enter alone is unreachable with a mouse and
+           does not exist on a phone keyboard's default layout. -->
       <form
         class="add"
         onsubmit={(e) => {
@@ -113,7 +122,10 @@
         }}
       >
         <Icon name="plus" size={15} />
-        <input class="new" bind:value={draft} placeholder="Add a task" />
+        <input class="new" bind:value={draft} placeholder={t('checklist.addTask')} />
+        <button class="btn btn--primary add-button" disabled={!draft.trim()}>
+          {t('common.add')}
+        </button>
       </form>
     {/if}
   </div>
@@ -184,7 +196,7 @@
     display: flex;
     align-items: center;
     gap: var(--space-2);
-    padding-left: calc(var(--indent) * 8px);
+    padding-inline-start: calc(var(--indent) * 8px);
     border-radius: var(--radius);
   }
 
@@ -229,12 +241,19 @@
     background: none;
     color: var(--text-faint);
     cursor: pointer;
-    opacity: 0;
   }
 
-  .task:hover .remove,
-  .remove:focus-visible {
-    opacity: 1;
+  /* Hidden until hover only where hovering exists. On a touch screen there is
+     no hover state, so the control would simply never appear. */
+  @media (hover: hover) and (pointer: fine) {
+    .remove {
+      opacity: 0;
+    }
+
+    .task:hover .remove,
+    .remove:focus-visible {
+      opacity: 1;
+    }
   }
 
   .remove:hover {
@@ -247,7 +266,7 @@
     align-items: center;
     gap: var(--space-2);
     margin-top: var(--space-2);
-    padding-left: var(--space-1);
+    padding-inline-start: var(--space-1);
     color: var(--text-faint);
   }
 
@@ -265,6 +284,15 @@
     outline: none;
     border-color: var(--accent);
     background: var(--bg-2);
+  }
+
+  .add-button {
+    flex: none;
+  }
+
+  .add-button:disabled {
+    opacity: 0.5;
+    cursor: default;
   }
 
   .empty {

@@ -7,11 +7,7 @@ export async function allThemes(): Promise<Theme[]> {
   return db.themes.toArray()
 }
 
-export async function saveTheme(input: {
-  id?: string
-  name: string
-  seed: ThemeSeed
-}): Promise<Theme> {
+export async function saveTheme(input: { id?: string; name: string; seed: ThemeSeed }): Promise<Theme> {
   const ts = now()
   const existing = input.id ? await db.themes.get(input.id) : undefined
 

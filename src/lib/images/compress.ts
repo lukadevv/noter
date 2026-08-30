@@ -55,18 +55,11 @@ async function toBlob(
   })
 }
 
-async function render(
-  bitmap: ImageBitmap,
-  maxEdge: number,
-  mime: string,
-  quality: number,
-): Promise<Blob> {
+async function render(bitmap: ImageBitmap, maxEdge: number, mime: string, quality: number): Promise<Blob> {
   const [width, height] = scaledSize(bitmap.width, bitmap.height, maxEdge)
   const canvas = canvasFor(width, height)
   const context = canvas.getContext('2d') as
-    | OffscreenCanvasRenderingContext2D
-    | CanvasRenderingContext2D
-    | null
+    OffscreenCanvasRenderingContext2D | CanvasRenderingContext2D | null
   if (!context) throw new Error('2D canvas is unavailable')
   context.imageSmoothingQuality = 'high'
   context.drawImage(bitmap, 0, 0, width, height)

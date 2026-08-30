@@ -1,10 +1,12 @@
+/*
+ * The Maps below are derived values, rebuilt whole on every recomputation and
+ * never mutated in place, so a reactive SvelteMap would add overhead without
+ * changing behaviour.
+ */
+/* eslint-disable svelte/prefer-svelte-reactivity */
 import { liveQuery, type Subscription } from 'dexie'
 import { ROOT, type Folder, type Note, type SmartFolder } from '$lib/db/schema'
-import {
-  buildTree,
-  flattenTree,
-  type FolderNode,
-} from '$lib/db/repo/folders'
+import { buildTree, flattenTree, type FolderNode } from '$lib/db/repo/folders'
 import { sortForList } from '$lib/db/repo/notes'
 import * as notesRepo from '$lib/db/repo/notes'
 import * as foldersRepo from '$lib/db/repo/folders'
@@ -140,7 +142,8 @@ class NotesStore {
   activeNote: Note | null = $derived(
     this.selectedNoteId === null
       ? null
-      : ([...this.notes, ...this.trashed, ...this.archived].find((n) => n.id === this.selectedNoteId) ?? null),
+      : ([...this.notes, ...this.trashed, ...this.archived].find((n) => n.id === this.selectedNoteId) ??
+          null),
   )
 
   activeFolder: Folder | null = $derived.by(() => {
@@ -255,7 +258,10 @@ class NotesStore {
    * single IndexedDB transaction. `flushPending` runs it early on blur, tab
    * switch and unload, which is what actually guarantees nothing is lost.
    */
-  #pendingBody = new Map<string, { title: string; body: string; tags: string[]; folderId: string; encrypted: boolean }>()
+  #pendingBody = new Map<
+    string,
+    { title: string; body: string; tags: string[]; folderId: string; encrypted: boolean }
+  >()
 
   /** Resolves when the most recently started write batch has committed. */
   #inFlight: Promise<void> = Promise.resolve()

@@ -56,14 +56,25 @@ export async function deriveKey(passphrase: string, params: KdfParams): Promise<
   )
 }
 
-export async function encryptBytes(key: CryptoKey, data: Uint8Array): Promise<{ iv: Uint8Array; ct: Uint8Array }> {
+export async function encryptBytes(
+  key: CryptoKey,
+  data: Uint8Array,
+): Promise<{ iv: Uint8Array; ct: Uint8Array }> {
   const iv = crypto.getRandomValues(new Uint8Array(IV_BYTES))
-  const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv as BufferSource }, key, data as BufferSource)
+  const ct = await crypto.subtle.encrypt(
+    { name: 'AES-GCM', iv: iv as BufferSource },
+    key,
+    data as BufferSource,
+  )
   return { iv, ct: new Uint8Array(ct) }
 }
 
 export async function decryptBytes(key: CryptoKey, iv: Uint8Array, ct: Uint8Array): Promise<Uint8Array> {
-  const plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: iv as BufferSource }, key, ct as BufferSource)
+  const plain = await crypto.subtle.decrypt(
+    { name: 'AES-GCM', iv: iv as BufferSource },
+    key,
+    ct as BufferSource,
+  )
   return new Uint8Array(plain)
 }
 

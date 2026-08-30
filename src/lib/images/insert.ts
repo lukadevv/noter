@@ -1,5 +1,6 @@
 import { ingestBlob, ingestUrl, type IngestResult } from './ingest'
 import { ui } from '$lib/stores/ui.svelte'
+import { t } from '$lib/i18n/index.svelte'
 
 /** Turns ingest results into markdown, reporting anything that was rejected. */
 function collect(results: IngestResult[]): string[] {
@@ -21,14 +22,20 @@ function collect(results: IngestResult[]): string[] {
 }
 
 /** Stores dropped, pasted or picked image files and returns their markdown. */
-export async function insertImages(files: File[], origin: 'paste' | 'file' | 'share' = 'paste'): Promise<string[]> {
+export async function insertImages(
+  files: File[],
+  origin: 'paste' | 'file' | 'share' = 'paste',
+): Promise<string[]> {
   const results: IngestResult[] = []
   for (const file of files) {
     results.push(await ingestBlob(file, origin))
   }
   const snippets = collect(results)
   if (snippets.length > 0) {
-    ui.toast(snippets.length === 1 ? 'Image saved.' : `${snippets.length} images saved.`, 'ok')
+    ui.toast(
+      snippets.length === 1 ? t('toast.imageSaved') : t('toast.imagesSaved', { count: snippets.length }),
+      'ok',
+    )
   }
   return snippets
 }

@@ -7,6 +7,7 @@
   import { parseThemeFile } from '$lib/db/repo/themes'
   import { PRESETS_BY_ID } from '$lib/theme/presets'
   import { untrack } from 'svelte'
+  import { t } from '$lib/i18n/index.svelte'
 
   interface Props {
     /** Theme id to start from; a built-in one is copied rather than edited. */
@@ -25,7 +26,11 @@
   let seed = $state<ThemeSeed>(
     structuredClone(untrack(() => theme.seedFor(startingId)) ?? theme.seedFor('dark')!),
   )
-  let name = $state(editingBuiltin ? `${startingName ?? 'Theme'} copy` : (startingName ?? 'Custom theme'))
+  let name = $state(
+    editingBuiltin
+      ? t('theme.copySuffix', { name: startingName ?? t('settings.theme') })
+      : (startingName ?? t('theme.customTheme')),
+  )
 
   let tokens = $derived(deriveTokens(seed))
 
@@ -49,7 +54,7 @@
 
   async function save() {
     await theme.saveCustom(name, $state.snapshot(seed), editingBuiltin ? undefined : startingId)
-    ui.toast('Theme saved.', 'ok')
+    ui.toast(t('toast.themeSaved'), 'ok')
     onclose()
   }
 
@@ -73,12 +78,12 @@
       if (!file) return
       const parsed = parseThemeFile(await file.text())
       if (!parsed) {
-        ui.toast('That file is not a Noter theme.', 'warn')
+        ui.toast(t('toast.themeInvalid'), 'warn')
         return
       }
       name = parsed.name
       seed = parsed.seed as ThemeSeed
-      ui.toast('Theme loaded. Save it to keep it.', 'info')
+      ui.toast(t('toast.themeLoaded'), 'info')
     })
     input.click()
   }
@@ -91,17 +96,17 @@
 
 <div class="backdrop" role="presentation" onpointerdown={close}></div>
 
-<div class="dialog" role="dialog" aria-modal="true" aria-label="Theme editor">
+<div class="dialog" role="dialog" aria-modal="true" aria-label={t('theme.editor')}>
   <header class="head">
-    <input class="name" bind:value={name} aria-label="Theme name" />
-    <button class="btn btn--ghost btn--icon" aria-label="Close" onclick={close}>
+    <input class="name" bind:value={name} aria-label={t('theme.name')} />
+    <button class="btn btn--ghost btn--icon" aria-label={t('common.close')} onclick={close}>
       <Icon name="x" size={16} />
     </button>
   </header>
 
   <div class="content">
     <div class="field">
-      <span class="label">Base</span>
+      <span class="label">{t('theme.base')}</span>
       <div class="segmented">
         {#each ['light', 'dark'] as const as mode (mode)}
           <button
@@ -109,24 +114,30 @@
             class:segment--active={seed.mode === mode}
             onclick={() => (seed = { ...seed, mode })}
           >
-            {mode}
+            {t(`theme.modes.${mode}`)}
           </button>
         {/each}
       </div>
     </div>
 
     <div class="field">
-      <label for="accent">Accent</label>
+      <label for="accent">{t('theme.accent')}</label>
       <div class="colour-row">
-        <input id="accent" type="color" value={hexOf(seed.accent)} oninput={(e) => setColor('accent', e.currentTarget.value)} />
+        <input
+          id="accent"
+          type="color"
+          value={hexOf(seed.accent)}
+          oninput={(e) => setColor('accent', e.currentTarget.value)}
+        />
         <input
           type="range"
           min="0.3"
           max="0.95"
           step="0.01"
           value={seed.accent.l}
-          aria-label="Accent lightness"
-          oninput={(e) => (seed = { ...seed, accent: { ...seed.accent, l: Number(e.currentTarget.value) } })}
+          aria-label={t('theme.accentLightness')}
+          oninput={(e) =>
+            (seed = { ...seed, accent: { ...seed.accent, l: Number(e.currentTarget.value) } })}
         />
         <input
           type="range"
@@ -134,15 +145,16 @@
           max="0.32"
           step="0.005"
           value={seed.accent.c}
-          aria-label="Accent chroma"
-          oninput={(e) => (seed = { ...seed, accent: { ...seed.accent, c: Number(e.currentTarget.value) } })}
+          aria-label={t('theme.accentChroma')}
+          oninput={(e) =>
+            (seed = { ...seed, accent: { ...seed.accent, c: Number(e.currentTarget.value) } })}
         />
       </div>
-      <span class="hint faint">Colour, then lightness and saturation.</span>
+      <span class="hint faint">{t('theme.accentHint')}</span>
     </div>
 
     <div class="field">
-      <label for="neutral-hue">Surface tint · hue {Math.round(seed.neutralHue)}°</label>
+      <label for="neutral-hue">{t('theme.surfaceTint', { hue: Math.round(seed.neutralHue) })}</label>
       <input
         id="neutral-hue"
         type="range"
@@ -158,24 +170,26 @@
         max="0.05"
         step="0.002"
         value={seed.neutralChroma}
-        aria-label="Surface tint strength"
+        aria-label={t('theme.surfaceTintStrength')}
         oninput={(e) => (seed = { ...seed, neutralChroma: Number(e.currentTarget.value) })}
       />
-      <span class="hint faint">A slight tint reads far better than pure grey.</span>
+      <span class="hint faint">{t('theme.surfaceHint')}</span>
     </div>
 
     <div class="field">
-      <span class="label">Status colours</span>
+      <span class="label">{t('theme.statusColours')}</span>
       <div class="colour-row">
-        {#each [['danger', 'Danger'], ['warn', 'Warning'], ['ok', 'Success']] as const as [key, label] (key)}
+        {#each ['danger', 'warn', 'ok'] as const as key (key)}
           <label class="swatch">
             <input
               type="color"
               value={hexOf(seed[key])}
-              aria-label={label}
+              aria-label={t(`theme.${key === 'warn' ? 'warning' : key === 'ok' ? 'success' : 'danger'}`)}
               oninput={(e) => setColor(key, e.currentTarget.value)}
             />
-            <span class="faint">{label}</span>
+            <span class="faint"
+              >{t(`theme.${key === 'warn' ? 'warning' : key === 'ok' ? 'success' : 'danger'}`)}</span
+            >
           </label>
         {/each}
       </div>
@@ -186,32 +200,32 @@
     <div class="checks">
       <div class="check-row" class:check-row--bad={textContrast < 4.5}>
         <Icon name={textContrast >= 4.5 ? 'check' : 'x'} size={14} />
-        Body text on background · {textContrast.toFixed(1)}:1
-        <span class="faint">{textContrast >= 4.5 ? 'passes AA' : 'below AA (4.5:1)'}</span>
+        {t('theme.bodyContrast', { ratio: textContrast.toFixed(1) })}
+        <span class="faint">{t(textContrast >= 4.5 ? 'theme.passesAA' : 'theme.belowAA')}</span>
       </div>
       <div class="check-row" class:check-row--bad={accentContrast < 4.5}>
         <Icon name={accentContrast >= 4.5 ? 'check' : 'x'} size={14} />
-        Label on accent · {accentContrast.toFixed(1)}:1
-        <span class="faint">{accentContrast >= 4.5 ? 'passes AA' : 'below AA (4.5:1)'}</span>
+        {t('theme.labelContrast', { ratio: accentContrast.toFixed(1) })}
+        <span class="faint">{t(accentContrast >= 4.5 ? 'theme.passesAA' : 'theme.belowAA')}</span>
       </div>
     </div>
 
     <div class="preview">
       <div class="preview-row">
-        <button class="btn btn--primary">Primary</button>
-        <button class="btn">Secondary</button>
-        <span class="pill" style="background: {tokens['accent-soft']}">Selected</span>
+        <button class="btn btn--primary">{t('theme.primary')}</button>
+        <button class="btn">{t('theme.secondary')}</button>
+        <span class="pill" style="background: {tokens['accent-soft']}">{t('theme.selected')}</span>
       </div>
       <p class="preview-text">
-        The quick brown fox jumps over the lazy dog.
-        <span class="faint">Secondary text sits here.</span>
+        {t('theme.preview')}
+        <span class="faint">{t('theme.previewSecondary')}</span>
       </p>
     </div>
   </div>
 
   <footer class="foot">
-    <button class="btn btn--ghost" onclick={importTheme}>Import</button>
-    <button class="btn btn--ghost" onclick={exportTheme}>Export</button>
+    <button class="btn btn--ghost" onclick={importTheme}>{t('theme.import')}</button>
+    <button class="btn btn--ghost" onclick={exportTheme}>{t('theme.export')}</button>
     <div class="spacer"></div>
     {#if !editingBuiltin}
       <button
@@ -221,11 +235,11 @@
           onclose()
         }}
       >
-        Delete
+        {t('common.delete')}
       </button>
     {/if}
-    <button class="btn" onclick={close}>Cancel</button>
-    <button class="btn btn--primary" onclick={save}>Save theme</button>
+    <button class="btn" onclick={close}>{t('common.cancel')}</button>
+    <button class="btn btn--primary" onclick={save}>{t('theme.saveTheme')}</button>
   </footer>
 </div>
 

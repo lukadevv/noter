@@ -18,6 +18,7 @@
   import { requestPersistence } from '$lib/db/db'
   import { lightbox } from '$lib/stores/lightbox.svelte'
   import { todayKey } from '$lib/db/repo/daily'
+  import { t } from '$lib/i18n/index.svelte'
   import { applyTokens, clearTokens } from '$lib/theme/apply'
   import { deriveAccentTokens } from '$lib/theme/tokens'
   import { hexToOklch } from '$lib/theme/oklch'
@@ -79,7 +80,7 @@
     void requestPersistence()
     void maybeRunScheduledBackup()
     void purgeExpiredTrash().then(async (count) => {
-      if (count > 0) ui.toast(`${count} note(s) past the 30-day retention were purged.`, 'info')
+      if (count > 0) ui.toast(t('toast.trashPurged', { count }), 'info')
       // Images belonging to purged notes are only unreferenced once those notes
       // are actually gone, so this runs after the trash sweep.
       await purgeOrphanAssets()
@@ -105,14 +106,14 @@
     if (!isDue(state)) return
     if (!(await ensurePermission())) return
     const result = await runBackup()
-    if (result.ok) ui.toast('Backup written to your folder.', 'ok')
+    if (result.ok) ui.toast(t('toast.backupWritten'), 'ok')
   }
 
   async function openToday() {
     const settings = theme.settings.dailyNotes
     if (!settings.enabled) {
-      ui.toast('Daily notes are off. Turn them on in Settings.', 'info', {
-        label: 'Settings',
+      ui.toast(t('toast.dailyOff'), 'info', {
+        label: t('sidebar.settings'),
         run: () => (settingsOpen = true),
       })
       return
@@ -273,26 +274,23 @@
   <!-- Reading a shared link is a rare path, so its decoder is fetched on demand. -->
   <Lazy load={() => import('$components/SharedNote.svelte')} props={{ payload: sharedPayload }} />
 {:else}
-<div
-  class="shell"
-  data-testid="app-shell"
-  class:shell--narrow={ui.narrow}
-  data-pane={ui.pane}
-  style="--sidebar-w: {theme.settings.sidebarWidth}px; --list-w: {theme.settings.listWidth}px"
->
-  <div class="pane pane--folders">
-    <Sidebar
-      onopensettings={() => (settingsOpen = true)}
-      onopenpalette={() => (paletteOpen = true)}
-    />
+  <div
+    class="shell"
+    data-testid="app-shell"
+    class:shell--narrow={ui.narrow}
+    data-pane={ui.pane}
+    style="--sidebar-w: {theme.settings.sidebarWidth}px; --list-w: {theme.settings.listWidth}px"
+  >
+    <div class="pane pane--folders">
+      <Sidebar onopensettings={() => (settingsOpen = true)} onopenpalette={() => (paletteOpen = true)} />
+    </div>
+    <div class="pane pane--list">
+      <NoteList />
+    </div>
+    <div class="pane pane--note">
+      <NoteView />
+    </div>
   </div>
-  <div class="pane pane--list">
-    <NoteList />
-  </div>
-  <div class="pane pane--note">
-    <NoteView />
-  </div>
-</div>
 {/if}
 
 {#if paletteOpen}

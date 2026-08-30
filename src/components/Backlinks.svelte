@@ -3,6 +3,7 @@
   import { notes } from '$lib/stores/notes.svelte'
   import { ui } from '$lib/stores/ui.svelte'
   import { derivedTitle } from '$lib/db/repo/notes'
+  import { t } from '$lib/i18n/index.svelte'
 
   interface Props {
     noteId: string
@@ -15,7 +16,7 @@
 
   function titleOf(id: string): string {
     const note = notes.notes.find((n) => n.id === id)
-    return note ? derivedTitle(note) : 'Untitled'
+    return note ? derivedTitle(note) : t('common.untitled')
   }
 </script>
 
@@ -23,7 +24,7 @@
   <section class="backlinks">
     <button class="head" onclick={() => (open = !open)} aria-expanded={open}>
       <Icon name="link" size={13} />
-      <span>{entries.length} {entries.length === 1 ? 'note links' : 'notes link'} here</span>
+      <span>{t('backlinks', { count: entries.length })}</span>
       <Icon name="chevron-right" size={13} class={open ? 'rotated' : ''} />
     </button>
 
@@ -78,7 +79,7 @@
 
   .head span {
     flex: 1;
-    text-align: left;
+    text-align: start;
   }
 
   .head :global(.rotated) {
@@ -100,7 +101,7 @@
     border: none;
     border-radius: var(--radius);
     background: none;
-    text-align: left;
+    text-align: start;
     cursor: pointer;
   }
 

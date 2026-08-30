@@ -55,7 +55,12 @@ export function oklchToLinearRgb({ l, c, h }: Oklch): Rgb {
 
 function inGamut({ r, g, b }: Rgb, epsilon = 1e-4): boolean {
   return (
-    r >= -epsilon && r <= 1 + epsilon && g >= -epsilon && g <= 1 + epsilon && b >= -epsilon && b <= 1 + epsilon
+    r >= -epsilon &&
+    r <= 1 + epsilon &&
+    g >= -epsilon &&
+    g <= 1 + epsilon &&
+    b >= -epsilon &&
+    b <= 1 + epsilon
   )
 }
 
@@ -86,7 +91,11 @@ export function hexToRgb(hex: string): Rgb | null {
   const m = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(hex.trim())
   if (!m) return null
   let body = m[1]!
-  if (body.length === 3) body = body.split('').map((ch) => ch + ch).join('')
+  if (body.length === 3)
+    body = body
+      .split('')
+      .map((ch) => ch + ch)
+      .join('')
   return {
     r: parseInt(body.slice(0, 2), 16) / 255,
     g: parseInt(body.slice(2, 4), 16) / 255,

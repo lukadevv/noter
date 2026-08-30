@@ -52,7 +52,9 @@ export function flattenTree(nodes: FolderNode[], respectCollapsed = true): Folde
 }
 
 export async function createFolder(
-  input: { name: string; parentId?: string; icon?: IconRef; color?: string | null } = { name: 'New folder' },
+  input: { name: string; parentId?: string; icon?: IconRef; color?: string | null } = {
+    name: 'New folder',
+  },
 ): Promise<Folder> {
   const parentId = input.parentId ?? ROOT
   const siblings = await db.folders.where('parentId').equals(parentId).toArray()
@@ -190,9 +192,7 @@ export async function nudgeFolder(id: string, direction: -1 | 1): Promise<boolea
   const folder = folders.find((f) => f.id === id)
   if (!folder) return false
 
-  const siblings = folders
-    .filter((f) => f.parentId === folder.parentId)
-    .sort((a, b) => a.order - b.order)
+  const siblings = folders.filter((f) => f.parentId === folder.parentId).sort((a, b) => a.order - b.order)
 
   const index = siblings.findIndex((f) => f.id === id)
   const target = siblings[index + direction]

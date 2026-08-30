@@ -3,6 +3,7 @@
   import { assetUrl } from '$lib/images/urls'
   import { toggleTaskAtLine } from '$lib/md/tasks'
   import { referencedAssetIds } from '$lib/db/repo/assets'
+  import { t } from '$lib/i18n/index.svelte'
 
   interface Props {
     body: string
@@ -62,7 +63,7 @@
   function missingImagePlaceholder(): HTMLElement {
     const span = document.createElement('span')
     span.className = imagesUnavailable ? 'missing-image missing-image--expected' : 'missing-image'
-    span.textContent = imagesUnavailable ? 'Image not included in this link' : 'missing image'
+    span.textContent = t(imagesUnavailable ? 'gallery.notShared' : 'gallery.missing')
     return span
   }
 
@@ -100,10 +101,13 @@
     role="presentation"
     onclick={onClick}
   >
+    <!-- Safe by construction: markdown-it runs with html:false and the result
+         passes through DOMPurify inside renderMarkdown. -->
+    <!-- eslint-disable-next-line svelte/no-at-html-tags -->
     {@html html}
   </article>
 {:else}
-  <p class="loading faint">Rendering…</p>
+  <p class="loading faint">{t('note.rendering')}</p>
 {/if}
 
 <style>

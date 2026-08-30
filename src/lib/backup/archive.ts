@@ -173,8 +173,7 @@ export async function importMarkdownArchive(file: Blob): Promise<ImportSummary> 
       deletedAt: path.startsWith('trash/') ? Date.now() : 0,
       daily: typeof parsed.meta.daily === 'string' ? parsed.meta.daily : null,
       lang: typeof parsed.meta.lang === 'string' ? parsed.meta.lang : null,
-      createdAt:
-        typeof parsed.meta.created === 'string' ? Date.parse(parsed.meta.created) : Date.now(),
+      createdAt: typeof parsed.meta.created === 'string' ? Date.parse(parsed.meta.created) : Date.now(),
       updatedAt: Number.isNaN(updated) ? Date.now() : updated,
     }
 

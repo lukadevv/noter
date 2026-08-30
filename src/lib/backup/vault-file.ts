@@ -170,7 +170,8 @@ export class VaultFileError extends Error {}
 
 /** Reads the clear-text header, so a file can be described before it is opened. */
 export function readHeader(bytes: Uint8Array): { header: VaultHeader; payloadOffset: number } {
-  if (bytes.length < MAGIC.length + 6) throw new VaultFileError('This file is too short to be a Noter backup.')
+  if (bytes.length < MAGIC.length + 6)
+    throw new VaultFileError('This file is too short to be a Noter backup.')
   for (let i = 0; i < MAGIC.length; i++) {
     if (bytes[i] !== MAGIC[i]) throw new VaultFileError('This is not a Noter backup file.')
   }

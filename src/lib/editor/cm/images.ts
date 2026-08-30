@@ -1,4 +1,11 @@
-import { Decoration, EditorView, ViewPlugin, WidgetType, type DecorationSet, type ViewUpdate } from '@codemirror/view'
+import {
+  Decoration,
+  EditorView,
+  ViewPlugin,
+  WidgetType,
+  type DecorationSet,
+  type ViewUpdate,
+} from '@codemirror/view'
 import { RangeSetBuilder } from '@codemirror/state'
 import { assetUrl } from '$lib/images/urls'
 

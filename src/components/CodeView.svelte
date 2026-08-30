@@ -1,6 +1,7 @@
 <script lang="ts">
   import Icon from './Icon.svelte'
   import { ui } from '$lib/stores/ui.svelte'
+  import { t } from '$lib/i18n/index.svelte'
 
   interface Props {
     body: string
@@ -13,9 +14,32 @@
   let { body, lang, readOnly = false, onchange, onlang }: Props = $props()
 
   const LANGUAGES = [
-    'plain', 'bash', 'c', 'cpp', 'csharp', 'css', 'diff', 'dockerfile', 'go', 'html',
-    'java', 'javascript', 'json', 'kotlin', 'lua', 'markdown', 'php', 'python', 'ruby',
-    'rust', 'sql', 'swift', 'toml', 'typescript', 'xml', 'yaml',
+    'plain',
+    'bash',
+    'c',
+    'cpp',
+    'csharp',
+    'css',
+    'diff',
+    'dockerfile',
+    'go',
+    'html',
+    'java',
+    'javascript',
+    'json',
+    'kotlin',
+    'lua',
+    'markdown',
+    'php',
+    'python',
+    'ruby',
+    'rust',
+    'sql',
+    'swift',
+    'toml',
+    'typescript',
+    'xml',
+    'yaml',
   ]
 
   /**
@@ -37,9 +61,9 @@
   async function copy() {
     try {
       await navigator.clipboard.writeText(parsed.code)
-      ui.toast('Code copied.', 'ok')
+      ui.toast(t('toast.codeCopied'), 'ok')
     } catch {
-      ui.toast('Clipboard access was denied.', 'warn')
+      ui.toast(t('toast.clipboardDenied'), 'warn')
     }
   }
 </script>
@@ -50,7 +74,7 @@
       class="input lang"
       value={parsed.lang}
       disabled={readOnly}
-      aria-label="Language"
+      aria-label={t('code.language')}
       onchange={(e) => {
         onlang(e.currentTarget.value)
         write(parsed.code, e.currentTarget.value)
@@ -63,7 +87,7 @@
     <div class="spacer"></div>
     <button class="btn btn--ghost" onclick={copy}>
       <Icon name="copy" size={14} />
-      Copy
+      {t('code.copy')}
     </button>
   </header>
 
@@ -72,9 +96,8 @@
     value={parsed.code}
     readonly={readOnly}
     spellcheck="false"
-    placeholder="Paste a snippet…"
-    oninput={(e) => write(e.currentTarget.value, parsed.lang)}
-  ></textarea>
+    placeholder={t('code.placeholder')}
+    oninput={(e) => write(e.currentTarget.value, parsed.lang)}></textarea>
 </div>
 
 <style>

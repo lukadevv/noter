@@ -7,6 +7,7 @@ import { pickImages } from '$lib/images/insert'
 import { todayKey } from '$lib/db/repo/daily'
 import { addDays } from '$lib/utils/dates'
 import type { ViewMode } from '$lib/db/schema'
+import { t } from '$lib/i18n/index.svelte'
 
 export interface Action {
   id: string
@@ -18,14 +19,6 @@ export interface Action {
   /** Hidden when this returns false, so the palette never offers a no-op. */
   available?: () => boolean
   run: () => void | Promise<void>
-}
-
-const VIEW_LABELS: Record<ViewMode, string> = {
-  doc: 'Document',
-  checklist: 'Checklist',
-  board: 'Board',
-  gallery: 'Gallery',
-  code: 'Code',
 }
 
 /**
@@ -40,7 +33,7 @@ export function buildActions(open: { settings: () => void; daily: () => void }):
   const actions: Action[] = [
     {
       id: 'note.new',
-      label: 'New note',
+      label: t('actions.newNote'),
       hint: 'Ctrl+N',
       icon: 'plus',
       group: 'Create',
@@ -48,14 +41,14 @@ export function buildActions(open: { settings: () => void; daily: () => void }):
     },
     {
       id: 'folder.new',
-      label: 'New folder',
+      label: t('actions.newFolder'),
       icon: 'folder-plus',
       group: 'Create',
       run: () => void notes.newFolder(),
     },
     {
       id: 'daily.today',
-      label: "Open today's note",
+      label: t('actions.openToday'),
       hint: 'Ctrl+Shift+D',
       icon: 'calendar',
       group: 'Create',
@@ -64,7 +57,7 @@ export function buildActions(open: { settings: () => void; daily: () => void }):
     },
     {
       id: 'scratchpad.open',
-      label: 'Open scratchpad',
+      label: t('actions.openScratchpad'),
       hint: 'Ctrl+Shift+Space',
       icon: 'lightbulb',
       group: 'Create',
@@ -76,7 +69,7 @@ export function buildActions(open: { settings: () => void; daily: () => void }):
     },
     {
       id: 'images.add',
-      label: 'Add images to this note',
+      label: t('actions.addImages'),
       icon: 'image',
       group: 'Note',
       available: () => current() !== null,
@@ -91,7 +84,7 @@ export function buildActions(open: { settings: () => void; daily: () => void }):
     },
     {
       id: 'note.pin',
-      label: 'Pin or unpin this note',
+      label: t('actions.togglePin'),
       icon: 'pin',
       group: 'Note',
       available: () => current() !== null,
@@ -102,7 +95,7 @@ export function buildActions(open: { settings: () => void; daily: () => void }):
     },
     {
       id: 'note.archive',
-      label: 'Archive this note',
+      label: t('actions.archive'),
       icon: 'archive',
       group: 'Note',
       available: () => current() !== null && current()!.archivedAt === 0,
@@ -113,7 +106,7 @@ export function buildActions(open: { settings: () => void; daily: () => void }):
     },
     {
       id: 'note.template',
-      label: 'Use this note as a template',
+      label: t('actions.asTemplate'),
       icon: 'copy',
       group: 'Note',
       available: () => current() !== null,
@@ -121,12 +114,12 @@ export function buildActions(open: { settings: () => void; daily: () => void }):
         const note = current()
         if (!note) return
         void notes.toggleTemplate(note.id)
-        ui.toast(note.template ? 'No longer a template.' : 'Saved as a template.', 'ok')
+        ui.toast(t(note.template ? 'toast.templateRemoved' : 'toast.templateSaved'), 'ok')
       },
     },
     {
       id: 'note.trash',
-      label: 'Move this note to trash',
+      label: t('actions.trash'),
       icon: 'trash',
       group: 'Note',
       available: () => current() !== null && current()!.deletedAt === 0,
@@ -134,44 +127,47 @@ export function buildActions(open: { settings: () => void; daily: () => void }):
         const note = current()
         if (!note) return
         void notes.trash(note.id)
-        ui.toast('Moved to trash.', 'info', { label: 'Undo', run: () => void notes.restore(note.id) })
+        ui.toast(t('toast.movedToTrash'), 'info', {
+          label: t('toast.undo'),
+          run: () => void notes.restore(note.id),
+        })
       },
     },
     {
       id: 'go.all',
-      label: 'Go to all notes',
+      label: t('actions.goAll'),
       icon: 'file-text',
       group: 'Go',
       run: () => notes.setScope({ kind: 'folder', id: null }),
     },
     {
       id: 'go.archive',
-      label: 'Go to archive',
+      label: t('actions.goArchive'),
       icon: 'archive',
       group: 'Go',
       run: () => notes.setScope({ kind: 'archive' }),
     },
     {
       id: 'go.trash',
-      label: 'Go to trash',
+      label: t('actions.goTrash'),
       icon: 'trash',
       group: 'Go',
       run: () => notes.setScope({ kind: 'trash' }),
     },
     {
       id: 'trash.empty',
-      label: 'Empty the trash',
+      label: t('actions.emptyTrash'),
       icon: 'trash',
       group: 'App',
       available: () => notes.trashed.length > 0,
       run: async () => {
         const removed = await emptyTrash()
-        ui.toast(`${removed} note(s) permanently deleted.`, 'warn')
+        ui.toast(t('toast.notesDeleted', { count: removed }), 'warn')
       },
     },
     {
       id: 'settings.open',
-      label: 'Open settings',
+      label: t('actions.openSettings'),
       hint: 'Ctrl+,',
       icon: 'settings',
       group: 'App',
@@ -179,7 +175,7 @@ export function buildActions(open: { settings: () => void; daily: () => void }):
     },
     {
       id: 'appearance.toggle',
-      label: 'Toggle light and dark',
+      label: t('actions.toggleTheme'),
       icon: 'lightbulb',
       group: 'Appearance',
       run: () => theme.applyThemeId(theme.settings.themeId === 'dark' ? 'light' : 'dark'),
@@ -187,11 +183,20 @@ export function buildActions(open: { settings: () => void; daily: () => void }):
   ]
 
   // Per-view actions, so "switch this note to a checklist" is one command.
-  for (const [view, label] of Object.entries(VIEW_LABELS) as [ViewMode, string][]) {
+  for (const view of ['doc', 'checklist', 'board', 'gallery', 'code'] as ViewMode[]) {
     actions.push({
       id: `view.${view}`,
-      label: `Switch this note to ${label.toLowerCase()} view`,
-      icon: view === 'doc' ? 'file-text' : view === 'checklist' ? 'check-square' : view === 'board' ? 'layout-grid' : view === 'gallery' ? 'image' : 'code',
+      label: t('actions.switchView', { view: t(`note.views.${view}`) }),
+      icon:
+        view === 'doc'
+          ? 'file-text'
+          : view === 'checklist'
+            ? 'check-square'
+            : view === 'board'
+              ? 'layout-grid'
+              : view === 'gallery'
+                ? 'image'
+                : 'code',
       group: 'View',
       available: () => current() !== null && current()!.view !== view,
       run: () => {
@@ -204,7 +209,7 @@ export function buildActions(open: { settings: () => void; daily: () => void }):
   for (const preset of PRESETS) {
     actions.push({
       id: `theme.${preset.id}`,
-      label: `Theme: ${preset.name}`,
+      label: t('actions.themeNamed', { name: preset.name }),
       icon: 'lightbulb',
       group: 'Appearance',
       available: () => theme.settings.themeId !== preset.id,
@@ -215,7 +220,7 @@ export function buildActions(open: { settings: () => void; daily: () => void }):
   for (const template of notes.templates) {
     actions.push({
       id: `template.${template.id}`,
-      label: `New note from "${derivedTitle(template)}"`,
+      label: t('actions.fromTemplate', { title: derivedTitle(template) }),
       icon: 'copy',
       group: 'Create',
       run: () => void notes.newFromTemplate(template.id),
@@ -226,14 +231,14 @@ export function buildActions(open: { settings: () => void; daily: () => void }):
     actions.push(
       {
         id: 'daily.yesterday',
-        label: "Open yesterday's note",
+        label: t('actions.openYesterday'),
         icon: 'calendar',
         group: 'Create',
         run: () => void notes.openDaily(addDays(todayKey(), -1), theme.settings.dailyNotes),
       },
       {
         id: 'daily.tomorrow',
-        label: "Open tomorrow's note",
+        label: t('actions.openTomorrow'),
         icon: 'calendar',
         group: 'Create',
         run: () => void notes.openDaily(addDays(todayKey(), 1), theme.settings.dailyNotes),

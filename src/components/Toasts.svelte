@@ -1,6 +1,7 @@
 <script lang="ts">
   import Icon from './Icon.svelte'
   import { ui } from '$lib/stores/ui.svelte'
+  import { t } from '$lib/i18n/index.svelte'
 
   const ICON = {
     info: 'file-text',
@@ -26,7 +27,7 @@
           {toast.action.label}
         </button>
       {/if}
-      <button class="close" aria-label="Dismiss" onclick={() => ui.dismiss(toast.id)}>
+      <button class="close" aria-label={t('common.dismiss')} onclick={() => ui.dismiss(toast.id)}>
         <Icon name="x" size={13} />
       </button>
     </div>

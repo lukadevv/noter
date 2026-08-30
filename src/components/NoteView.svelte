@@ -21,6 +21,7 @@
   import { keyring } from '$lib/crypto/keyring.svelte'
   import UnlockPrompt from './UnlockPrompt.svelte'
   import type { ViewMode } from '$lib/db/schema'
+  import { t } from '$lib/i18n/index.svelte'
 
   let note = $derived(notes.activeNote)
   let mode = $state<'edit' | 'read'>('edit')
@@ -64,12 +65,12 @@
   let readOnly = $derived(note !== null && (note.deletedAt > 0 || locked))
   let tasks = $derived(taskStats(text))
 
-  const VIEWS: { id: ViewMode; label: string; icon: string }[] = [
-    { id: 'doc', label: 'Document', icon: 'file-text' },
-    { id: 'checklist', label: 'Checklist', icon: 'check-square' },
-    { id: 'board', label: 'Board', icon: 'layout-grid' },
-    { id: 'gallery', label: 'Gallery', icon: 'image' },
-    { id: 'code', label: 'Code', icon: 'code' },
+  const VIEWS: { id: ViewMode; icon: string }[] = [
+    { id: 'doc', icon: 'file-text' },
+    { id: 'checklist', icon: 'check-square' },
+    { id: 'board', icon: 'layout-grid' },
+    { id: 'gallery', icon: 'image' },
+    { id: 'code', icon: 'code' },
   ]
 
   /** Only the document view has a separate reading mode; the rest render directly. */
@@ -100,7 +101,7 @@
     const rect = (event.currentTarget as HTMLElement).getBoundingClientRect()
 
     const viewItems: MenuItem[] = VIEWS.map((view, index) => ({
-      label: `${view.label}${current.view === view.id ? ' ✓' : ''}`,
+      label: `${t(`note.views.${view.id}`)}${current.view === view.id ? ' ✓' : ''}`,
       icon: view.icon,
       separatorBefore: index === 0,
       run: () => void notes.update(current.id, { view: view.id }),
@@ -111,9 +112,9 @@
       y: rect.bottom + 4,
       items: current.deletedAt
         ? [
-            { label: 'Restore', icon: 'restore', run: () => void notes.restore(current.id) },
+            { label: t('common.restore'), icon: 'restore', run: () => void notes.restore(current.id) },
             {
-              label: 'Delete permanently',
+              label: t('note.menu.deleteForever'),
               icon: 'trash',
               danger: true,
               separatorBefore: true,
@@ -121,37 +122,41 @@
             },
           ]
         : [
-            { label: current.pinned ? 'Unpin' : 'Pin', icon: 'pin', run: () => void notes.togglePin(current.id) },
             {
-              label: current.archivedAt ? 'Unarchive' : 'Archive',
+              label: t(current.pinned ? 'note.menu.unpin' : 'note.menu.pin'),
+              icon: 'pin',
+              run: () => void notes.togglePin(current.id),
+            },
+            {
+              label: t(current.archivedAt ? 'note.menu.unarchive' : 'note.menu.archive'),
               icon: 'archive',
               run: () => void notes.setArchived(current.id, current.archivedAt === 0),
             },
             ...viewItems,
             {
-              label: 'Add images',
+              label: t('note.menu.addImages'),
               icon: 'image',
               separatorBefore: true,
               run: async () => append(current.id, await pickImages()),
             },
-            { label: 'History…', icon: 'restore', run: () => (historyOpen = true) },
+            { label: t('note.menu.history'), icon: 'restore', run: () => (historyOpen = true) },
             {
-              label: 'Share a copy…',
+              label: t('note.menu.share'),
               icon: 'link',
               run: () => {
-                if (locked) ui.toast('Unlock the note before sharing it.', 'warn')
+                if (locked) ui.toast(t('toast.unlockToShare'), 'warn')
                 else shareOpen = true
               },
             },
             {
-              label: 'Move to trash',
+              label: t('note.menu.trash'),
               icon: 'trash',
               danger: true,
               separatorBefore: true,
               run: () => {
                 void notes.trash(current.id)
-                ui.toast('Moved to trash.', 'info', {
-                  label: 'Undo',
+                ui.toast(t('toast.movedToTrash'), 'info', {
+                  label: t('toast.undo'),
                   run: () => void notes.restore(current.id),
                 })
               },
@@ -180,7 +185,11 @@
     {@const current = note}
     <header class="head">
       {#if ui.narrow}
-        <button class="btn btn--ghost btn--icon" aria-label="Back to list" onclick={() => ui.back()}>
+        <button
+          class="btn btn--ghost btn--icon"
+          aria-label={t('note.backToList')}
+          onclick={() => ui.back()}
+        >
           <Icon name="chevron-right" size={16} class="flip" />
         </button>
       {/if}
@@ -189,7 +198,9 @@
         class="title"
         data-testid="note-title"
         value={locked ? '' : (content?.title ?? current.title)}
-        placeholder={locked ? 'Locked note' : derivedTitle({ title: content?.title ?? '', body: text })}
+        placeholder={locked
+          ? t('list.lockedNote')
+          : derivedTitle({ title: content?.title ?? '', body: text })}
         disabled={readOnly}
         onfocus={() => (titleBeforeEdit = derivedTitle(current))}
         oninput={(e) => void notes.update(current.id, { title: e.currentTarget.value })}
@@ -208,21 +219,21 @@
           titleBeforeEdit = value
 
           const updated = await notes.retitle(current.id, previous, value)
-          if (updated > 0) ui.toast(`Updated links in ${updated} note(s).`, 'ok')
+          if (updated > 0) ui.toast(t('toast.linksUpdated', { count: updated }), 'ok')
         }}
       />
 
       <div class="actions">
         {#if tasks.total > 0}
-          <span class="stamp faint">{tasks.done}/{tasks.total}</span>
+          <span class="stamp faint numeric">{tasks.done}/{tasks.total}</span>
         {/if}
-        <span class="stamp faint">{relativeTime(current.updatedAt)}</span>
+        <span class="stamp faint">{relativeTime(current.updatedAt, Date.now(), t)}</span>
 
         {#if showsReadToggle}
           <button
             class="btn btn--ghost btn--icon"
-            aria-label={mode === 'edit' ? 'Reading view' : 'Editing view'}
-            title={mode === 'edit' ? 'Reading view' : 'Editing view'}
+            aria-label={t(mode === 'edit' ? 'note.readingView' : 'note.editingView')}
+            title={t(mode === 'edit' ? 'note.readingView' : 'note.editingView')}
             onclick={() => (mode = mode === 'edit' ? 'read' : 'edit')}
           >
             <Icon name={mode === 'edit' ? 'file-text' : 'pencil'} size={16} />
@@ -232,14 +243,14 @@
         <button
           class="btn btn--ghost btn--icon"
           class:pinned={current.pinned === 1}
-          aria-label={current.pinned ? 'Unpin note' : 'Pin note'}
+          aria-label={t(current.pinned ? 'note.unpin' : 'note.pin')}
           onclick={() => void notes.togglePin(current.id)}
         >
           <Icon name="pin" size={16} />
         </button>
         <button
           class="btn btn--ghost btn--icon"
-          aria-label="Note actions"
+          aria-label={t('note.noteActions')}
           data-testid="note-menu"
           onclick={openMenu}
         >
@@ -252,7 +263,7 @@
       <nav class="daily" aria-label="Daily note navigation">
         <button
           class="btn btn--ghost btn--icon"
-          aria-label="Previous day"
+          aria-label={t('note.previousDay')}
           onclick={() => void notes.openDaily(addDays(current.daily!, -1), theme.settings.dailyNotes)}
         >
           <Icon name="chevron-right" size={15} class="flip" />
@@ -260,7 +271,7 @@
         <span class="day">{current.daily}</span>
         <button
           class="btn btn--ghost btn--icon"
-          aria-label="Next day"
+          aria-label={t('note.nextDay')}
           onclick={() => void notes.openDaily(addDays(current.daily!, 1), theme.settings.dailyNotes)}
         >
           <Icon name="chevron-right" size={15} />
@@ -268,18 +279,18 @@
       </nav>
     {/if}
 
-    <nav class="views" aria-label="Note view">
+    <nav class="views" aria-label={t('note.view')}>
       {#each VIEWS as view (view.id)}
         <button
           class="view"
           data-testid="view-tab-{view.id}"
           class:view--active={current.view === view.id}
           disabled={readOnly}
-          title={view.label}
+          title={t(`note.views.${view.id}`)}
           onclick={() => void notes.update(current.id, { view: view.id })}
         >
           <Icon name={view.icon} size={14} />
-          <span class="view-label">{view.label}</span>
+          <span class="view-label">{t(`note.views.${view.id}`)}</span>
         </button>
       {/each}
     </nav>
@@ -287,8 +298,10 @@
     {#if current.deletedAt > 0}
       <div class="banner">
         <Icon name="trash" size={14} />
-        <span>This note is in the trash. Restore it to keep editing.</span>
-        <button class="btn btn--ghost" onclick={() => void notes.restore(current.id)}>Restore</button>
+        <span>{t('note.inTrash')}</span>
+        <button class="btn btn--ghost" onclick={() => void notes.restore(current.id)}>
+          {t('common.restore')}
+        </button>
       </div>
     {/if}
 
@@ -340,16 +353,16 @@
     {#if dropActive}
       <div class="dropzone">
         <Icon name="image" size={20} />
-        <span>Drop images to add them to this note</span>
+        <span>{t('note.dropImages')}</span>
       </div>
     {/if}
   {:else}
     <div class="placeholder">
       <Icon name="notebook" size={26} />
-      <p class="faint">Select a note, or create one.</p>
+      <p class="faint">{t('note.selectOrCreate')}</p>
       <button class="btn btn--primary" data-testid="new-note-empty" onclick={() => void notes.newNote()}>
         <Icon name="plus" size={15} />
-        New note
+        {t('list.newNote')}
       </button>
     </div>
   {/if}
@@ -434,7 +447,7 @@
   }
 
   .stamp {
-    margin-right: var(--space-2);
+    margin-inline-end: var(--space-2);
     font-size: 11px;
     white-space: nowrap;
     font-variant-numeric: tabular-nums;

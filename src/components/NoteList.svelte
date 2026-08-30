@@ -8,6 +8,7 @@
   import { computeRange } from '$lib/utils/virtual'
   import { emptyTrash, moveNote } from '$lib/db/repo/notes'
   import { ROOT } from '$lib/db/schema'
+  import { t } from '$lib/i18n/index.svelte'
 
   /** Kept in sync with the fixed row height in NoteListItem's styles. */
   const ROW_HEIGHT = 62
@@ -25,17 +26,17 @@
     const scope = notes.scope
     switch (scope.kind) {
       case 'trash':
-        return 'Trash'
+        return t('sidebar.trash')
       case 'archive':
-        return 'Archive'
+        return t('sidebar.archive')
       case 'tag':
         return `#${scope.tag}`
       case 'search':
-        return `Search: ${scope.query}`
+        return t('list.searchHeading', { query: scope.query })
       case 'smart':
-        return notes.smartFolders.find((f) => f.id === scope.id)?.name ?? 'Saved search'
+        return notes.smartFolders.find((f) => f.id === scope.id)?.name ?? t('list.savedSearch')
       default:
-        return notes.activeFolder?.name ?? 'All notes'
+        return notes.activeFolder?.name ?? t('sidebar.allNotes')
     }
   })
 
@@ -80,7 +81,7 @@
     const rect = (event.currentTarget as HTMLElement).getBoundingClientRect()
     const targets: MenuItem[] = [
       {
-        label: 'All notes (no folder)',
+        label: t('list.noFolder'),
         icon: 'file-text',
         run: () => void bulkMove(ROOT),
       },
@@ -98,7 +99,7 @@
     const count = await notes.applyToMarked(async (id) => {
       await moveNote(id, folderId, null, null)
     })
-    ui.toast(`${count} note(s) moved.`, 'ok')
+    ui.toast(t('toast.notesMoved', { count }), 'ok')
   }
 
   function openMenu(id: string, x: number, y: number) {
@@ -111,9 +112,9 @@
       y,
       items: trashed
         ? [
-            { label: 'Restore', icon: 'restore', run: () => void notes.restore(id) },
+            { label: t('common.restore'), icon: 'restore', run: () => void notes.restore(id) },
             {
-              label: 'Delete permanently',
+              label: t('note.menu.deleteForever'),
               icon: 'trash',
               danger: true,
               separatorBefore: true,
@@ -122,24 +123,24 @@
           ]
         : [
             {
-              label: note.pinned ? 'Unpin' : 'Pin',
+              label: t(note.pinned ? 'note.menu.unpin' : 'note.menu.pin'),
               icon: 'pin',
               run: () => void notes.togglePin(id),
             },
             {
-              label: note.archivedAt ? 'Unarchive' : 'Archive',
+              label: t(note.archivedAt ? 'note.menu.unarchive' : 'note.menu.archive'),
               icon: 'archive',
               run: () => void notes.setArchived(id, note.archivedAt === 0),
             },
             {
-              label: 'Move to trash',
+              label: t('note.menu.trash'),
               icon: 'trash',
               danger: true,
               separatorBefore: true,
               run: () => {
                 void notes.trash(id)
-                ui.toast('Moved to trash.', 'info', {
-                  label: 'Undo',
+                ui.toast(t('toast.movedToTrash'), 'info', {
+                  label: t('toast.undo'),
                   run: () => void notes.restore(id),
                 })
               },
@@ -152,7 +153,11 @@
 <section class="list" data-testid="note-list">
   <header class="head">
     {#if ui.narrow}
-      <button class="btn btn--ghost btn--icon" aria-label="Back to folders" onclick={() => ui.back()}>
+      <button
+        class="btn btn--ghost btn--icon"
+        aria-label={t('note.backToFolders')}
+        onclick={() => ui.back()}
+      >
         <Icon name="panel-left" size={16} />
       </button>
     {/if}
@@ -165,15 +170,15 @@
         disabled={items.length === 0}
         onclick={async () => {
           const removed = await emptyTrash()
-          ui.toast(`${removed} note(s) permanently deleted.`, 'warn')
+          ui.toast(t('toast.notesDeleted', { count: removed }), 'warn')
         }}
       >
-        Empty trash
+        {t('list.emptyTrash')}
       </button>
     {:else if notes.scope.kind === 'folder'}
       <button
         class="btn btn--ghost btn--icon"
-        aria-label="New note"
+        aria-label={t('list.newNote')}
         data-testid="new-note"
         onclick={async () => {
           await notes.newNote()
@@ -188,27 +193,29 @@
   {#if notes.marked.length > 0}
     <div class="bulk" data-testid="bulk-bar">
       <span class="bulk-count">{notes.marked.length}</span>
-      <button class="btn btn--ghost bulk-all" onclick={() => notes.markAll()}>Select all</button>
+      <button class="btn btn--ghost bulk-all" onclick={() => notes.markAll()}>
+        {t('list.selectAll')}
+      </button>
       <div class="spacer"></div>
       {#if notes.scope.kind === 'trash'}
         <button
           class="btn btn--ghost btn--icon"
-          title="Restore"
-          aria-label="Restore selected notes"
+          title={t('common.restore')}
+          aria-label={t('list.restoreSelected')}
           onclick={async () => {
             const n = await notes.applyToMarked((id) => notes.restore(id))
-            ui.toast(`${n} note(s) restored.`, 'ok')
+            ui.toast(t('toast.notesRestored', { count: n }), 'ok')
           }}
         >
           <Icon name="restore" size={15} />
         </button>
         <button
           class="btn btn--ghost btn--icon btn--danger"
-          title="Delete permanently"
-          aria-label="Delete selected notes permanently"
+          title={t('note.menu.deleteForever')}
+          aria-label={t('list.deleteSelectedForever')}
           onclick={async () => {
             const n = await notes.applyToMarked((id) => notes.deleteForever(id))
-            ui.toast(`${n} note(s) deleted for good.`, 'warn')
+            ui.toast(t('toast.notesDeletedForGood', { count: n }), 'warn')
           }}
         >
           <Icon name="trash" size={15} />
@@ -216,16 +223,16 @@
       {:else}
         <button
           class="btn btn--ghost btn--icon"
-          title="Move to folder"
-          aria-label="Move selected notes to a folder"
+          title={t('list.moveToFolder')}
+          aria-label={t('list.moveToFolder')}
           onclick={openMoveMenu}
         >
           <Icon name="folder" size={15} />
         </button>
         <button
           class="btn btn--ghost btn--icon"
-          title="Pin"
-          aria-label="Pin selected notes"
+          title={t('note.menu.pin')}
+          aria-label={t('list.pinSelected')}
           onclick={async () => {
             await notes.applyToMarked((id) => notes.togglePin(id))
           }}
@@ -234,24 +241,24 @@
         </button>
         <button
           class="btn btn--ghost btn--icon"
-          title="Archive"
-          aria-label="Archive selected notes"
+          title={t('note.menu.archive')}
+          aria-label={t('list.archiveSelected')}
           onclick={async () => {
             const n = await notes.applyToMarked((id) => notes.setArchived(id, true))
-            ui.toast(`${n} note(s) archived.`, 'ok')
+            ui.toast(t('toast.notesArchived', { count: n }), 'ok')
           }}
         >
           <Icon name="archive" size={15} />
         </button>
         <button
           class="btn btn--ghost btn--icon btn--danger"
-          title="Move to trash"
-          aria-label="Move selected notes to trash"
+          title={t('note.menu.trash')}
+          aria-label={t('list.trashSelected')}
           onclick={async () => {
             const ids = [...notes.marked]
             const n = await notes.applyToMarked((id) => notes.trash(id))
-            ui.toast(`${n} note(s) moved to trash.`, 'info', {
-              label: 'Undo',
+            ui.toast(t('toast.notesTrashed', { count: n }), 'info', {
+              label: t('toast.undo'),
               run: () => void Promise.all(ids.map((id) => notes.restore(id))),
             })
           }}
@@ -259,7 +266,11 @@
           <Icon name="trash" size={15} />
         </button>
       {/if}
-      <button class="btn btn--ghost btn--icon" aria-label="Clear selection" onclick={() => notes.clearMarks()}>
+      <button
+        class="btn btn--ghost btn--icon"
+        aria-label={t('list.clearSelection')}
+        onclick={() => notes.clearMarks()}
+      >
         <Icon name="x" size={14} />
       </button>
     </div>
@@ -269,7 +280,7 @@
     class="scroller"
     bind:this={scroller}
     role="listbox"
-    aria-label="Notes"
+    aria-label={t('list.notes')}
     tabindex="-1"
     onscroll={(e) => (scrollTop = e.currentTarget.scrollTop)}
   >
@@ -278,11 +289,11 @@
         <Icon name="file-text" size={22} />
         <p class="faint">
           {#if notes.scope.kind === 'trash'}
-            Trash is empty.
+            {t('list.trashEmpty')}
           {:else if notes.scope.kind === 'archive'}
-            Nothing archived.
+            {t('list.nothingArchived')}
           {:else}
-            No notes here yet.
+            {t('list.noNotes')}
           {/if}
         </p>
       </div>
@@ -316,7 +327,7 @@
     height: 100%;
     min-height: 0;
     background: var(--bg);
-    border-right: 1px solid var(--border);
+    border-inline-end: 1px solid var(--border);
   }
 
   .head {
@@ -364,7 +375,7 @@
   .bulk-count {
     flex: none;
     min-width: 20px;
-    padding-left: var(--space-2);
+    padding-inline-start: var(--space-2);
     font-size: 12px;
     font-weight: 650;
     font-variant-numeric: tabular-nums;

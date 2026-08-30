@@ -4,6 +4,7 @@
   import { FOLDER_ICON_NAMES } from '$lib/icons/registry'
   import type { IconRef } from '$lib/db/schema'
   import { untrack } from 'svelte'
+  import { t } from '$lib/i18n/index.svelte'
 
   interface Props {
     value: IconRef
@@ -21,9 +22,54 @@
 
   /** A small, hand-picked emoji set: enough to be expressive, short enough to scan. */
   const EMOJI = [
-    '📁','📂','🗂️','📋','📌','📎','🔖','📝','✏️','🖊️','📓','📔','📕','📗','📘','📙',
-    '💡','🔥','⭐','✨','🎯','🚀','🧠','⚙️','🔧','🛠️','🧪','🔬','📊','📈','💰','🧾',
-    '🏠','🏢','🌱','🌍','☕','🍕','🎵','🎬','🎮','📷','✈️','🚗','❤️','✅','⏰','🔒',
+    '📁',
+    '📂',
+    '🗂️',
+    '📋',
+    '📌',
+    '📎',
+    '🔖',
+    '📝',
+    '✏️',
+    '🖊️',
+    '📓',
+    '📔',
+    '📕',
+    '📗',
+    '📘',
+    '📙',
+    '💡',
+    '🔥',
+    '⭐',
+    '✨',
+    '🎯',
+    '🚀',
+    '🧠',
+    '⚙️',
+    '🔧',
+    '🛠️',
+    '🧪',
+    '🔬',
+    '📊',
+    '📈',
+    '💰',
+    '🧾',
+    '🏠',
+    '🏢',
+    '🌱',
+    '🌍',
+    '☕',
+    '🍕',
+    '🎵',
+    '🎬',
+    '🎮',
+    '📷',
+    '✈️',
+    '🚗',
+    '❤️',
+    '✅',
+    '⏰',
+    '🔒',
   ]
 
   // The full catalogue is a separate chunk; it downloads the first time this
@@ -44,13 +90,17 @@
 
 <div class="backdrop" role="presentation" onpointerdown={onclose}></div>
 
-<div class="picker" role="dialog" aria-modal="true" aria-label="Choose an icon">
+<div class="picker" role="dialog" aria-modal="true" aria-label={t('icons.choose')}>
   <header class="head">
     <div class="tabs">
-      <button class="tab" class:tab--active={tab === 'icons'} onclick={() => (tab = 'icons')}>Icons</button>
-      <button class="tab" class:tab--active={tab === 'emoji'} onclick={() => (tab = 'emoji')}>Emoji</button>
+      <button class="tab" class:tab--active={tab === 'icons'} onclick={() => (tab = 'icons')}
+        >{t('icons.icons')}</button
+      >
+      <button class="tab" class:tab--active={tab === 'emoji'} onclick={() => (tab = 'emoji')}
+        >{t('icons.emoji')}</button
+      >
     </div>
-    <button class="btn btn--ghost btn--icon" aria-label="Close" onclick={onclose}>
+    <button class="btn btn--ghost btn--icon" aria-label={t('common.close')} onclick={onclose}>
       <Icon name="x" size={15} />
     </button>
   </header>
@@ -59,7 +109,12 @@
     <div class="field">
       <Icon name="search" size={14} />
       <!-- svelte-ignore a11y_autofocus -->
-      <input bind:value={query} placeholder="Search {names.length} icons" aria-label="Search icons" autofocus />
+      <input
+        bind:value={query}
+        placeholder={t('icons.searchCount', { count: names.length })}
+        aria-label={t('icons.search')}
+        autofocus
+      />
     </div>
 
     <div class="grid">
@@ -76,9 +131,9 @@
       {/each}
 
       {#if loading}
-        <p class="status faint">Loading the icon set…</p>
+        <p class="status faint">{t('icons.loading')}</p>
       {:else if filtered.length === 0}
-        <p class="status faint">No icons match “{query}”.</p>
+        <p class="status faint">{t('icons.noMatches', { term: query })}</p>
       {/if}
     </div>
   {:else}

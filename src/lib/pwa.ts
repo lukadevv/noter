@@ -4,6 +4,8 @@
  * Updates are prompted rather than applied silently: swapping the running app
  * out from under someone mid-edit is exactly the moment to not be clever.
  */
+import { t } from '$lib/i18n/index.svelte'
+
 export function registerServiceWorker(): void {
   if (import.meta.env.DEV) return
 
@@ -12,7 +14,7 @@ export function registerServiceWorker(): void {
       onNeedRefresh() {
         // Deferred to the toast system once the store is reachable from here;
         // a confirm keeps the behaviour honest until then.
-        if (confirm('A new version of Noter is ready. Reload now?')) void updateSW(true)
+        if (confirm(t('update.ready'))) void updateSW(true)
       },
     })
   })
