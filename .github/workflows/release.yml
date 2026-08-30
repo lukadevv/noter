@@ -46,38 +46,56 @@ jobs:
       # The draft is created once, here, rather than by whichever build job wins
       # the race: GitHub happily keeps several drafts on the same tag, and three
       # platforms starting at once is exactly how that happens.
+      # The release id comes from the create response itself, never from
+      # re-listing drafts: the REST releases list does not reliably include a
+      # draft the instant it is created, and tauri-action only uploads when
+      # `releaseId` is a valid number. Taking `data.id` straight from the
+      # create call sidesteps that race entirely.
       - id: draft
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ steps.check.outputs.tag }}
           VERSION: ${{ steps.check.outputs.version }}
-        run: |
-          find_id() {
-            gh api "repos/$GITHUB_REPOSITORY/releases" --paginate \
-              --jq ".[] | select(.tag_name == \"$TAG\") | .id" | head -n 1
-          }
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner
+            const repo = context.repo.repo
 
-          id="$(find_id)"
-          if [ -z "$id" ]; then
-            cat > notes.md <<'NOTES'
-          The same app as the website, installed on your device. Notes stay on the
-          machine you write them on; nothing is uploaded anywhere.
+            const existingId = await github.paginate(
+              github.rest.repos.listReleases,
+              { owner, repo, per_page: 100 },
+            ).then((releases) =>
+              releases.find((r) => r.tag_name === process.env.TAG)?.id,
+            )
 
-          | Platform | File |
-          | --- | --- |
-          | Windows | `.exe` (installer) or `.msi` |
-          | macOS | `.dmg` (Apple silicon and Intel) |
-          | Linux | `.AppImage`, `.deb` or `.rpm` |
-          | Android | `.apk`, sideloaded |
+            let id = existingId
+            if (!id) {
+              const { data } = await github.rest.repos.createRelease({
+                owner,
+                repo,
+                tag_name: process.env.TAG,
+                name: `Noter ${process.env.VERSION}`,
+                draft: true,
+                body: [
+                  'The same app as the website, installed on your device. Notes stay on the',
+                  'machine you write them on; nothing is uploaded anywhere.',
+                  '',
+                  '| Platform | File |',
+                  '| --- | --- |',
+                  '| Windows | `.exe` (installer) or `.msi` |',
+                  '| macOS | `.dmg` (Apple silicon and Intel) |',
+                  '| Linux | `.AppImage`, `.deb` or `.rpm` |',
+                  '| Android | `.apk`, sideloaded |',
+                  '',
+                  'The desktop builds are not code-signed. Windows shows a SmartScreen',
+                  'warning — "More info" then "Run anyway" — and macOS wants the app opened',
+                  'from its right-click menu the first time.',
+                ].join('\n'),
+              })
+              id = data.id
+            }
 
-          The desktop builds are not code-signed. Windows shows a SmartScreen
-          warning — "More info" then "Run anyway" — and macOS wants the app opened
-          from its right-click menu the first time.
-          NOTES
-            gh release create "$TAG" --draft --title "Noter $VERSION" --notes-file notes.md
-            id="$(find_id)"
-          fi
-          echo "release_id=$id" >> "$GITHUB_OUTPUT"
+            core.setOutput('release_id', String(id))
 
   desktop:
     name: ${{ matrix.label }}
