@@ -243,6 +243,13 @@ token from the HTML-tag method â€” the tag is only emitted when it has a value â
 or drop Google's verification HTML file into `public/`, from where it ships at
 the site root. Submit `https://your-domain/sitemap.xml` once verified.
 
+**Cloudflare Web Analytics.** Set `VITE_CLOUDFLARE_ANALYTICS_TOKEN` to the site
+token shown in your Web Analytics dashboard. Only the token value, not the whole
+snippet. When set, the build injects the beacon script and the CSP opens the
+`static.cloudflareinsights.com` origin it loads from. It is skipped on the
+desktop and Android builds, which share this `index.html` yet are not web
+traffic.
+
 ## Bundle budget
 
 `pnpm build` fails if the initial payload exceeds 150 KB gzipped.

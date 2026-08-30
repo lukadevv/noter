@@ -20,7 +20,11 @@ const CSP = [
   "default-src 'self'",
   "img-src 'self' blob: data: https:",
   "media-src 'self' blob: data:",
-  "script-src 'self'",
+  // Only matters when VITE_CLOUDFLARE_ANALYTICS_TOKEN is set: the Cloudflare
+  // beacon is a third-party module and would be blocked by a bare 'self'. The
+  // connect-src https: entry already covers the cloudflareinsights.com endpoint
+  // it reports to.
+  "script-src 'self' https://static.cloudflareinsights.com",
   "style-src 'self' 'unsafe-inline'",
   "font-src 'self' data:",
   "connect-src 'self' blob: data: https:",
@@ -93,7 +97,8 @@ function siteUrl(): Plugin {
 
 /**
  * Injects the parts of the head that are computed rather than written by hand:
- * structured data, the locale alternates, and the Search Console token.
+ * structured data, the locale alternates, the Search Console token, and the
+ * Cloudflare Web Analytics beacon.
  *
  * Building these here keeps `index.html` readable and keeps the feature list in
  * one place instead of drifting between the page and the code.
@@ -104,6 +109,7 @@ function seo(): Plugin {
     transformIndexHtml() {
       const base = (process.env.VITE_SITE_URL ?? '').replace(/\/$/, '')
       const verification = process.env.VITE_GOOGLE_SITE_VERIFICATION ?? ''
+      const cfToken = process.env.VITE_CLOUDFLARE_ANALYTICS_TOKEN ?? ''
 
       const tags: HtmlTagDescriptor[] = [
         {
@@ -133,6 +139,25 @@ function seo(): Plugin {
         tags.push({
           tag: 'link',
           attrs: { rel: 'canonical', href: `${base}/` },
+          injectTo: 'head',
+        })
+      }
+
+      // Cloudflare Web Analytics. Unlike the inert Google verification <meta>,
+      // this is a third-party script, so it needs the `script-src` entry added
+      // at the top of the file to load under the CSP. It is also only meaningful
+      // for the web deployment: the desktop and Android shells share this
+      // `index.html`, and firing analytics from a native webview would report a
+      // local-first app's activity to Cloudflare for nothing. Skipped entirely
+      // when the token is unset or a native build is running.
+      if (cfToken && !process.env.NOTER_NATIVE) {
+        tags.push({
+          tag: 'script',
+          attrs: {
+            type: 'module',
+            src: 'https://static.cloudflareinsights.com/beacon.min.js',
+            'data-cf-beacon': JSON.stringify({ token: cfToken }),
+          },
           injectTo: 'head',
         })
       }

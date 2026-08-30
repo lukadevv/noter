@@ -101,6 +101,7 @@ jobs:
         env:
           VITE_SITE_URL: ${{ vars.SITE_URL }}
           VITE_GOOGLE_SITE_VERIFICATION: ${{ vars.GOOGLE_SITE_VERIFICATION }}
+          VITE_CLOUDFLARE_ANALYTICS_TOKEN: ${{ vars.CLOUDFLARE_ANALYTICS_TOKEN }}
         run: pnpm build
 
       - name: Publish
