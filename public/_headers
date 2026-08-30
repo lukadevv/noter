@@ -1,0 +1,24 @@
+# Cloudflare Pages response headers.
+#
+# The build injects a Content-Security-Policy <meta> tag, but two things can only
+# be set from a header: `frame-ancestors`, which browsers ignore in a meta tag,
+# and the caching rules that keep clients off a stale service worker.
+
+/*
+  Content-Security-Policy: frame-ancestors 'none'
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  # The app talks to nothing and needs no device APIs; say so explicitly.
+  Permissions-Policy: geolocation=(), microphone=(), camera=(), interest-cohort=()
+  X-Frame-Options: DENY
+
+# A cached service worker is a client stuck on an old build forever.
+/sw.js
+  Cache-Control: no-cache, no-store, must-revalidate
+
+/manifest.webmanifest
+  Cache-Control: public, max-age=0, must-revalidate
+
+# Hashed filenames, so these can be cached indefinitely.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable

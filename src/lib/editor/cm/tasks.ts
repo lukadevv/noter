@@ -1,4 +1,11 @@
-import { Decoration, EditorView, ViewPlugin, WidgetType, type DecorationSet, type ViewUpdate } from '@codemirror/view'
+import {
+  Decoration,
+  type EditorView,
+  ViewPlugin,
+  WidgetType,
+  type DecorationSet,
+  type ViewUpdate,
+} from '@codemirror/view'
 import { RangeSetBuilder } from '@codemirror/state'
 import { checkboxOffset, parseTaskLine } from '$lib/md/tasks'
 
@@ -59,7 +66,11 @@ function buildDecorations(view: EditorView): DecorationSet {
             (range) => range.from <= start + 3 && range.to >= start,
           )
           if (!cursorInside) {
-            builder.add(start, start + 3, Decoration.replace({ widget: new CheckboxWidget(task.done, start) }))
+            builder.add(
+              start,
+              start + 3,
+              Decoration.replace({ widget: new CheckboxWidget(task.done, start) }),
+            )
           }
         }
       }

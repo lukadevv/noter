@@ -1,4 +1,10 @@
-import { Decoration, EditorView, ViewPlugin, type DecorationSet, type ViewUpdate } from '@codemirror/view'
+import {
+  Decoration,
+  type EditorView,
+  ViewPlugin,
+  type DecorationSet,
+  type ViewUpdate,
+} from '@codemirror/view'
 import { RangeSetBuilder } from '@codemirror/state'
 import { autocompletion, type CompletionContext, type CompletionResult } from '@codemirror/autocomplete'
 

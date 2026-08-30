@@ -4,10 +4,17 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
+
+# A newer push supersedes an in-flight run, except on main, where every commit
+# should produce its own deployment.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   check:
-    name: Types, unit tests and bundle budget
+    name: Lint, types, unit tests and bundle budget
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -22,11 +29,19 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      - name: Lint
+        run: pnpm lint
+
+      - name: Formatting
+        run: pnpm format:check
+
       # `build` runs svelte-check, builds, and fails if the initial payload
       # outgrows its budget. Icons are committed, so no image tooling is needed.
-      - run: pnpm build
+      - name: Type-check, build and bundle budget
+        run: pnpm build
 
-      - run: pnpm test
+      - name: Unit tests
+        run: pnpm test
 
   e2e:
     name: End-to-end
@@ -34,7 +49,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # No version input: the action reads the pinned one from packageManager.
       - uses: pnpm/action-setup@v4
 
       - uses: actions/setup-node@v4
@@ -46,9 +60,11 @@ jobs:
 
       # Only Chromium: the suite tests this app's behaviour, not cross-browser
       # rendering, and the service-worker paths need a Chromium-class engine.
-      - run: pnpm exec playwright install --with-deps chromium
+      - name: Install Playwright browser
+        run: pnpm exec playwright install --with-deps chromium
 
-      - run: pnpm exec playwright test
+      - name: Run end-to-end tests
+        run: pnpm exec playwright test
 
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
@@ -56,3 +72,42 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 7
+
+  deploy:
+    name: Deploy to Cloudflare Pages
+    # Nothing ships unless both suites are green.
+    needs: [check, e2e]
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: ${{ steps.publish.outputs.deployment-url }}
+    permissions:
+      contents: read
+      deployments: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build
+        # Only needed for link previews; see .env.example.
+        env:
+          VITE_SITE_URL: ${{ vars.SITE_URL }}
+          VITE_GOOGLE_SITE_VERIFICATION: ${{ vars.GOOGLE_SITE_VERIFICATION }}
+        run: pnpm build
+
+      - name: Publish
+        id: publish
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist --project-name=${{ vars.CLOUDFLARE_PROJECT_NAME }} --branch=main
