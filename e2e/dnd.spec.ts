@@ -3,12 +3,15 @@ import { createFolder, createNoteWith, openApp } from './helpers'
 
 /** Folder names in tree order, with their nesting depth. */
 async function tree(page: Page): Promise<{ name: string; depth: number }[]> {
-  return page.getByRole('tree').getByTestId('folder-row').evaluateAll((rows) =>
-    rows.map((row) => ({
-      name: row.querySelector('.name')?.textContent?.trim() ?? '',
-      depth: Number(getComputedStyle(row).getPropertyValue('--depth')) || 0,
-    })),
-  )
+  return page
+    .getByRole('tree')
+    .getByTestId('folder-row')
+    .evaluateAll((rows) =>
+      rows.map((row) => ({
+        name: row.querySelector('.name')?.textContent?.trim() ?? '',
+        depth: Number(getComputedStyle(row).getPropertyValue('--depth')) || 0,
+      })),
+    )
 }
 
 function names(entries: { name: string }[]): string[] {
@@ -55,11 +58,13 @@ test.describe('folder drag and drop', () => {
   test('nests a folder when dropped on the middle of a row', async ({ page }) => {
     await dropFolder(page, 2, 0, 'into')
 
-    await expect.poll(async () => await tree(page)).toEqual([
-      { name: 'Alpha', depth: 0 },
-      { name: 'Gamma', depth: 1 },
-      { name: 'Beta', depth: 0 },
-    ])
+    await expect
+      .poll(async () => await tree(page))
+      .toEqual([
+        { name: 'Alpha', depth: 0 },
+        { name: 'Gamma', depth: 1 },
+        { name: 'Beta', depth: 0 },
+      ])
   })
 
   test('survives a reload', async ({ page }) => {
@@ -77,12 +82,16 @@ test.describe('folder drag and drop', () => {
     // Alpha now contains Beta; dropping Alpha into Beta would orphan the branch.
     await dropFolder(page, 0, 1, 'into')
 
-    await expect(page.getByTestId('toast').filter({ hasText: 'cannot be moved inside itself' })).toBeVisible()
-    await expect.poll(async () => await tree(page)).toEqual([
-      { name: 'Alpha', depth: 0 },
-      { name: 'Beta', depth: 1 },
-      { name: 'Gamma', depth: 0 },
-    ])
+    await expect(
+      page.getByTestId('toast').filter({ hasText: 'cannot be moved inside itself' }),
+    ).toBeVisible()
+    await expect
+      .poll(async () => await tree(page))
+      .toEqual([
+        { name: 'Alpha', depth: 0 },
+        { name: 'Beta', depth: 1 },
+        { name: 'Gamma', depth: 0 },
+      ])
   })
 
   test('unfiles a nested folder by dropping it below the tree', async ({ page }) => {

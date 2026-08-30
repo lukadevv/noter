@@ -171,7 +171,9 @@ test.describe('backup and restore', () => {
     await openSettings(page)
     const chooser = page.waitForEvent('filechooser')
     await page.getByRole('button', { name: 'Import vault…' }).click()
-    await (await chooser).setFiles({
+    await (
+      await chooser
+    ).setFiles({
       name: 'not-a-vault.noter',
       mimeType: 'application/octet-stream',
       buffer: Buffer.from('this is definitely not a backup'),
@@ -239,9 +241,7 @@ test.describe('backup and restore', () => {
     await expect(page.getByTestId('share-dialog')).toBeVisible()
     await expect(page.getByTestId('share-dialog')).toContainText('Images are not shared')
 
-    await expect
-      .poll(() => page.getByTestId('share-url').inputValue())
-      .toMatch(/#\/s\//)
+    await expect.poll(() => page.getByTestId('share-url').inputValue()).toMatch(/#\/s\//)
     const link = await page.getByTestId('share-url').inputValue()
     await page.getByTestId('share-close').click()
 

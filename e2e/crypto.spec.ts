@@ -1,10 +1,10 @@
-import { expect, test } from '@playwright/test'
+import { expect, test, type Locator, type Page } from '@playwright/test'
 import { createFolder, createNoteWith, folderMenu, openApp } from './helpers'
 
 const PASSPHRASE = 'a decent folder passphrase'
 
 /** Encrypts the folder in `row` and waits for the notes to be rewritten. */
-async function encryptFolder(page: import('@playwright/test').Page, row: import('@playwright/test').Locator) {
+async function encryptFolder(page: Page, row: Locator) {
   await folderMenu(page, row, 'Encrypt folder')
   await expect(page.getByTestId('folder-lock')).toBeVisible()
 
@@ -121,7 +121,8 @@ test.describe('folder encryption', () => {
 
     await folderMenu(page, row, 'Encryption')
     await page.getByRole('button', { name: 'Lock now' }).click()
-    await page.getByLabel('Close').click()
+    // Scoped to the dialog: a toast may still be on screen with its own control.
+    await page.getByTestId('folder-lock').getByLabel('Close').click()
 
     await page.getByTestId('note-item').first().click()
     await expect(page.getByTestId('lock-prompt')).toBeVisible()

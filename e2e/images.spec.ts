@@ -1,8 +1,8 @@
-import { expect, test } from '@playwright/test'
+import { expect, test, type Page } from '@playwright/test'
 import { createNote, createNoteWith, noteMenu, openApp, TINY_PNG, typeMarkdown } from './helpers'
 
 /** Attaches an image through whichever file picker the app just opened. */
-async function attachImage(page: import('@playwright/test').Page, open: () => Promise<void>) {
+async function attachImage(page: Page, open: () => Promise<void>) {
   const chooser = page.waitForEvent('filechooser')
   await open()
   await (await chooser).setFiles({ name: 'shot.png', mimeType: 'image/png', buffer: TINY_PNG })

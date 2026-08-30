@@ -110,8 +110,7 @@ test.describe('offline and PWA', () => {
     await openApp(page)
 
     const meta = await page.evaluate(() => {
-      const get = (selector: string) =>
-        document.querySelector(selector)?.getAttribute('content') ?? null
+      const get = (selector: string) => document.querySelector(selector)?.getAttribute('content') ?? null
       return {
         title: get('meta[property="og:title"]'),
         description: get('meta[property="og:description"]'),
@@ -128,14 +127,59 @@ test.describe('offline and PWA', () => {
     expect(meta.width).toBe('1200')
   })
 
+  test('publishes structured data search engines can read', async ({ page }) => {
+    await openApp(page)
+
+    const graph = await page.evaluate(() => {
+      const script = document.querySelector('script[type="application/ld+json"]')
+      return script
+        ? (JSON.parse(script.textContent ?? '{}') as { '@graph': Record<string, unknown>[] })
+        : null
+    })
+
+    expect(graph).not.toBeNull()
+    const app = graph!['@graph'].find((node) => node['@type'] === 'SoftwareApplication')
+    expect(app, 'no SoftwareApplication node').toBeDefined()
+    expect(app!.name).toBe('Noter')
+    expect(app!.isAccessibleForFree).toBe(true)
+    // Free apps need an explicit zero-price offer; validators do not assume it.
+    expect(app!.offers).toMatchObject({ price: '0' })
+    expect((app!.inLanguage as string[]).length).toBe(10)
+    expect((app!.featureList as string[]).length).toBeGreaterThan(4)
+  })
+
+  test('serves robots.txt and a sitemap', async ({ page }) => {
+    await openApp(page)
+
+    for (const path of ['/robots.txt', '/sitemap.xml']) {
+      const status = await page.evaluate(async (url) => (await fetch(url)).status, path)
+      expect(status, `${path} should be served`).toBe(200)
+    }
+
+    const sitemap = await page.evaluate(async () => (await fetch('/sitemap.xml')).text())
+    expect(sitemap).toContain('http://www.sitemaps.org/schemas/sitemap/0.9')
+  })
+
+  test('declares its language alternates', async ({ page }) => {
+    await openApp(page)
+
+    const alternates = await page.evaluate(() =>
+      [...document.querySelectorAll('meta[property="og:locale:alternate"]')].map((meta) =>
+        meta.getAttribute('content'),
+      ),
+    )
+
+    // Nine alternates beside the default locale.
+    expect(alternates).toHaveLength(9)
+    expect(alternates).toContain('ar_AR')
+  })
+
   test('ships a Content-Security-Policy that blocks inline scripts', async ({ page }) => {
     await openApp(page)
 
     const csp = await page.evaluate(
       () =>
-        document
-          .querySelector('meta[http-equiv="Content-Security-Policy"]')
-          ?.getAttribute('content') ?? '',
+        document.querySelector('meta[http-equiv="Content-Security-Policy"]')?.getAttribute('content') ?? '',
     )
 
     expect(csp).toContain("script-src 'self'")

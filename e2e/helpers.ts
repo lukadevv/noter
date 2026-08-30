@@ -65,7 +65,10 @@ export async function settleAutosave(page: Page, expectedText: string): Promise<
   })
 
   await expect
-    .poll(() => notePersisted(page, expectedText), { timeout: 10_000, message: `"${expectedText}" never reached IndexedDB` })
+    .poll(() => notePersisted(page, expectedText), {
+      timeout: 10_000,
+      message: `"${expectedText}" never reached IndexedDB`,
+    })
     .toBe(true)
 }
 
@@ -99,8 +102,61 @@ export async function createNoteWith(page: Page, text: string): Promise<void> {
   await typeMarkdown(page, text)
   // The list shows a derived title with markdown markers stripped, so the
   // expected text has to be stripped the same way.
-  const firstLine = text.split('\n')[0]!.replace(/^#{1,6}\s+/, '').replace(/^[-*+]\s+/, '')
+  const firstLine = text
+    .split('\n')[0]!
+    .replace(/^#{1,6}\s+/, '')
+    .replace(/^[-*+]\s+/, '')
   await settleAutosave(page, firstLine.slice(0, 20))
+  await expectTypedFully(page, text)
+}
+
+/**
+ * Asserts the whole text arrived, in order.
+ *
+ * A keystroke can occasionally be dropped while the editor is still settling.
+ * Without this the test carries on against a half-typed note and fails somewhere
+ * unrelated, which is far harder to read than failing right here.
+ *
+ * Lines are matched in sequence rather than compared whole: CodeMirror's
+ * markdown mode continues lists on Enter, so the stored body legitimately
+ * contains markers the test never typed.
+ */
+export async function expectTypedFully(page: Page, text: string): Promise<void> {
+  const lines = text.split('\n').filter((line) => line.trim())
+  const pattern = new RegExp(lines.map(escapeRegExp).join('[\\s\\S]*'))
+
+  await expect
+    .poll(async () => (await noteBodies(page)).some((body) => pattern.test(body)), {
+      timeout: 10_000,
+      message: `the editor never received all of:\n${text}`,
+    })
+    .toBe(true)
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+/** Every note body currently in IndexedDB. */
+export function noteBodies(page: Page): Promise<string[]> {
+  return page.evaluate(async () => {
+    const open = indexedDB.open('noter')
+    const database = await new Promise<IDBDatabase>((resolve, reject) => {
+      open.onsuccess = () => resolve(open.result)
+      open.onerror = () => reject(open.error)
+    })
+    if (!database.objectStoreNames.contains('notes')) {
+      database.close()
+      return []
+    }
+    const rows = await new Promise<{ body: string }[]>((resolve) => {
+      const request = database.transaction('notes', 'readonly').objectStore('notes').getAll()
+      request.onsuccess = () => resolve(request.result as { body: string }[])
+      request.onerror = () => resolve([])
+    })
+    database.close()
+    return rows.map((row) => row.body)
+  })
 }
 
 /** A note row addressed by its title, so a mention in another note's preview
