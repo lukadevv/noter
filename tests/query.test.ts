@@ -125,9 +125,7 @@ describe('query evaluation', () => {
   it('filters by content presence', () => {
     expect(run('has:task', note({ body: '- [ ] a' }))).toBe(true)
     expect(run('has:link', note({ body: 'see [[Other]]' }))).toBe(true)
-    expect(
-      run('has:image', note({ body: '![[img:11111111-1111-4111-8111-111111111111]]' })),
-    ).toBe(true)
+    expect(run('has:image', note({ body: '![[img:11111111-1111-4111-8111-111111111111]]' }))).toBe(true)
     expect(run('has:image', note())).toBe(false)
   })
 

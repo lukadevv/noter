@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest'
-import { addCard, addColumn, moveCard, parseBoard, removeCard, renameColumn, updateCardText } from '$lib/md/board'
+import {
+  addCard,
+  addColumn,
+  moveCard,
+  parseBoard,
+  removeCard,
+  renameColumn,
+  updateCardText,
+} from '$lib/md/board'
 
 const BOARD = `## To do
 - write the parser

@@ -75,17 +75,17 @@ yarn would build something that does not match CI.
 
 ## Commands
 
-| Command | What it does |
-|---|---|
-| `pnpm dev` | Dev server with hot reload |
-| `pnpm build` | Type-check, build to `dist/`, and enforce the bundle budget |
-| `pnpm build:fast` | Build without the type-check and budget gate |
-| `pnpm preview` | Serve the production build locally |
-| `pnpm check` | `svelte-check` over the whole project |
-| `pnpm test` | Unit tests (Vitest) |
-| `pnpm test:e2e` | End-to-end tests (Playwright) |
-| `pnpm test:e2e:ui` | Playwright's interactive runner |
-| `pnpm test:all` | Unit tests, then end-to-end |
+| Command                      | What it does                                                     |
+| ---------------------------- | ---------------------------------------------------------------- |
+| `pnpm dev`                   | Dev server with hot reload                                       |
+| `pnpm build`                 | Type-check, build to `dist/`, and enforce the bundle budget      |
+| `pnpm build:fast`            | Build without the type-check and budget gate                     |
+| `pnpm preview`               | Serve the production build locally                               |
+| `pnpm check`                 | `svelte-check` over the whole project                            |
+| `pnpm test`                  | Unit tests (Vitest)                                              |
+| `pnpm test:e2e`              | End-to-end tests (Playwright)                                    |
+| `pnpm test:e2e:ui`           | Playwright's interactive runner                                  |
+| `pnpm test:all`              | Unit tests, then end-to-end                                      |
 | `node scripts/gen-icons.mjs` | Regenerate every icon and the social card from `assets/logo.png` |
 
 Run one-off binaries with `pnpm exec`, never `npx`. The first e2e run needs the
@@ -93,13 +93,13 @@ browser: `pnpm exec playwright install chromium`.
 
 ## Keyboard
 
-| Shortcut | Action |
-|---|---|
-| `Ctrl+K` | Command palette |
-| `Ctrl+N` | New note |
-| `Ctrl+,` | Settings |
-| `Ctrl+Shift+D` | Today's daily note |
-| `Ctrl+Shift+Space` | Scratchpad |
+| Shortcut           | Action             |
+| ------------------ | ------------------ |
+| `Ctrl+K`           | Command palette    |
+| `Ctrl+N`           | New note           |
+| `Ctrl+,`           | Settings           |
+| `Ctrl+Shift+D`     | Today's daily note |
+| `Ctrl+Shift+Space` | Scratchpad         |
 
 ## Architecture
 
@@ -145,15 +145,15 @@ against `fake-indexeddb`.
 the production build, so the service worker, the injected CSP and the code-split
 chunks are all exercised as they ship:
 
-| Spec | What it covers |
-|---|---|
-| `notes.spec.ts` | Notes and folders, trash, archive, pinning, bulk actions, persistence across reloads |
-| `images.spec.ts` | Paste-to-store pipeline, deduplication, gallery, lightbox, orphan cleanup |
-| `search.spec.ts` | Command palette, tags, structured queries, smart folders, wiki-links, backlinks, completion |
-| `crypto.spec.ts` | Folder encryption, unlock, wrong passphrase, and that no plaintext leaks into IndexedDB |
-| `backup.spec.ts` | Vault round-trip into a clean browser, merge semantics, Markdown archive, history, share links |
-| `offline.spec.ts` | Offline reload, cached manifest, CSP, and that heavy chunks stay lazy |
-| `responsive.spec.ts` | Single-pane stack on a phone viewport (runs under the `mobile` project) |
+| Spec                 | What it covers                                                                                 |
+| -------------------- | ---------------------------------------------------------------------------------------------- |
+| `notes.spec.ts`      | Notes and folders, trash, archive, pinning, bulk actions, persistence across reloads           |
+| `images.spec.ts`     | Paste-to-store pipeline, deduplication, gallery, lightbox, orphan cleanup                      |
+| `search.spec.ts`     | Command palette, tags, structured queries, smart folders, wiki-links, backlinks, completion    |
+| `crypto.spec.ts`     | Folder encryption, unlock, wrong passphrase, and that no plaintext leaks into IndexedDB        |
+| `backup.spec.ts`     | Vault round-trip into a clean browser, merge semantics, Markdown archive, history, share links |
+| `offline.spec.ts`    | Offline reload, cached manifest, CSP, and that heavy chunks stay lazy                          |
+| `responsive.spec.ts` | Single-pane stack on a phone viewport (runs under the `mobile` project)                        |
 
 Two conventions keep the suite honest:
 
@@ -168,20 +168,25 @@ Two conventions keep the suite honest:
 when iterating (the offline spec skips itself there, since there is no service
 worker).
 
+**Linting and formatting** are split: ESLint covers what a type checker does not
+see — unsafe patterns, dead code, accessibility in markup — while Prettier owns
+formatting entirely. `pnpm verify` runs everything CI runs except the browser
+suite.
+
 ## Branding assets
 
 `assets/logo.png` is the only artwork maintained by hand. Everything under
 `public/` is generated from it by `scripts/gen-icons.mjs` and committed, so a
 clone builds without any image tooling:
 
-| Output | Used for |
-|---|---|
-| `favicon.ico`, `icons/favicon-16.png`, `icons/favicon-32.png` | Browser tabs and OS shortcuts |
-| `icons/icon-192.png`, `icons/icon-512.png` | PWA icons with `purpose: any` |
-| `icons/maskable-192.png`, `icons/maskable-512.png` | Android, which crops to its own shape |
-| `icons/apple-touch-icon.png` | iOS home screen (opaque; iOS composites transparency onto black) |
-| `icons/logo-64.png` | The brand mark in the sidebar |
-| `og.png` | Link previews (1200×630) |
+| Output                                                        | Used for                                                         |
+| ------------------------------------------------------------- | ---------------------------------------------------------------- |
+| `favicon.ico`, `icons/favicon-16.png`, `icons/favicon-32.png` | Browser tabs and OS shortcuts                                    |
+| `icons/icon-192.png`, `icons/icon-512.png`                    | PWA icons with `purpose: any`                                    |
+| `icons/maskable-192.png`, `icons/maskable-512.png`            | Android, which crops to its own shape                            |
+| `icons/apple-touch-icon.png`                                  | iOS home screen (opaque; iOS composites transparency onto black) |
+| `icons/logo-64.png`                                           | The brand mark in the sidebar                                    |
+| `og.png`                                                      | Link previews (1200×630)                                         |
 
 The maskable and Apple icons are full-bleed: those platforms apply their own
 mask, so an icon with rounded corners of its own gets clipped twice and looks
@@ -201,6 +206,29 @@ VITE_SITE_URL=https://your-domain.example pnpm build
 
 Without it the Open Graph tags fall back to relative paths, which most scrapers
 ignore — previews simply do not appear, rather than pointing somewhere wrong.
+
+## Search engines
+
+The build emits everything a crawler needs, all of it derived from
+`src/lib/seo.ts` so the description and feature list live in one place:
+
+- **JSON-LD** describing the app as a `SoftwareApplication`, including the
+  explicit zero-price offer that marks it as free, the ten supported languages,
+  and a feature list
+- **Open Graph and Twitter** tags with a 1200×630 card, plus `og:locale`
+  alternates for every language
+- **`robots.txt`** and a one-entry **`sitemap.xml`**, both with the origin filled
+  in at build time
+- A **canonical link**, emitted only when `VITE_SITE_URL` is set
+
+There is deliberately no `hreflang`: the interface language is a per-visitor
+setting, not a URL, so advertising per-language addresses would promise pages
+that do not exist.
+
+**Google Search Console.** Either set `VITE_GOOGLE_SITE_VERIFICATION` to the
+token from the HTML-tag method — the tag is only emitted when it has a value —
+or drop Google's verification HTML file into `public/`, from where it ships at
+the site root. Submit `https://your-domain/sitemap.xml` once verified.
 
 ## Bundle budget
 
@@ -223,12 +251,31 @@ it and those notes are gone.
 ## Deploying
 
 `pnpm build` produces `dist/`, which is plain static files — any static host will
-do. Two things are worth configuring on the server:
+do. The app uses hash routing, so no rewrite rules are needed.
 
-- **`frame-ancestors`**: the build injects a Content-Security-Policy `<meta>` tag,
-  but browsers ignore `frame-ancestors` there. Send it as a response header
-  (`Content-Security-Policy: frame-ancestors 'none'`) to block framing.
-- **Service worker scope**: `sw.js` must be served from the site root with
-  `Cache-Control: no-cache`, otherwise clients can get stuck on an old worker.
+`public/_headers` carries the response headers that a `<meta>` tag cannot set:
+`frame-ancestors`, which browsers ignore in markup, and `Cache-Control: no-cache`
+on `sw.js`, without which a client can get stuck on an old service worker
+indefinitely. Cloudflare Pages and Netlify read that file directly; on other
+hosts, translate it into their configuration.
 
-The app uses hash routing, so no rewrite rules are needed.
+### Cloudflare Pages
+
+`.github/workflows/ci.yml` deploys on every push to `main`, but only after lint,
+types, the bundle budget, unit tests and the end-to-end suite have all passed.
+
+Configure these in the repository's **Settings → Secrets and variables → Actions**:
+
+| Kind     | Name                      | Value                                                |
+| -------- | ------------------------- | ---------------------------------------------------- |
+| Secret   | `CLOUDFLARE_API_TOKEN`    | A token with the _Cloudflare Pages: Edit_ permission |
+| Secret   | `CLOUDFLARE_ACCOUNT_ID`   | From the Cloudflare dashboard sidebar                |
+| Variable | `CLOUDFLARE_PROJECT_NAME` | The Pages project name, e.g. `noter`                 |
+| Variable | `SITE_URL`                | The deployed origin, e.g. `https://noter.pages.dev`  |
+
+`SITE_URL` only affects link previews. Everything else works without it — see
+`.env.example`, which documents every variable the build reads.
+
+Create the Pages project once (dashboard → Workers & Pages → Create → Pages →
+_Direct Upload_); the workflow uploads to it from then on, so Cloudflare never
+needs to build the project itself.

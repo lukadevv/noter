@@ -63,11 +63,7 @@ describe('isAncestor', () => {
 })
 
 describe('neighboursFor', () => {
-  const siblings = [
-    folder('a', ROOT, 1000),
-    folder('b', ROOT, 2000),
-    folder('c', ROOT, 3000),
-  ]
+  const siblings = [folder('a', ROOT, 1000), folder('b', ROOT, 2000), folder('c', ROOT, 3000)]
 
   it('places an item before the first sibling', () => {
     expect(neighboursFor(siblings, 'c', 'a', 'before')).toEqual({

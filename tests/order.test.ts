@@ -37,7 +37,11 @@ describe('fractional ordering', () => {
   })
 
   it('respaces a list without reordering it', () => {
-    const items = [{ id: 'a', order: 1 }, { id: 'b', order: 1.0000001 }, { id: 'c', order: 2 }]
+    const items = [
+      { id: 'a', order: 1 },
+      { id: 'b', order: 1.0000001 },
+      { id: 'c', order: 2 },
+    ]
     const result = rebalance(items)
     expect(result.map((i) => i.id)).toEqual(['a', 'b', 'c'])
     expect(result.map((i) => i.order)).toEqual([1000, 2000, 3000])

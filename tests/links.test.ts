@@ -57,7 +57,12 @@ describe('backlinks', () => {
 
   it('collects incoming links, case-insensitively', () => {
     const map = buildBacklinks(notes, (n) => n.title)
-    expect(map.get('b')?.map((e) => e.noteId).sort()).toEqual(['a', 'c'])
+    expect(
+      map
+        .get('b')
+        ?.map((e) => e.noteId)
+        .sort(),
+    ).toEqual(['a', 'c'])
   })
 
   it('ignores links to notes that do not exist', () => {

@@ -25,9 +25,6 @@ const SOURCE = join(ROOT, 'assets/logo.png')
 const PUBLIC = join(ROOT, 'public')
 const ICONS = join(PUBLIC, 'icons')
 
-/** Sampled from the top and bottom of the logo, so the fill matches its gradient. */
-const GRADIENT_TOP = '#9494fb'
-const GRADIENT_BOTTOM = '#5f5be0'
 /** The app's dark background, so the social card matches the product. */
 const CARD_BACKGROUND = '#17171c'
 const CARD_TEXT = '#edecf2'
@@ -124,7 +121,13 @@ function shapeExtent() {
 }
 
 function hex([r, g, b]) {
-  return `#${[r, g, b].map((n) => Math.max(0, Math.min(255, Math.round(n))).toString(16).padStart(2, '0')).join('')}`
+  return `#${[r, g, b]
+    .map((n) =>
+      Math.max(0, Math.min(255, Math.round(n)))
+        .toString(16)
+        .padStart(2, '0'),
+    )
+    .join('')}`
 }
 
 /**
@@ -189,7 +192,18 @@ function favicon(output) {
 
 /** Renders text to its own image and reports the size, so nothing is guessed. */
 function renderText(text, font, pointsize, fill, output) {
-  run(['-background', 'none', '-font', font, '-pointsize', String(pointsize), '-fill', fill, `label:${text}`, output])
+  run([
+    '-background',
+    'none',
+    '-font',
+    font,
+    '-pointsize',
+    String(pointsize),
+    '-fill',
+    fill,
+    `label:${text}`,
+    output,
+  ])
   const [width, height] = execFileSync('identify', ['-format', '%w %h', output], { encoding: 'utf8' })
     .split(' ')
     .map(Number)
@@ -217,9 +231,19 @@ function socialCard(output) {
   if (!font) {
     // No usable font: a centred logo still reads as a deliberate card.
     run([
-      '-size', `${WIDTH}x${HEIGHT}`, `xc:${CARD_BACKGROUND}`,
-      '(', logo, '-resize', '320x320', ')', '-gravity', 'center', '-composite',
-      '-strip', output,
+      '-size',
+      `${WIDTH}x${HEIGHT}`,
+      `xc:${CARD_BACKGROUND}`,
+      '(',
+      logo,
+      '-resize',
+      '320x320',
+      ')',
+      '-gravity',
+      'center',
+      '-composite',
+      '-strip',
+      output,
     ])
     rmSync(logo, { force: true })
     return false
@@ -250,11 +274,29 @@ function socialCard(output) {
   const textTop = Math.round((HEIGHT - textHeight) / 2)
 
   run([
-    '-size', `${WIDTH}x${HEIGHT}`, `xc:${CARD_BACKGROUND}`,
-    '(', logo, ')', '-geometry', `+${left}+${logoTop}`, '-composite',
-    '(', wordmarkFile, ')', '-geometry', `+${textLeft}+${textTop}`, '-composite',
-    '(', taglineFile, ')', '-geometry', `+${textLeft}+${textTop + wordmark.height + 12}`, '-composite',
-    '-strip', output,
+    '-size',
+    `${WIDTH}x${HEIGHT}`,
+    `xc:${CARD_BACKGROUND}`,
+    '(',
+    logo,
+    ')',
+    '-geometry',
+    `+${left}+${logoTop}`,
+    '-composite',
+    '(',
+    wordmarkFile,
+    ')',
+    '-geometry',
+    `+${textLeft}+${textTop}`,
+    '-composite',
+    '(',
+    taglineFile,
+    ')',
+    '-geometry',
+    `+${textLeft}+${textTop + wordmark.height + 12}`,
+    '-composite',
+    '-strip',
+    output,
   ])
 
   for (const file of [logo, wordmarkFile, taglineFile]) rmSync(file, { force: true })

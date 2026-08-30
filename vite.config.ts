@@ -1,7 +1,13 @@
-import { defineConfig, type Plugin } from 'vite'
+import { defineConfig, type HtmlTagDescriptor, type Plugin } from 'vite'
 import { svelte } from '@sveltejs/vite-plugin-svelte'
 import { VitePWA } from 'vite-plugin-pwa'
 import { fileURLToPath } from 'node:url'
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { alternateOgLocales, structuredData } from './src/lib/seo'
+
+const { version } = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8')) as {
+  version: string
+}
 
 /**
  * The CSP is only injected for production builds: Vite's dev server relies on
@@ -51,11 +57,81 @@ function csp(): Plugin {
  * appear rather than pointing somewhere wrong.
  */
 function siteUrl(): Plugin {
+  const base = () => (process.env.VITE_SITE_URL ?? '').replace(/\/$/, '')
+
   return {
     name: 'noter-site-url',
     transformIndexHtml(html) {
+      return html.replaceAll('%SITE_URL%', base())
+    },
+    // `robots.txt` and `sitemap.xml` are copied verbatim from public/, so their
+    // placeholders are filled in on the emitted files instead.
+    closeBundle() {
+      const origin = base()
+      for (const file of ['robots.txt', 'sitemap.xml']) {
+        const path = fileURLToPath(new URL(`./dist/${file}`, import.meta.url))
+        if (!existsSync(path)) continue
+        const contents = readFileSync(path, 'utf8')
+        // With no origin configured, drop the lines that would be meaningless.
+        const filled = origin
+          ? contents.replaceAll('%SITE_URL%', origin)
+          : contents
+              .split('\n')
+              .filter((line) => !line.includes('%SITE_URL%'))
+              .join('\n')
+        writeFileSync(path, filled)
+      }
+    },
+  }
+}
+
+/**
+ * Injects the parts of the head that are computed rather than written by hand:
+ * structured data, the locale alternates, and the Search Console token.
+ *
+ * Building these here keeps `index.html` readable and keeps the feature list in
+ * one place instead of drifting between the page and the code.
+ */
+function seo(): Plugin {
+  return {
+    name: 'noter-seo',
+    transformIndexHtml() {
       const base = (process.env.VITE_SITE_URL ?? '').replace(/\/$/, '')
-      return html.replaceAll('%SITE_URL%', base)
+      const verification = process.env.VITE_GOOGLE_SITE_VERIFICATION ?? ''
+
+      const tags: HtmlTagDescriptor[] = [
+        {
+          tag: 'script',
+          attrs: { type: 'application/ld+json' },
+          children: structuredData(base, version),
+          injectTo: 'head',
+        },
+        ...alternateOgLocales().map((locale) => ({
+          tag: 'meta',
+          attrs: { property: 'og:locale:alternate', content: locale },
+          injectTo: 'head' as const,
+        })),
+      ]
+
+      // Google's HTML-tag verification. Left out entirely when unset, rather
+      // than emitting an empty token that would fail verification confusingly.
+      if (verification) {
+        tags.push({
+          tag: 'meta',
+          attrs: { name: 'google-site-verification', content: verification },
+          injectTo: 'head-prepend',
+        })
+      }
+
+      if (base) {
+        tags.push({
+          tag: 'link',
+          attrs: { rel: 'canonical', href: `${base}/` },
+          injectTo: 'head',
+        })
+      }
+
+      return tags
     },
   }
 }
@@ -65,6 +141,7 @@ export default defineConfig({
     svelte(),
     csp(),
     siteUrl(),
+    seo(),
     VitePWA({
       strategies: 'injectManifest',
       srcDir: 'src',

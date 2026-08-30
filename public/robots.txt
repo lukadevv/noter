@@ -1,0 +1,13 @@
+# Noter is a single page; there is nothing else to crawl.
+#
+# Notes live in the visitor's own browser and are never on the server, so there
+# is no user content here for a crawler to reach — only the app shell.
+
+User-agent: *
+Allow: /
+
+# Hash routes are client-side only and carry note payloads in some cases; they
+# are not addressable by a crawler and should not be requested.
+Disallow: /*?
+
+Sitemap: %SITE_URL%/sitemap.xml
