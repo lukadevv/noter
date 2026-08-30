@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The manifest's theme_color. Painted before the webview has anything on
+         screen, so the app does not open on a white flash. -->
+    <color name="noterBackground">#16161A</color>
+</resources>

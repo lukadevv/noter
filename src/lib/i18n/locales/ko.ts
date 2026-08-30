@@ -427,6 +427,7 @@ const ko: Messages = {
     backupFolderSet: '백업은 「{name}」에 저장됩니다.',
     backupDenied: '그 폴더에 대한 권한이 거부되었습니다.',
     backupFailed: '백업에 실패했습니다.',
+    saveFailed: '파일을 저장하지 못했습니다.',
     vaultEncrypted: '암호화된 백업을 내려받았습니다.',
     vaultPlain: '백업을 내려받았습니다 (암호화 없음).',
     archiveDownloaded: 'Markdown 압축본을 내려받았습니다.',

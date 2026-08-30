@@ -489,6 +489,7 @@ export const en = {
     backupFolderSet: 'Backups will be written to “{name}”.',
     backupDenied: 'Permission to that folder was declined.',
     backupFailed: 'Backup failed.',
+    saveFailed: 'The file could not be saved.',
     vaultEncrypted: 'Encrypted backup downloaded.',
     vaultPlain: 'Backup downloaded (not encrypted).',
     archiveDownloaded: 'Markdown archive downloaded.',

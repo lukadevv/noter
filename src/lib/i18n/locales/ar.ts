@@ -500,6 +500,7 @@ const ar: Messages = {
     backupFolderSet: 'ستُكتب النسخ الاحتياطية في «{name}».',
     backupDenied: 'رُفض الإذن لذلك المجلد.',
     backupFailed: 'فشل النسخ الاحتياطي.',
+    saveFailed: 'تعذّر حفظ الملف.',
     vaultEncrypted: 'نُزّلت نسخة احتياطية مشفَّرة.',
     vaultPlain: 'نُزّلت النسخة الاحتياطية (غير مشفَّرة).',
     archiveDownloaded: 'نُزّل أرشيف Markdown.',

@@ -30,10 +30,16 @@ const CSP = [
 ].join('; ')
 
 function csp(): Plugin {
+  // The desktop shell declares its own policy in `tauri.conf.json`, which has to
+  // allow the IPC protocol this one knows nothing about. Two policies both apply,
+  // so the browser-shaped one is left out of that build. See scripts/build-native.mjs.
+  const skip = process.env.NOTER_NATIVE === 'tauri'
+
   return {
     name: 'noter-csp',
     apply: 'build',
     transformIndexHtml(html) {
+      if (skip) return html
       return {
         html,
         tags: [

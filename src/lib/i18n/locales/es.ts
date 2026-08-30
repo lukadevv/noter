@@ -478,6 +478,7 @@ const es: Messages = {
     backupFolderSet: 'Las copias se van a escribir en «{name}».',
     backupDenied: 'Se denegó el permiso a esa carpeta.',
     backupFailed: 'Falló la copia de seguridad.',
+    saveFailed: 'No se pudo guardar el archivo.',
     vaultEncrypted: 'Copia cifrada descargada.',
     vaultPlain: 'Copia descargada (sin cifrar).',
     archiveDownloaded: 'Archivo Markdown descargado.',

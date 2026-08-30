@@ -465,6 +465,7 @@ const pt: Messages = {
     backupFolderSet: 'Os backups serão escritos em “{name}”.',
     backupDenied: 'A permissão para essa pasta foi negada.',
     backupFailed: 'O backup falhou.',
+    saveFailed: 'Não foi possível salvar o arquivo.',
     vaultEncrypted: 'Backup criptografado baixado.',
     vaultPlain: 'Backup baixado (sem criptografia).',
     archiveDownloaded: 'Arquivo Markdown baixado.',

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The background layer of the launcher icon. These are the colours the gradient
+  in the maskable web icons starts and ends on, sampled from the logo itself, so
+  the installed app and the installed PWA look like the same product.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <gradient
+        android:angle="270"
+        android:endColor="#5550DA"
+        android:startColor="#A29FFF"
+        android:type="linear" />
+</shape>

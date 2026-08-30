@@ -20,3 +20,16 @@ bun.lockb
 .env.local
 .env.*.local
 !.env.example
+
+# Native shells. The Rust build tree and Tauri's generated schemas are large and
+# reproducible. The Android project is committed and brings its own .gitignore
+# for everything Gradle and Capacitor regenerate; only its release output is
+# missing from that list.
+src-tauri/target/
+src-tauri/gen/
+android/app/release/
+
+# Signing keys. An Android release is signed with the same key every time, which
+# is exactly why that key never goes near the repository.
+*.keystore
+*.jks

@@ -185,6 +185,35 @@ function fullBleed(size, output, { opaque = false } = {}) {
   run(args)
 }
 
+/**
+ * The logo centred on transparency, for the foreground layer of an adaptive icon.
+ *
+ * Android masks that layer to its own shape and shifts it around while
+ * animating, keeping only the inner 72 of 108 density-independent pixels
+ * guaranteed visible, so the artwork is inset well inside the canvas instead of
+ * filling it.
+ */
+const ADAPTIVE_INSET = 0.6
+
+function adaptiveForeground(size, output) {
+  const inner = Math.round(size * ADAPTIVE_INSET)
+  run([
+    '-size',
+    `${size}x${size}`,
+    'xc:none',
+    '(',
+    SOURCE,
+    '-resize',
+    `${inner}x${inner}`,
+    ')',
+    '-gravity',
+    'center',
+    '-composite',
+    '-strip',
+    output,
+  ])
+}
+
 /** Multi-resolution favicon: browsers and OS shortcuts pick the size they need. */
 function favicon(output) {
   run([SOURCE, '-strip', '-define', 'icon:auto-resize=48,32,16', output])
@@ -353,6 +382,45 @@ outputs.push(ico)
 const og = join(PUBLIC, 'og.png')
 const hasWordmark = socialCard(og)
 outputs.push(og)
+
+/**
+ * Android launcher icons, for the shell in `android/`.
+ *
+ * Android 8 and later compose two layers of their own: the logo on
+ * transparency over the gradient declared in `ic_launcher_gradient.xml`, which
+ * continues the same colours the maskable icons use. `ic_launcher.png` is the
+ * flat fallback for older launchers, and is full-bleed for the same reason the
+ * maskable icons are.
+ */
+const ANDROID_RES = join(ROOT, 'android/app/src/main/res')
+
+// Density, legacy icon size, and the 108dp adaptive layer at that density.
+const ANDROID_DENSITIES = [
+  ['mdpi', 48, 108],
+  ['hdpi', 72, 162],
+  ['xhdpi', 96, 216],
+  ['xxhdpi', 144, 324],
+  ['xxxhdpi', 192, 432],
+]
+
+if (existsSync(ANDROID_RES)) {
+  for (const [density, legacy, adaptive] of ANDROID_DENSITIES) {
+    const dir = join(ANDROID_RES, `mipmap-${density}`)
+    mkdirSync(dir, { recursive: true })
+
+    const flat = join(dir, 'ic_launcher.png')
+    fullBleed(legacy, flat)
+    // Round launchers mask the same artwork; a separate file is only needed
+    // because the manifest points at both names.
+    const round = join(dir, 'ic_launcher_round.png')
+    fullBleed(legacy, round)
+
+    const foreground = join(dir, 'ic_launcher_foreground.png')
+    adaptiveForeground(adaptive, foreground)
+
+    outputs.push(flat, round, foreground)
+  }
+}
 
 for (const file of outputs) {
   console.log(`  ${file.slice(ROOT.length + 1)}`)

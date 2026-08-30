@@ -424,6 +424,7 @@ const zh: Messages = {
     backupFolderSet: '备份将写入「{name}」。',
     backupDenied: '该文件夹的权限被拒绝。',
     backupFailed: '备份失败。',
+    saveFailed: '无法保存文件。',
     vaultEncrypted: '已下载加密备份。',
     vaultPlain: '已下载备份（未加密）。',
     archiveDownloaded: '已下载 Markdown 压缩包。',

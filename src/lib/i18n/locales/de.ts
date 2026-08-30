@@ -467,6 +467,7 @@ const de: Messages = {
     backupFolderSet: 'Sicherungen werden nach „{name}“ geschrieben.',
     backupDenied: 'Die Berechtigung für diesen Ordner wurde verweigert.',
     backupFailed: 'Die Sicherung ist fehlgeschlagen.',
+    saveFailed: 'Die Datei konnte nicht gespeichert werden.',
     vaultEncrypted: 'Verschlüsselte Sicherung heruntergeladen.',
     vaultPlain: 'Sicherung heruntergeladen (unverschlüsselt).',
     archiveDownloaded: 'Markdown-Archiv heruntergeladen.',

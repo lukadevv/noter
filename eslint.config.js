@@ -91,6 +91,10 @@ export default ts.config(
       'public/',
       '.svelte-kit/',
       'assets/',
+      // The native shells: a Rust crate and a Gradle project, neither of which
+      // holds JavaScript this config could say anything useful about.
+      'src-tauri/',
+      'android/',
     ],
   },
 )

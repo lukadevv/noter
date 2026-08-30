@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Noter</string>
+    <string name="title_activity_main">Noter</string>
+    <string name="package_name">dev.lukadevv.noter</string>
+    <string name="custom_url_scheme">dev.lukadevv.noter</string>
+</resources>

@@ -8,6 +8,7 @@
   import { PRESETS_BY_ID } from '$lib/theme/presets'
   import { untrack } from 'svelte'
   import { t } from '$lib/i18n/index.svelte'
+  import { SaveCancelled, saveFile } from '$lib/platform/save-file'
 
   interface Props {
     /** Theme id to start from; a built-in one is copied rather than edited. */
@@ -58,15 +59,15 @@
     onclose()
   }
 
-  function exportTheme() {
+  async function exportTheme() {
     const file = { format: 'noter-theme' as const, version: 1 as const, name, seed: $state.snapshot(seed) }
     const blob = new Blob([JSON.stringify(file, null, 2)], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = `${name.toLowerCase().replace(/\s+/g, '-')}.noter-theme.json`
-    link.click()
-    URL.revokeObjectURL(url)
+    try {
+      await saveFile(blob, `${name.toLowerCase().replace(/\s+/g, '-')}.noter-theme.json`)
+    } catch (cause) {
+      // Backing out of the native save dialog is a choice, not a failure.
+      if (!(cause instanceof SaveCancelled)) ui.toast(t('toast.saveFailed'), 'warn')
+    }
   }
 
   function importTheme() {

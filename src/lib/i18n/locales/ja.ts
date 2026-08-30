@@ -442,6 +442,7 @@ const ja: Messages = {
     backupFolderSet: 'バックアップは「{name}」に書き出されます。',
     backupDenied: 'そのフォルダへの権限が拒否されました。',
     backupFailed: 'バックアップに失敗しました。',
+    saveFailed: 'ファイルを保存できませんでした。',
     vaultEncrypted: '暗号化されたバックアップをダウンロードしました。',
     vaultPlain: 'バックアップをダウンロードしました（暗号化なし）。',
     archiveDownloaded: 'Markdown アーカイブをダウンロードしました。',

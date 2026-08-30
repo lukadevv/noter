@@ -9,6 +9,7 @@
     exportMarkdownArchive,
     importMarkdownArchive,
   } from '$lib/backup/archive'
+  import { SaveCancelled } from '$lib/platform/save-file'
   import {
     describeVault,
     exportVault,
@@ -63,12 +64,15 @@
       // An export taken moments after typing must include what was typed.
       await notes.flushPending()
       const blob = await exportVault(vaultPassphrase ? { passphrase: vaultPassphrase } : {})
-      download(blob, vaultFileName())
+      await download(blob, vaultFileName())
       ui.toast(
         t(vaultPassphrase ? 'toast.vaultEncrypted' : 'toast.vaultPlain'),
         vaultPassphrase ? 'ok' : 'warn',
       )
       vaultPassphrase = ''
+    } catch (cause) {
+      // Backing out of the native save dialog is a choice, not a failure.
+      if (!(cause instanceof SaveCancelled)) ui.toast(t('toast.saveFailed'), 'warn')
     } finally {
       busy = ''
     }
@@ -78,8 +82,10 @@
     busy = 'archive'
     try {
       await notes.flushPending()
-      download(await exportMarkdownArchive(), archiveFileName())
+      await download(await exportMarkdownArchive(), archiveFileName())
       ui.toast(t('toast.archiveDownloaded'), 'ok')
+    } catch (cause) {
+      if (!(cause instanceof SaveCancelled)) ui.toast(t('toast.saveFailed'), 'warn')
     } finally {
       busy = ''
     }

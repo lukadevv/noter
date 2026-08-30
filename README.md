@@ -87,6 +87,10 @@ yarn would build something that does not match CI.
 | `pnpm test:e2e:ui`           | Playwright's interactive runner                                  |
 | `pnpm test:all`              | Unit tests, then end-to-end                                      |
 | `node scripts/gen-icons.mjs` | Regenerate every icon and the social card from `assets/logo.png` |
+| `pnpm desktop:dev`           | Run the app in the desktop shell, with hot reload                |
+| `pnpm desktop:build`         | Build the desktop installers for the current platform            |
+| `pnpm android:sync`          | Build the web assets and copy them into the Android project      |
+| `pnpm android:open`          | Open the Android project in Android Studio                       |
 
 Run one-off binaries with `pnpm exec`, never `npx`. The first e2e run needs the
 browser: `pnpm exec playwright install chromium`.
@@ -186,6 +190,7 @@ clone builds without any image tooling:
 | `icons/maskable-192.png`, `icons/maskable-512.png`            | Android, which crops to its own shape                            |
 | `icons/apple-touch-icon.png`                                  | iOS home screen (opaque; iOS composites transparency onto black) |
 | `icons/logo-64.png`                                           | The brand mark in the sidebar                                    |
+| `android/…/mipmap-*/ic_launcher*.png`                         | The Android launcher, flat and adaptive layers                   |
 | `og.png`                                                      | Link previews (1200×630)                                         |
 
 The maskable and Apple icons are full-bleed: those platforms apply their own
@@ -196,6 +201,14 @@ invisible.
 
 Regenerating needs ImageMagick (`sudo apt install imagemagick` /
 `brew install imagemagick`); the script says so if it is missing.
+
+The desktop shell keeps its own set, in the `.ico` and `.icns` containers
+Windows and macOS want. Those come from Tauri's own converter and change only
+when the logo does:
+
+```bash
+pnpm exec tauri icon assets/logo.png -o src-tauri/icons
+```
 
 **Link previews need an absolute URL.** Set `VITE_SITE_URL` when building for a
 real deployment:
@@ -279,3 +292,104 @@ Configure these in the repository's **Settings → Secrets and variables → Act
 Create the Pages project once (dashboard → Workers & Pages → Create → Pages →
 _Direct Upload_); the workflow uploads to it from then on, so Cloudflare never
 needs to build the project itself.
+
+## Downloadable builds
+
+The website is the whole app, so the desktop and Android builds are that same
+`dist/` folder loaded from local storage instead of over the network, inside a
+system webview. There is no second implementation to keep in step — only a shell
+around the one that already exists.
+
+| Target                | Shell                  | Output                                           |
+| --------------------- | ---------------------- | ------------------------------------------------ |
+| Windows, macOS, Linux | Tauri 2 (`src-tauri/`) | `.exe`/`.msi`, `.dmg`, `.AppImage`/`.deb`/`.rpm` |
+| Android               | Capacitor (`android/`) | `.apk` to sideload, `.aab` for the Play Store    |
+
+iOS is deliberately absent. Apple allows no distribution outside the App Store,
+so an `.ipa` on a releases page would be a file nobody could install; on iOS the
+PWA installed from Safari is the native build.
+
+### What changes inside a shell
+
+Three things, all in `src/lib/platform/`:
+
+- **Saving files.** A webview has no download manager behind an `<a download>`
+  link — clicking one does nothing at all. Exports go through a save dialog on
+  the desktop and the share sheet on Android, which is what lets a file reach
+  Downloads or Drive from a sandboxed app without asking for storage permissions.
+- **The service worker** is not registered. The shell already carries the whole
+  app on disk; a second, staler copy that outlives the installer helps nobody.
+- **The Content-Security-Policy** meta tag is left out of the desktop build,
+  because Tauri applies the policy from `tauri.conf.json` and that one has to
+  allow the IPC protocol the browser policy knows nothing about. Android keeps
+  the web policy unchanged.
+
+Automatic backups to a folder use the File System Access API, which no webview
+outside Chromium implements. The app already treats that as an optional
+capability and falls back to manual exports, so the shells simply take the path
+Firefox and Safari take.
+
+### Building locally
+
+The desktop shell needs a [Rust toolchain](https://rustup.rs) and, on Linux, the
+webview development packages (`libwebkit2gtk-4.1-dev`, `librsvg2-dev`,
+`libxdo-dev`, `patchelf`, `build-essential`). Then:
+
+```bash
+pnpm desktop:dev      # hot reload, Vite behind a native window
+pnpm desktop:build    # installers in src-tauri/target/release/bundle/
+```
+
+The Android shell needs JDK 21 and the Android SDK — installing Android Studio
+gets both:
+
+```bash
+pnpm android:sync     # build dist/ and copy it into android/
+pnpm android:open     # then run or build from Android Studio
+```
+
+Version numbers come from `package.json` alone: `scripts/sync-native-version.mjs`
+stamps it into `tauri.conf.json`, and `android/app/build.gradle` reads it
+directly, packing `1.4.2` into the always-increasing `versionCode` 10402 that
+Android requires.
+
+### Cutting a release
+
+Bump `version` in `package.json`, commit, and push a matching tag:
+
+```bash
+git tag v0.2.0 && git push origin v0.2.0
+```
+
+`.github/workflows/release.yml` takes it from there. It refuses tags that
+disagree with `package.json`, creates one draft release, builds Linux, Windows
+and a universal macOS binary in parallel, adds the Android artefacts, and only
+then publishes the release. Nothing appears half-finished on the releases page,
+because the draft is what everything uploads into.
+
+**Android needs a signing key**, and the same one every time: Android will only
+install an update over a package signed with the key the previous one used, so a
+key generated per build would strand everyone who installed the last release.
+Create one once, keep it somewhere safe, and never commit it:
+
+```bash
+keytool -genkeypair -v -keystore noter.keystore -alias noter \
+  -keyalg RSA -keysize 2048 -validity 10000
+base64 -w0 noter.keystore    # the value for the secret below
+```
+
+| Secret                      | Value                             |
+| --------------------------- | --------------------------------- |
+| `ANDROID_KEYSTORE_BASE64`   | The keystore file, base64-encoded |
+| `ANDROID_KEYSTORE_PASSWORD` | The keystore password             |
+| `ANDROID_KEY_ALIAS`         | The key alias, e.g. `noter`       |
+| `ANDROID_KEY_PASSWORD`      | The key password                  |
+
+Without them the Android job logs a warning and stops, and the release still
+ships its desktop builds.
+
+**The desktop builds are not code-signed.** Windows shows a SmartScreen warning
+until the download builds reputation, and macOS asks for the app to be opened
+from its right-click menu the first time. Signing them means an Apple Developer
+membership and a Windows certificate — a running yearly cost, not a code change,
+and the release notes say plainly what to expect until then.

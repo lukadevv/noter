@@ -469,6 +469,7 @@ const fr: Messages = {
     backupFolderSet: 'Les sauvegardes seront écrites dans « {name} ».',
     backupDenied: 'L’autorisation pour ce dossier a été refusée.',
     backupFailed: 'La sauvegarde a échoué.',
+    saveFailed: "Le fichier n'a pas pu être enregistré.",
     vaultEncrypted: 'Sauvegarde chiffrée téléchargée.',
     vaultPlain: 'Sauvegarde téléchargée (non chiffrée).',
     archiveDownloaded: 'Archive Markdown téléchargée.',

@@ -185,16 +185,13 @@ export async function importMarkdownArchive(file: Blob): Promise<ImportSummary> 
   return summary
 }
 
-/** Triggers a browser download for a generated file. */
-export function download(blob: Blob, filename: string): void {
-  const url = URL.createObjectURL(blob)
-  const link = document.createElement('a')
-  link.href = url
-  link.download = filename
-  link.click()
-  // Revoking immediately can cancel the download in some browsers.
-  setTimeout(() => URL.revokeObjectURL(url), 10_000)
-}
+/**
+ * Hands a generated file to the user.
+ *
+ * Re-exported from the platform layer so callers keep importing it from here;
+ * what actually happens depends on the shell the app is running in.
+ */
+export { saveFile as download } from '$lib/platform/save-file'
 
 export function archiveFileName(): string {
   const now = new Date()
