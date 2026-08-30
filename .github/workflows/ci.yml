@@ -96,8 +96,6 @@ jobs:
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
-        env:
-          PNPM_ALLOW_IGNORED_BUILDS: 1
 
       - name: Build
         env:
@@ -112,3 +110,4 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy dist --project-name=${{ vars.CLOUDFLARE_PROJECT_NAME }} --branch=main
+          packageManager: npm
