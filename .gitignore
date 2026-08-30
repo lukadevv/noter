@@ -10,6 +10,9 @@ playwright-report/
 blob-report/
 .playwright/
 
+# Gentle-AI
+.atl/
+
 # This project uses pnpm; a lockfile from another package manager is a mistake.
 package-lock.json
 yarn.lock
