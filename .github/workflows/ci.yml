@@ -96,6 +96,8 @@ jobs:
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
+        env:
+          PNPM_ALLOW_IGNORED_BUILDS: 1
 
       - name: Build
         env:

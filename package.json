@@ -59,8 +59,7 @@
     "vitest": "^3.0.4",
     "workbox-core": "^7.4.1",
     "workbox-precaching": "^7.4.1",
-    "workbox-routing": "^7.4.1",
-    "wrangler": "^4.127.1"
+    "workbox-routing": "^7.4.1"
   },
   "dependencies": {
     "@capacitor/android": "^8.5.0",
