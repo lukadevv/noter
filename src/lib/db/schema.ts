@@ -82,6 +82,12 @@ export interface Note {
    * unencrypted anyway, so listing their ids here reveals nothing new.
    */
   assetRefs?: string[]
+  /**
+   * Locked for editing: the note opens read-only until unlocked, which guards
+   * against accidental rewrites. Absent on notes older than the feature.
+   * (Not to be confused with an encrypted note being "locked" by its folder.)
+   */
+  editLock?: Flag
   /** 'YYYY-MM-DD' when this is a daily note; null otherwise (sparse index). */
   daily: string | null
   /** Singleton notes the app manages itself; null otherwise (sparse index). */

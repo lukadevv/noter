@@ -18,6 +18,8 @@
     ['Mod+Shift+D', 'actions.openToday'],
     ['Mod+Shift+Space', 'actions.openScratchpad'],
     ['Mod+,', 'actions.openSettings'],
+    ['Mod+Shift+L', 'settings.about.keys.lock'],
+    ['Mod+Click', 'settings.about.keys.link'],
     ['Mod+1', 'settings.about.keys.home'],
     ['Mod+2', 'settings.about.keys.notes'],
     ['Mod+\\', 'settings.about.keys.sidebar'],

@@ -147,6 +147,40 @@ test.describe('notes and folders', () => {
     await expect(page.locator('.cm-content')).toContainText('Shape shifter')
   })
 
+  test('locks a note against edits and unlocks it again', async ({ page }) => {
+    await createNoteWith(page, 'Guarded note\nDo not touch.')
+    await page.getByTestId('edit-lock').click()
+    await expect(page.getByTestId('edit-lock')).toHaveAttribute('aria-pressed', 'true')
+
+    await page.locator('.cm-content').click()
+    await page.keyboard.type('XYZ')
+    await expect(page.locator('.cm-content')).not.toContainText('XYZ')
+    await expect(page.getByText('Locked — tap the padlock to edit')).toBeVisible()
+
+    // The lock is part of the note, so it survives a reload.
+    await page.reload()
+    await page.getByTestId('note-item').first().click()
+    await expect(page.getByTestId('edit-lock')).toHaveAttribute('aria-pressed', 'true')
+
+    await page.keyboard.press('ControlOrMeta+Shift+L')
+    await expect(page.getByTestId('edit-lock')).toHaveAttribute('aria-pressed', 'false')
+    await page.locator('.cm-content').click()
+    await page.keyboard.press('End')
+    await page.keyboard.type(' Edited')
+    await expect(page.locator('.cm-content')).toContainText('Edited')
+  })
+
+  test('keeps undo history per note when switching between notes', async ({ page }) => {
+    await createNoteWith(page, 'First note')
+    await createNoteWith(page, 'Second note')
+    await page.getByTestId('note-item').filter({ hasText: 'First note' }).click()
+    await expect(page.locator('.cm-content')).toContainText('First note')
+    // Undo right after switching must not bring back the other note's text.
+    await page.locator('.cm-content').click()
+    await page.keyboard.press('ControlOrMeta+z')
+    await expect(page.locator('.cm-content')).not.toContainText('Second note')
+  })
+
   test('creates a note with Ctrl+N', async ({ page }) => {
     await page.keyboard.press('Control+n')
     await expect(page.locator('.cm-content')).toBeVisible()

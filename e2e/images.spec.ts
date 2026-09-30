@@ -78,7 +78,10 @@ test.describe('images', () => {
     await attachImage(page, () => noteMenu(page, 'Add images'))
     await expect(page.locator('.cm-inline-image img')).toHaveCount(1)
 
-    await page.getByLabel('Reading view').click()
+    // Notes in the trash are shown read-only, through the rendered view.
+    await noteMenu(page, 'Move to trash')
+    await page.getByTestId('view-trash').click()
+    await page.getByTestId('note-item').first().click()
     await expect(page.locator('.prose img.asset')).toHaveAttribute('src', /^blob:/)
   })
 
@@ -87,7 +90,9 @@ test.describe('images', () => {
     // Rendered from markdown rather than pasted, so the test does not depend on
     // the network; the point is that remote images are visibly marked.
     await typeMarkdown(page, 'Remote picture\n\n![](https://example.invalid/a.png)')
-    await page.getByLabel('Reading view').click()
+    await noteMenu(page, 'Move to trash')
+    await page.getByTestId('view-trash').click()
+    await page.getByTestId('note-item').first().click()
 
     const image = page.locator('.prose img[data-external]')
     await expect(image).toHaveCount(1)

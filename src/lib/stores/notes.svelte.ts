@@ -406,6 +406,10 @@ class NotesStore {
     if (archived && this.selectedNoteId === id) this.selectedNoteId = null
   }
 
+  async setEditLock(id: string, locked: boolean): Promise<void> {
+    await notesRepo.setNoteFlags(id, { editLock: locked ? 1 : 0 })
+  }
+
   async togglePin(id: string): Promise<void> {
     const note = this.notes.find((n) => n.id === id)
     if (!note) return

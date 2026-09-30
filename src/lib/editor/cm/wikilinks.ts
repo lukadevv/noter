@@ -1,10 +1,4 @@
-import {
-  Decoration,
-  type EditorView,
-  ViewPlugin,
-  type DecorationSet,
-  type ViewUpdate,
-} from '@codemirror/view'
+import { Decoration, EditorView, ViewPlugin, type DecorationSet, type ViewUpdate } from '@codemirror/view'
 import { RangeSetBuilder } from '@codemirror/state'
 import { autocompletion, type CompletionContext, type CompletionResult } from '@codemirror/autocomplete'
 
@@ -20,14 +14,16 @@ function buildDecorations(view: EditorView): DecorationSet {
     let match: RegExpExecArray | null
     while ((match = LINK.exec(text)) !== null) {
       if (match[1]!.startsWith('img:')) continue
-      builder.add(from + match.index, from + match.index + match[0].length, LINK_MARK)
+      builder.add(
+        from + match.index,
+        from + match.index + match[0].length,
+        Decoration.mark({ class: 'cm-wikilink', attributes: { 'data-link': match[1]!.trim() } }),
+      )
     }
   }
 
   return builder.finish()
 }
-
-const LINK_MARK = Decoration.mark({ class: 'cm-wikilink' })
 
 export const wikiLinkHighlight = ViewPlugin.fromClass(
   class {
@@ -45,6 +41,25 @@ export const wikiLinkHighlight = ViewPlugin.fromClass(
   },
   { decorations: (plugin) => plugin.decorations },
 )
+
+/**
+ * Follows a `[[link]]` on Ctrl/⌘-click — a plain click places the cursor, as in
+ * any editor — or on a plain click when the note is locked for editing, where
+ * placing a cursor to type has no point.
+ */
+export function wikiLinkClicks(onLink: (target: string) => void) {
+  return EditorView.domEventHandlers({
+    mousedown: (event, view) => {
+      const link = (event.target as HTMLElement | null)?.closest<HTMLElement>('.cm-wikilink')
+      const target = link?.dataset.link
+      if (!target || event.button !== 0) return false
+      if (!(event.ctrlKey || event.metaKey || view.state.readOnly)) return false
+      event.preventDefault()
+      onLink(target)
+      return true
+    },
+  })
+}
 
 export interface CompletionSources {
   /** Existing note titles, for `[[` completion. */

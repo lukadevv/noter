@@ -64,7 +64,10 @@ export const editorTheme = EditorView.theme({
     border: '1px solid var(--border)',
     cursor: 'zoom-in',
   },
-  '.cm-wikilink': { color: 'var(--accent)' },
+  '.cm-wikilink': { color: 'var(--accent)', cursor: 'text' },
+  '.cm-wikilink:hover': { textDecoration: 'underline', textUnderlineOffset: '3px' },
+  // Locked notes follow links on a plain click, so they look clickable.
+  '.cm-content[aria-readonly="true"] .cm-wikilink': { cursor: 'pointer' },
   '.cm-tooltip-autocomplete': {
     border: '1px solid var(--border)',
     borderRadius: 'var(--radius)',

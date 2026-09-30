@@ -64,6 +64,14 @@ export async function updateNote(id: string, patch: Partial<Note>): Promise<void
 }
 
 /**
+ * Changes how a note behaves without counting as an edit: locking a note is
+ * not writing in it, so it keeps its place in "recently modified".
+ */
+export async function setNoteFlags(id: string, patch: Pick<Partial<Note>, 'editLock'>): Promise<void> {
+  await db.notes.update(id, patch)
+}
+
+/**
  * Live notes in a folder. Trashed and archived notes are excluded here; the
  * dedicated trash and archive views query them explicitly.
  */

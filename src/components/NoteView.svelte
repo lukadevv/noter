@@ -25,39 +25,41 @@
   import { dialogs } from '$lib/stores/dialogs.svelte'
   import { noteMenuItems } from '$lib/menus/note'
   import { contextmenu } from '$lib/ui/contextmenu'
+  import { formatShortcut } from '$lib/ui/keys'
+  import { pop } from '$lib/ui/motion.svelte'
 
   let note = $derived(notes.activeNote)
-  let mode = $state<'edit' | 'read'>('edit')
   let dropActive = $state(false)
   /** Title as it was when the field gained focus, so renames can repoint links. */
   let titleBeforeEdit = ''
 
   /**
-   * Plaintext of the open note. For an ordinary note this is just its body; for
-   * one in a locked folder it is the decrypted text, which only exists in memory
-   * while the folder is unlocked.
+   * Plaintext of the open note. For an ordinary note this is just its body,
+   * derived synchronously so it can never lag behind the note it belongs to —
+   * the editor must never see one note's id paired with another note's text.
+   * For a note in a locked folder it is the decrypted text, which only exists
+   * in memory while the folder is unlocked, tagged with the note it came from.
    */
-  let content = $state<{ title: string; body: string } | null>(null)
+  let revealed = $state<{ id: string; title: string; body: string } | null>(null)
 
   $effect(() => {
     const current = note
     const unlocked = keyring.unlocked
-    if (!current) {
-      content = null
-      return
-    }
-    if (current.encrypted !== 1) {
-      content = { title: current.title, body: current.body }
-      return
-    }
+    if (!current || current.encrypted !== 1) return
     void unlocked
     let cancelled = false
-    void notes.reveal(current).then((revealed) => {
-      if (!cancelled) content = revealed
+    void notes.reveal(current).then((plain) => {
+      if (!cancelled) revealed = plain ? { id: current.id, ...plain } : null
     })
     return () => {
       cancelled = true
     }
+  })
+
+  let content = $derived.by<{ title: string; body: string } | null>(() => {
+    if (!note) return null
+    if (note.encrypted !== 1) return { title: note.title, body: note.body }
+    return revealed?.id === note.id ? revealed : null
   })
 
   let locked = $derived(note?.encrypted === 1 && content === null)
@@ -73,8 +75,35 @@
     { id: 'code', icon: 'code' },
   ]
 
-  /** Only the document view has a separate reading mode; the rest render directly. */
-  let showsReadToggle = $derived(note?.view === 'doc')
+  /** Locked for editing by the user (not to be confused with an encrypted folder's lock). */
+  let editLocked = $derived(note?.editLock === 1)
+  /** Bumped each time a locked note refuses input, to replay the lock's nudge. */
+  let nudge = $state(0)
+  let hint = $state(false)
+  let hintTimer: ReturnType<typeof setTimeout> | undefined
+
+  function refused() {
+    nudge++
+    hint = true
+    clearTimeout(hintTimer)
+    hintTimer = setTimeout(() => (hint = false), 2400)
+  }
+
+  function toggleEditLock() {
+    if (!note || readOnly) return
+    const next = !editLocked
+    void notes.setEditLock(note.id, next)
+    hint = false
+    ui.toast(t(next ? 'note.lockedToast' : 'note.unlockedToast'), 'info')
+  }
+
+  function onKeydown(event: KeyboardEvent) {
+    if (!note || ui.section !== 'notes') return
+    if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toLowerCase() === 'l') {
+      event.preventDefault()
+      toggleEditLock()
+    }
+  }
 
   function write(id: string, body: string) {
     notes.editBody(id, body, content?.title ?? note?.title ?? '')
@@ -84,11 +113,13 @@
     if (snippets.length === 0 || !note) return
     const trimmed = text.replace(/\s+$/, '')
     write(id, `${trimmed}${trimmed ? '\n\n' : ''}${snippets.join('\n')}`)
+    // A discrete action, not typing: save it now rather than after the debounce.
+    void notes.flushPending()
   }
 
   async function onDrop(event: DragEvent) {
     dropActive = false
-    if (!note || readOnly) return
+    if (!note || readOnly || editLocked) return
     const files = [...(event.dataTransfer?.files ?? [])].filter((f) => f.type.startsWith('image/'))
     if (files.length === 0) return
     event.preventDefault()
@@ -170,13 +201,16 @@
           ? t('list.lockedNote')
           : derivedTitle({ title: content?.title ?? '', body: text })}
         disabled={readOnly}
+        readonly={editLocked}
         onfocus={() => (titleBeforeEdit = derivedTitle(current))}
         oninput={(e) => {
           // Titles go through the same debounced, sealed write as the body: a
           // direct write per keystroke would store an encrypted note's title in
           // plaintext until the next body save.
           const title = e.currentTarget.value
-          if (content) content = { ...content, title }
+          // An encrypted note's store copy lags until the sealed write lands;
+          // keep the revealed copy current so the next body save keeps this title.
+          if (revealed?.id === current.id) revealed = { ...revealed, title }
           notes.editBody(current.id, text, title)
         }}
         onkeydown={(e) => {
@@ -204,15 +238,28 @@
         {/if}
         <span class="stamp faint">{relativeTime(current.updatedAt, Date.now(), t)}</span>
 
-        {#if showsReadToggle}
-          <button
-            class="btn btn--ghost btn--icon"
-            aria-label={t(mode === 'edit' ? 'note.readingView' : 'note.editingView')}
-            title={t(mode === 'edit' ? 'note.readingView' : 'note.editingView')}
-            onclick={() => (mode = mode === 'edit' ? 'read' : 'edit')}
-          >
-            <Icon name={mode === 'edit' ? 'file-text' : 'pencil'} size={16} />
-          </button>
+        {#if !readOnly}
+          <span class="lock-wrap">
+            {#if hint && editLocked}
+              <span class="lock-hint" role="status" transition:pop>{t('note.lockedHint')}</span>
+            {/if}
+            {#key nudge}
+              <button
+                class="btn btn--ghost btn--icon lock"
+                class:lock--on={editLocked}
+                class:lock--nudge={nudge > 0}
+                data-testid="edit-lock"
+                aria-pressed={editLocked}
+                aria-label={t(editLocked ? 'note.unlockEditing' : 'note.lockEditing')}
+                title="{t(editLocked ? 'note.unlockEditing' : 'note.lockEditing')} ({formatShortcut(
+                  'Mod+Shift+L',
+                )})"
+                onclick={toggleEditLock}
+              >
+                <Icon name={editLocked ? 'lock-keyhole' : 'lock-open'} size={16} />
+              </button>
+            {/key}
+          </span>
         {/if}
 
         <button
@@ -297,7 +344,7 @@
           onchange={(b) => write(current.id, b)}
           onlang={(lang) => void notes.update(current.id, { lang })}
         />
-      {:else if mode === 'read' || readOnly}
+      {:else if readOnly}
         <ReadingView
           body={text}
           {readOnly}
@@ -305,19 +352,22 @@
           onlink={(target) => void notes.openLink(target)}
         />
       {:else}
-        {#key current.id}
-          <Editor
-            noteId={current.id}
-            body={text}
-            lineNumbers={theme.settings.showLineNumbers}
-            onchange={(body) => notes.editBody(current.id, body, content?.title ?? current.title)}
-            onflush={() => notes.flushPending()}
-            onimages={(files) => insertImages(files)}
-            onurl={(url) => insertUrl(url)}
-            titles={() => notes.notes.map((n) => derivedTitle(n))}
-            tags={() => [...notes.tagCounts.keys()]}
-          />
-        {/key}
+        <!-- One editor for every note: it swaps per-note states instead of
+             remounting, so cursor, scroll and undo survive switching notes. -->
+        <Editor
+          noteId={current.id}
+          body={text}
+          locked={editLocked}
+          lineNumbers={theme.settings.showLineNumbers}
+          onchange={(body) => notes.editBody(current.id, body, content?.title ?? current.title)}
+          onflush={() => notes.flushPending()}
+          onblocked={refused}
+          onlink={(target) => void notes.openLink(target)}
+          onimages={(files) => insertImages(files)}
+          onurl={(url) => insertUrl(url)}
+          titles={() => notes.notes.map((n) => derivedTitle(n))}
+          tags={() => [...notes.tagCounts.keys()]}
+        />
       {/if}
     </div>
 
@@ -366,7 +416,52 @@
   />
 {/if}
 
+<svelte:window onkeydown={onKeydown} />
+
 <style>
+  .lock-wrap {
+    position: relative;
+    display: inline-flex;
+  }
+
+  .lock--on {
+    color: var(--warn);
+  }
+
+  .lock--nudge {
+    animation: nudge 360ms var(--ease-out);
+  }
+
+  @keyframes nudge {
+    20% {
+      transform: translateX(-3px) rotate(-8deg);
+    }
+    40% {
+      transform: translateX(3px) rotate(6deg);
+    }
+    60% {
+      transform: translateX(-2px) rotate(-4deg);
+    }
+    80% {
+      transform: translateX(1px);
+    }
+  }
+
+  .lock-hint {
+    position: absolute;
+    top: calc(100% + 6px);
+    inset-inline-end: 0;
+    z-index: var(--z-sticky);
+    padding: var(--space-1) var(--space-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface-3);
+    box-shadow: var(--shadow-2);
+    color: var(--text);
+    font-size: var(--text-sm);
+    white-space: nowrap;
+  }
+
   .note {
     position: relative;
     display: flex;
