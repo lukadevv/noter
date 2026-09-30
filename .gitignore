@@ -36,3 +36,4 @@ android/app/release/
 # is exactly why that key never goes near the repository.
 *.keystore
 *.jks
+updater.conf.json

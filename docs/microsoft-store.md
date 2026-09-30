@@ -98,7 +98,43 @@ must have a higher version than the last package the Store accepted, so bump
 >
 > Notifications are local only and require user permission. The app requires the Microsoft Edge WebView2 Runtime, which is included in Windows 11 and in up-to-date Windows 10. The runFullTrust capability is required because this is a desktop (Win32) application. There are no ads, no in-app purchases and no data collection.
 
-## 5. Troubleshooting
+## 5. Automatic submissions on every release
+
+After the first submission has passed certification, the _Release_ workflow can
+send each new version to the Store by itself: its **Microsoft Store** job
+downloads the `.msix` from the GitHub release and creates and commits a new
+submission with it. Store listing, screenshots and pricing carry over from the
+previous submission.
+
+It needs a Partner Center API client:
+
+1. In Partner Center, open **Account settings → User management → Microsoft
+   Entra applications** and associate your Microsoft Entra ID (Azure AD)
+   tenant if it is not already.
+2. **Create Microsoft Entra application** (or add an existing one) and give it
+   the **Manager** role. Open it and **Add new key**: copy the client secret
+   right away, it is shown once.
+3. Note the **Tenant ID**, **Client ID** and the **Seller ID** (_Account settings
+   → Legal info → Developer_), and the app's **Store ID** (_Product identity_,
+   e.g. `9NXXXXXXXXXX`).
+4. In GitHub, _Settings → Secrets and variables → Actions_:
+
+   | Where    | Name                     | Value               |
+   | -------- | ------------------------ | ------------------- |
+   | Secret   | `MS_STORE_TENANT_ID`     | Tenant ID           |
+   | Secret   | `MS_STORE_CLIENT_ID`     | Client ID           |
+   | Secret   | `MS_STORE_CLIENT_SECRET` | Client secret       |
+   | Secret   | `MS_STORE_SELLER_ID`     | Seller ID           |
+   | Variable | `MS_STORE_PRODUCT_ID`    | Store ID of the app |
+
+Without them the job logs a notice and skips; the `.msix` on the release can
+still be uploaded by hand. A submission that is already in progress in Partner
+Center blocks a new one, so finish or delete a draft there before tagging.
+
+The Store copy never updates itself: `install_kind` in `src-tauri/src/lib.rs`
+detects the MSIX install and the app leaves updating to the Store.
+
+## 6. Troubleshooting
 
 - **"The package identity doesn't match" / "Invalid package family name":** one
   of the three repository variables differs from _Product identity_. Fix it and
@@ -108,7 +144,7 @@ must have a higher version than the last package the Store accepted, so bump
 - **The MSIX workflow fails at "Check the Partner Center identity":** the
   repository variables are not set yet (step 2).
 
-## 6. Tell users of the .exe
+## 7. Tell users of the .exe
 
 The Store version keeps its data in a different location from the version
 installed with the `.exe`/`.msi`. To move over: in the old version, go to

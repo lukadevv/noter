@@ -30,7 +30,14 @@
   },
   "bundle": {
     "active": true,
-    "targets": ["deb", "rpm", "appimage", "nsis", "msi", "dmg"],
+    "targets": [
+      "deb",
+      "rpm",
+      "appimage",
+      "nsis",
+      "msi",
+      "dmg"
+    ],
     "category": "Productivity",
     "publisher": "lukadevv",
     "copyright": "© lukadevv. Licensed under the GNU AGPL v3.",
@@ -53,6 +60,17 @@
     "windows": {
       "nsis": {
         "installMode": "both"
+      }
+    }
+  },
+  "plugins": {
+    "updater": {
+      "endpoints": [
+        "https://github.com/lukadevv/noter/releases/latest/download/latest.json"
+      ],
+      "pubkey": "",
+      "windows": {
+        "installMode": "passive"
       }
     }
   }

@@ -149,12 +149,34 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      # In-app updates. The updater only installs downloads signed with the
+      # key whose public half is baked into the app, so both halves must be
+      # configured: the private key as a secret, the public key as a variable
+      # (see docs/updates.md). Without them the build is exactly as before and
+      # the app falls back to pointing at the release page.
+      - name: Configure the updater
+        id: updater
+        shell: bash
+        env:
+          PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          PUBKEY: ${{ vars.TAURI_UPDATER_PUBKEY }}
+        run: |
+          if [ -n "$PRIVATE_KEY" ] && [ -n "$PUBKEY" ]; then
+            node -e 'require("fs").writeFileSync("updater.conf.json", JSON.stringify({ bundle: { createUpdaterArtifacts: true }, plugins: { updater: { pubkey: process.env.PUBKEY } } }))'
+            echo "args=--config updater.conf.json" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::Updater signing is not configured; building without update artefacts."
+            echo "args=" >> "$GITHUB_OUTPUT"
+          fi
+
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           releaseId: ${{ needs.prepare.outputs.release_id }}
-          args: ${{ matrix.args }}
+          args: ${{ matrix.args }} ${{ steps.updater.outputs.args }}
 
       # The Microsoft Store package. Unsigned on purpose: the Store signs it.
       # Skipped until the Partner Center identity is stored as repo variables.
@@ -262,3 +284,57 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_REPO: ${{ github.repository }}
         run: gh release edit "${{ needs.prepare.outputs.tag }}" --draft=false --latest
+
+  store:
+    name: Microsoft Store
+    needs: [prepare, publish]
+    runs-on: windows-latest
+    steps:
+      # Submitting needs a Partner Center API client (see docs/microsoft-store.md).
+      # Without one the job says so and succeeds, and the .msix on the release
+      # can still be uploaded by hand.
+      - id: creds
+        shell: pwsh
+        env:
+          TENANT: ${{ secrets.MS_STORE_TENANT_ID }}
+          CLIENT: ${{ secrets.MS_STORE_CLIENT_ID }}
+          SECRET: ${{ secrets.MS_STORE_CLIENT_SECRET }}
+          SELLER: ${{ secrets.MS_STORE_SELLER_ID }}
+          PRODUCT: ${{ vars.MS_STORE_PRODUCT_ID }}
+        run: |
+          if ($env:TENANT -and $env:CLIENT -and $env:SECRET -and $env:SELLER -and $env:PRODUCT) {
+            "configured=true" >> $env:GITHUB_OUTPUT
+          } else {
+            Write-Output "::notice::Microsoft Store submission is not configured; skipping. See docs/microsoft-store.md."
+            "configured=false" >> $env:GITHUB_OUTPUT
+          }
+
+      - name: Fetch the MSIX from the release
+        if: steps.creds.outputs.configured == 'true'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          gh release download "${{ needs.prepare.outputs.tag }}" --pattern '*.msix' --dir msix
+          $file = Get-ChildItem msix -Filter *.msix | Select-Object -First 1
+          if (-not $file) { throw 'The release has no .msix (are the MSIX_* variables set?).' }
+          "MSIX=$($file.FullName)" >> $env:GITHUB_ENV
+
+      - uses: microsoft/microsoft-store-apppublisher@v1.4
+        if: steps.creds.outputs.configured == 'true'
+
+      - name: Submit to the Store
+        if: steps.creds.outputs.configured == 'true'
+        shell: pwsh
+        env:
+          TENANT: ${{ secrets.MS_STORE_TENANT_ID }}
+          CLIENT: ${{ secrets.MS_STORE_CLIENT_ID }}
+          SECRET: ${{ secrets.MS_STORE_CLIENT_SECRET }}
+          SELLER: ${{ secrets.MS_STORE_SELLER_ID }}
+          PRODUCT: ${{ vars.MS_STORE_PRODUCT_ID }}
+        run: |
+          msstore reconfigure --tenantId $env:TENANT --sellerId $env:SELLER --clientId $env:CLIENT --clientSecret $env:SECRET
+          # Creates a submission with the new package and commits it for
+          # certification; the listing, screenshots and pricing carry over.
+          msstore publish "$env:MSIX" --appId $env:PRODUCT

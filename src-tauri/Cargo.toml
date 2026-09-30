@@ -20,6 +20,14 @@ tauri = { version = "2", features = [] }
 tauri-plugin-dialog = "2"
 tauri-plugin-notification = "2"
 base64 = "0.22"
+# Needed by generate_context! once tauri.conf.json configures a plugin.
+serde_json = "1"
+
+# Self-updating only exists on the desktop: Android installs come from an APK
+# or a store, which update themselves.
+[target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
+tauri-plugin-updater = "2"
+tauri-plugin-process = "2"
 
 [profile.release]
 codegen-units = 1
