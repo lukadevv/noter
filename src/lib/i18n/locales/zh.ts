@@ -53,6 +53,7 @@ const zh: Messages = {
     deleteFolder: '删除文件夹',
     defaultFolderName: '新建文件夹',
     encryptedFolder: '已加密的文件夹',
+    rename: '重命名',
   },
 
   list: {
@@ -447,6 +448,13 @@ const zh: Messages = {
   },
 
   update: { ready: 'Noter 有新版本了。现在重新加载吗？' },
+  menu: {
+    moveTo: '移动到',
+    markTemplate: '用作模板',
+    unmarkTemplate: '不再用作模板',
+    showNotesTagged: '显示带有 #{tag} 的笔记',
+    searchTag: '用此标签搜索',
+  },
 }
 
 export default zh

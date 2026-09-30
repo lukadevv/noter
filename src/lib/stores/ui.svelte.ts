@@ -32,13 +32,44 @@ class UiStore {
     else if (this.pane === 'list') this.pane = 'folders'
   }
 
+  #timers = new Map<string, { handle: ReturnType<typeof setTimeout>; remaining: number; started: number }>()
+
   toast(message: string, tone: Toast['tone'] = 'info', action?: Toast['action']): void {
+    // The same message twice in a row (a double click, a retried save) is one toast.
+    const duplicate = this.toasts.find((t) => t.message === message && t.tone === tone)
+    if (duplicate) this.dismiss(duplicate.id)
+
     const toast: Toast = { id: shortId(), message, tone, action }
-    this.toasts = [...this.toasts, toast]
-    setTimeout(() => this.dismiss(toast.id), action ? 8000 : 4000)
+    // Never more than three: a burst of messages should not bury the page.
+    this.toasts = [...this.toasts, toast].slice(-3)
+    this.#arm(toast.id, action ? 8000 : 4000)
+  }
+
+  #arm(id: string, ms: number): void {
+    this.#timers.set(id, {
+      handle: setTimeout(() => this.dismiss(id), ms),
+      remaining: ms,
+      started: Date.now(),
+    })
+  }
+
+  /** Hovering or focusing a toast holds it, so an Undo is not snatched away mid-reach. */
+  holdToast(id: string): void {
+    const timer = this.#timers.get(id)
+    if (!timer) return
+    clearTimeout(timer.handle)
+    timer.remaining = Math.max(1500, timer.remaining - (Date.now() - timer.started))
+  }
+
+  releaseToast(id: string): void {
+    const timer = this.#timers.get(id)
+    if (timer) this.#arm(id, timer.remaining)
   }
 
   dismiss(id: string): void {
+    const timer = this.#timers.get(id)
+    if (timer) clearTimeout(timer.handle)
+    this.#timers.delete(id)
     this.toasts = this.toasts.filter((t) => t.id !== id)
   }
 

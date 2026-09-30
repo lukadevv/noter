@@ -57,6 +57,7 @@ const ar: Messages = {
     deleteFolder: 'حذف المجلد',
     defaultFolderName: 'مجلد جديد',
     encryptedFolder: 'مجلد مشفَّر',
+    rename: 'إعادة تسمية',
   },
 
   list: {
@@ -523,6 +524,13 @@ const ar: Messages = {
   },
 
   update: { ready: 'توجد نسخة جديدة من Noter. أعيد التحميل الآن؟' },
+  menu: {
+    moveTo: 'نقل إلى',
+    markTemplate: 'استخدام كقالب',
+    unmarkTemplate: 'إيقاف الاستخدام كقالب',
+    showNotesTagged: 'عرض الملاحظات الموسومة #{tag}',
+    searchTag: 'البحث بهذا الوسم',
+  },
 }
 
 export default ar

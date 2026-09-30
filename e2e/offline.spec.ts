@@ -100,10 +100,10 @@ test.describe('offline and PWA', () => {
   test('shows the product logo as the sidebar brand mark', async ({ page }) => {
     await openApp(page)
 
-    const mark = page.locator('.brand img')
+    // Inline SVG, so it can never be a broken image; check it actually drew.
+    const mark = page.locator('.brand svg.logo')
     await expect(mark).toBeVisible()
-    // A decoded image, not a broken one.
-    await expect.poll(() => mark.evaluate((el: HTMLImageElement) => el.naturalWidth)).toBeGreaterThan(0)
+    await expect(mark.locator('path')).toHaveCount(1)
   })
 
   test('carries link-preview metadata', async ({ page }) => {

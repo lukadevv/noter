@@ -53,6 +53,7 @@ const es: Messages = {
     deleteFolder: 'Eliminar carpeta',
     defaultFolderName: 'Nueva carpeta',
     encryptedFolder: 'Carpeta cifrada',
+    rename: 'Renombrar',
   },
 
   list: {
@@ -502,6 +503,13 @@ const es: Messages = {
 
   update: {
     ready: 'Hay una versión nueva de Noter lista. ¿Recargar ahora?',
+  },
+  menu: {
+    moveTo: 'Mover a',
+    markTemplate: 'Usar como plantilla',
+    unmarkTemplate: 'Dejar de usar como plantilla',
+    showNotesTagged: 'Ver notas con #{tag}',
+    searchTag: 'Buscar con esta etiqueta',
   },
 }
 

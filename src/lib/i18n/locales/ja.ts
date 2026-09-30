@@ -51,6 +51,7 @@ const ja: Messages = {
     deleteFolder: 'フォルダを削除',
     defaultFolderName: '新しいフォルダ',
     encryptedFolder: '暗号化されたフォルダ',
+    rename: '名前を変更',
   },
 
   list: {
@@ -466,6 +467,13 @@ const ja: Messages = {
   },
 
   update: { ready: 'Noter の新しいバージョンがあります。今すぐ再読み込みしますか？' },
+  menu: {
+    moveTo: '移動先',
+    markTemplate: 'テンプレートにする',
+    unmarkTemplate: 'テンプレートを解除',
+    showNotesTagged: '#{tag} のノートを表示',
+    searchTag: 'このタグで検索',
+  },
 }
 
 export default ja

@@ -1,13 +1,12 @@
 <script lang="ts">
   import Icon from './Icon.svelte'
-  import Menu from './Menu.svelte'
   import NoteListItem from './NoteListItem.svelte'
-  import type { MenuItem } from '$lib/ui-types'
+  import { menu } from '$lib/stores/menu.svelte'
+  import { folderTargets } from '$lib/menus/note'
   import { notes } from '$lib/stores/notes.svelte'
   import { ui } from '$lib/stores/ui.svelte'
   import { computeRange } from '$lib/utils/virtual'
   import { emptyTrash } from '$lib/db/repo/notes'
-  import { ROOT } from '$lib/db/schema'
   import { t } from '$lib/i18n/index.svelte'
 
   /** Kept in sync with the fixed row height in NoteListItem's styles. */
@@ -16,7 +15,6 @@
   let scroller = $state<HTMLElement | null>(null)
   let scrollTop = $state(0)
   let viewportHeight = $state(0)
-  let menu = $state<{ x: number; y: number; items: MenuItem[] } | null>(null)
 
   let items = $derived(notes.listNotes)
   let range = $derived(computeRange(items.length, ROW_HEIGHT, scrollTop, viewportHeight))
@@ -78,21 +76,11 @@
   }
 
   function openMoveMenu(event: MouseEvent) {
-    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect()
-    const targets: MenuItem[] = [
-      {
-        label: t('list.noFolder'),
-        icon: 'file-text',
-        run: () => void bulkMove(ROOT),
-      },
-      ...notes.visibleFolders.map((folder, index) => ({
-        label: `${'\u00a0\u00a0'.repeat(folder.depth)}${folder.name}`,
-        icon: 'folder',
-        separatorBefore: index === 0,
-        run: () => void bulkMove(folder.id),
-      })),
-    ]
-    menu = { x: rect.left, y: rect.bottom + 4, items: targets }
+    menu.open(
+      folderTargets((folderId) => void bulkMove(folderId)),
+      event.currentTarget as HTMLElement,
+      t('list.moveToFolder'),
+    )
   }
 
   async function bulkMove(folderId: string) {
@@ -100,53 +88,6 @@
       await notes.move(id, folderId)
     })
     ui.toast(t('toast.notesMoved', { count }), 'ok')
-  }
-
-  function openMenu(id: string, x: number, y: number) {
-    const note = [...notes.notes, ...notes.trashed, ...notes.archived].find((n) => n.id === id)
-    if (!note) return
-
-    const trashed = note.deletedAt > 0
-    menu = {
-      x,
-      y,
-      items: trashed
-        ? [
-            { label: t('common.restore'), icon: 'restore', run: () => void notes.restore(id) },
-            {
-              label: t('note.menu.deleteForever'),
-              icon: 'trash',
-              danger: true,
-              separatorBefore: true,
-              run: () => void notes.deleteForever(id),
-            },
-          ]
-        : [
-            {
-              label: t(note.pinned ? 'note.menu.unpin' : 'note.menu.pin'),
-              icon: 'pin',
-              run: () => void notes.togglePin(id),
-            },
-            {
-              label: t(note.archivedAt ? 'note.menu.unarchive' : 'note.menu.archive'),
-              icon: 'archive',
-              run: () => void notes.setArchived(id, note.archivedAt === 0),
-            },
-            {
-              label: t('note.menu.trash'),
-              icon: 'trash',
-              danger: true,
-              separatorBefore: true,
-              run: () => {
-                void notes.trash(id)
-                ui.toast(t('toast.movedToTrash'), 'info', {
-                  label: t('toast.undo'),
-                  run: () => void notes.restore(id),
-                })
-              },
-            },
-          ],
-    }
   }
 </script>
 
@@ -308,17 +249,12 @@
           height={ROW_HEIGHT}
           onselect={select}
           onmark={mark}
-          onmenu={openMenu}
         />
       {/each}
       <div style="height: {range.padBottom}px"></div>
     {/if}
   </div>
 </section>
-
-{#if menu}
-  <Menu items={menu.items} x={menu.x} y={menu.y} onclose={() => (menu = null)} />
-{/if}
 
 <style>
   .list {

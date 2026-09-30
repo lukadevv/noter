@@ -3,6 +3,9 @@
   import type { FolderNode } from '$lib/db/repo/folders'
   import type { DropPosition } from '$lib/ui-types'
   import { t } from '$lib/i18n/index.svelte'
+  import { contextmenu } from '$lib/ui/contextmenu'
+  import { menu } from '$lib/stores/menu.svelte'
+  import { folderMenuItems } from '$lib/menus/folder'
 
   interface Props {
     node: FolderNode
@@ -12,7 +15,6 @@
     onselect: (id: string) => void
     ontoggle: (id: string) => void
     onrename: (id: string, name: string) => void
-    onmenu: (id: string, anchor: HTMLElement) => void
     ondropfolder: (draggedId: string, targetId: string, position: DropPosition) => void
     ondropnote: (noteId: string, folderId: string) => void
     ondraghover: (id: string | null, position: DropPosition | null) => void
@@ -27,7 +29,6 @@
     onselect,
     ontoggle,
     onrename,
-    onmenu,
     ondropfolder,
     ondropnote,
     ondraghover,
@@ -136,7 +137,12 @@
 
   function onKeydown(event: KeyboardEvent) {
     // Alt+Arrow reorders without a mouse; drag and drop is not reachable from a
-    // keyboard at all.
+    // keyboard at all. F2 renames, as in every file manager.
+    if (event.key === 'F2' && !renaming) {
+      event.preventDefault()
+      startRename()
+      return
+    }
     if (!event.altKey) return
     if (event.key === 'ArrowUp') {
       event.preventDefault()
@@ -168,6 +174,7 @@
   ondrop={onDrop}
   ondragend={() => ondraghover(null, null)}
   onkeydown={onKeydown}
+  use:contextmenu={() => (renaming ? [] : folderMenuItems(node.id, { onrename: startRename }))}
 >
   <button
     class="twisty"
@@ -215,7 +222,12 @@
       aria-label={t('sidebar.folderActions')}
       onclick={(e) => {
         e.stopPropagation()
-        if (menuButton) onmenu(node.id, menuButton)
+        if (menuButton)
+          menu.open(
+            folderMenuItems(node.id, { onrename: startRename }),
+            menuButton,
+            t('sidebar.folderActions'),
+          )
       }}
     >
       <Icon name="more" size={14} />

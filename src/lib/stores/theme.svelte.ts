@@ -1,3 +1,4 @@
+import { motion } from '$lib/ui/motion.svelte'
 import { liveQuery, type Subscription } from 'dexie'
 import { applyChrome, applyTokens } from '$lib/theme/apply'
 import {
@@ -120,7 +121,7 @@ class ThemeStore {
       editorFontSize: this.settings.editorFontSize,
       radiusScale: this.settings.radiusScale,
     })
-    document.documentElement.dataset.reduceMotion = String(this.settings.reduceMotion)
+    motion.apply(this.settings.motion)
     this.saveMirror()
   }
 

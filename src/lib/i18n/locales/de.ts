@@ -50,6 +50,7 @@ const de: Messages = {
     deleteFolder: 'Ordner löschen',
     defaultFolderName: 'Neuer Ordner',
     encryptedFolder: 'Verschlüsselter Ordner',
+    rename: 'Umbenennen',
   },
 
   list: {
@@ -492,6 +493,13 @@ const de: Messages = {
   },
 
   update: { ready: 'Eine neue Version von Noter ist bereit. Jetzt neu laden?' },
+  menu: {
+    moveTo: 'Verschieben nach',
+    markTemplate: 'Als Vorlage verwenden',
+    unmarkTemplate: 'Nicht mehr als Vorlage verwenden',
+    showNotesTagged: 'Notizen mit #{tag} anzeigen',
+    searchTag: 'Mit diesem Tag suchen',
+  },
 }
 
 export default de

@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Privacy policy — Noter</title>
+    <meta name="description" content="Noter keeps everything on your device. No account, no server, no tracking in the apps." />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #f7f7fa;
+        --text: #1d1d23;
+        --dim: #5b5a66;
+        --accent: #5550da;
+        --border: #dcdce4;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #17171c;
+          --text: #edecf2;
+          --dim: #a8a6b4;
+          --accent: #a29fff;
+          --border: #32323b;
+        }
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font: 16px/1.65 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      }
+      main {
+        max-width: 44rem;
+        margin: 0 auto;
+        padding: 48px 20px 80px;
+      }
+      header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 8px;
+      }
+      header img {
+        width: 36px;
+        height: 36px;
+      }
+      h1 {
+        font-size: 28px;
+        margin: 0;
+      }
+      h2 {
+        font-size: 19px;
+        margin: 32px 0 8px;
+      }
+      p,
+      li {
+        color: var(--text);
+      }
+      .meta,
+      .note {
+        color: var(--dim);
+        font-size: 14px;
+      }
+      a {
+        color: var(--accent);
+      }
+      nav {
+        margin: 16px 0 32px;
+        font-size: 14px;
+      }
+      hr {
+        border: 0;
+        border-top: 1px solid var(--border);
+        margin: 48px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <img src="/icons/icon-192.png" alt="" />
+        <h1>Privacy policy</h1>
+      </header>
+      <p class="meta">Noter · Last updated: 30 September 2026</p>
+      <nav><a href="#en">English</a> · <a href="#es">Español</a></nav>
+
+      <section id="en" lang="en">
+        <h2>The short version</h2>
+        <p>
+          Noter keeps everything you write and store on your own device. There is no account, no Noter
+          server, and the desktop and Android apps send no analytics or telemetry. We cannot see, sell or
+          lose your data, because we never have it.
+        </p>
+
+        <h2>What Noter stores, and where</h2>
+        <ul>
+          <li>
+            Notes, folders, images, timers, medication entries and settings are stored locally, in the app's
+            own storage on your device (IndexedDB inside the app's web view, or your browser for the web
+            version).
+          </li>
+          <li>
+            Vault entries and encrypted folders are encrypted on your device with AES-256-GCM, using a key
+            derived from a password only you know. The password is never stored or sent anywhere, and it
+            cannot be recovered.
+          </li>
+          <li>
+            Medication names and dose times are health information. They never leave your device unless you
+            export a backup yourself.
+          </li>
+        </ul>
+
+        <h2>Network connections</h2>
+        <ul>
+          <li>
+            When you paste or drop the address of an image, Noter downloads that image from the site you
+            pointed at. That site sees an ordinary request for the image.
+          </li>
+          <li>
+            A share link carries a copy of the note inside the part of the address after <code>#</code>. Browsers
+            never send that part to any server; whoever you give the link to can read the note.
+          </li>
+          <li>
+            The web version (not the desktop or Android apps) may use Cloudflare Web Analytics, which counts
+            page visits without cookies and without identifying you. Nothing you write is included.
+          </li>
+          <li>The Microsoft Store and Google Play may collect data under their own policies when you install the app.</li>
+        </ul>
+
+        <h2>Notifications</h2>
+        <p>
+          Timer and medication reminders are scheduled and shown by your own device. Noter asks for permission
+          before showing any, and you can turn them off in the app or in your system settings.
+        </p>
+
+        <h2>Backups and exports</h2>
+        <p>
+          Backups and exports are files you create and keep. Where they go (a folder, a USB drive, a cloud
+          service) is your choice, and that service's own policy applies to them.
+        </p>
+
+        <h2>Deleting your data</h2>
+        <p>
+          Delete notes and entries inside the app, or remove everything by uninstalling the app (or clearing
+          the site's data in your browser for the web version).
+        </p>
+
+        <h2>Children</h2>
+        <p>Noter collects no personal data from anyone, including children.</p>
+
+        <h2>Changes and contact</h2>
+        <p>
+          If this policy changes, the new version will be published at this address with a new date. Questions:
+          <a href="https://github.com/lukadevv/noter/issues">github.com/lukadevv/noter/issues</a>.
+        </p>
+      </section>
+
+      <hr />
+
+      <section id="es" lang="es">
+        <h2>En resumen</h2>
+        <p>
+          Noter guarda todo lo que escribís y almacenás en tu propio dispositivo. No hay cuenta ni servidor de
+          Noter, y las apps de escritorio y Android no envían analíticas ni telemetría. No podemos ver, vender ni
+          perder tus datos, porque nunca los tenemos.
+        </p>
+
+        <h2>Qué guarda Noter y dónde</h2>
+        <ul>
+          <li>
+            Notas, carpetas, imágenes, temporizadores, medicación y ajustes se guardan localmente, en el
+            almacenamiento propio de la app en tu dispositivo (IndexedDB dentro de la app, o tu navegador en la
+            versión web).
+          </li>
+          <li>
+            Los elementos del Vault y las carpetas cifradas se cifran en tu dispositivo con AES-256-GCM, con una
+            clave derivada de una contraseña que solo vos conocés. La contraseña nunca se guarda ni se envía, y no
+            se puede recuperar.
+          </li>
+          <li>
+            Los nombres de medicamentos y los horarios de toma son información de salud. Nunca salen de tu
+            dispositivo, salvo que vos exportes una copia.
+          </li>
+        </ul>
+
+        <h2>Conexiones de red</h2>
+        <ul>
+          <li>
+            Cuando pegás o soltás la dirección de una imagen, Noter la descarga del sitio indicado. Ese sitio ve un
+            pedido común de la imagen.
+          </li>
+          <li>
+            Un link compartido lleva una copia de la nota en la parte de la dirección que va después de
+            <code>#</code>. Los navegadores nunca envían esa parte a ningún servidor; quien reciba el link puede
+            leer la nota.
+          </li>
+          <li>
+            La versión web (no las apps de escritorio ni Android) puede usar Cloudflare Web Analytics, que cuenta
+            visitas sin cookies y sin identificarte. No incluye nada de lo que escribís.
+          </li>
+          <li>
+            Microsoft Store y Google Play pueden recopilar datos según sus propias políticas cuando instalás la app.
+          </li>
+        </ul>
+
+        <h2>Notificaciones</h2>
+        <p>
+          Los recordatorios de temporizadores y medicación los programa y muestra tu propio dispositivo. Noter pide
+          permiso antes de mostrar alguno, y podés desactivarlos en la app o en los ajustes del sistema.
+        </p>
+
+        <h2>Copias y exportaciones</h2>
+        <p>
+          Las copias de seguridad y exportaciones son archivos que vos creás y guardás. Dónde terminan (una
+          carpeta, un pendrive, un servicio en la nube) lo elegís vos, y se rigen por la política de ese servicio.
+        </p>
+
+        <h2>Borrar tus datos</h2>
+        <p>
+          Borrá notas y elementos desde la app, o eliminá todo desinstalándola (o borrando los datos del sitio en
+          tu navegador, en la versión web).
+        </p>
+
+        <h2>Menores</h2>
+        <p>Noter no recopila datos personales de nadie, incluidos menores.</p>
+
+        <h2>Cambios y contacto</h2>
+        <p>
+          Si esta política cambia, la nueva versión se publicará en esta dirección con una fecha nueva. Consultas:
+          <a href="https://github.com/lukadevv/noter/issues">github.com/lukadevv/noter/issues</a>.
+        </p>
+      </section>
+    </main>
+  </body>
+</html>

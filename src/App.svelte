@@ -5,6 +5,8 @@
   import Toasts from '$components/Toasts.svelte'
   import Lightbox from '$components/Lightbox.svelte'
   import Lazy from '$components/Lazy.svelte'
+  import ContextMenu from '$components/ContextMenu.svelte'
+  import { dialogs } from '$lib/stores/dialogs.svelte'
   import { notes } from '$lib/stores/notes.svelte'
   import { theme } from '$lib/stores/theme.svelte'
   import { ui } from '$lib/stores/ui.svelte'
@@ -319,6 +321,21 @@
   />
 {/if}
 
+{#if dialogs.current?.kind === 'folderStyle' || dialogs.current?.kind === 'folderLock'}
+  {@const kind = dialogs.current.kind}
+  {@const folder = notes.folders.find((f) => f.id === dialogs.current?.id)}
+  {#if folder}
+    <Lazy
+      load={() =>
+        kind === 'folderStyle'
+          ? import('$components/FolderStyle.svelte')
+          : import('$components/FolderLock.svelte')}
+      props={{ folder, onclose: () => dialogs.close() }}
+    />
+  {/if}
+{/if}
+
+<ContextMenu />
 <Lightbox />
 <Toasts />
 

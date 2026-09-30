@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Icon from './Icon.svelte'
+  import Dialog from './ui/Dialog.svelte'
   import { decryptFolder, encryptFolder, keyring } from '$lib/crypto/keyring.svelte'
   import { ui } from '$lib/stores/ui.svelte'
   import type { Folder } from '$lib/db/schema'
@@ -50,17 +50,7 @@
   }
 </script>
 
-<div class="backdrop" role="presentation" onpointerdown={onclose}></div>
-
-<div class="dialog" data-testid="folder-lock" role="dialog" aria-modal="true" aria-label={t('lock.title')}>
-  <header class="head">
-    <Icon name="lock" size={16} />
-    <span class="title truncate">{folder.name}</span>
-    <button class="btn btn--ghost btn--icon" aria-label={t('common.close')} onclick={onclose}>
-      <Icon name="x" size={15} />
-    </button>
-  </header>
-
+<Dialog label={folder.name} {onclose} size="md" flush icon="lock" testid="folder-lock">
   <div class="content">
     {#if folder.encrypted}
       <p class="note">
@@ -131,43 +121,9 @@
       <p class="danger">{error}</p>
     {/if}
   </div>
-</div>
+</Dialog>
 
 <style>
-  .backdrop {
-    position: fixed;
-    inset: 0;
-    z-index: 52;
-    background: var(--overlay);
-  }
-
-  .dialog {
-    position: fixed;
-    z-index: 53;
-    inset: 50% auto auto 50%;
-    transform: translate(-50%, -50%);
-    width: min(94vw, 26rem);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    background: var(--surface);
-    box-shadow: var(--shadow-2);
-    overflow: hidden;
-  }
-
-  .head {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-    padding: var(--space-3);
-    border-bottom: 1px solid var(--border);
-  }
-
-  .title {
-    flex: 1;
-    min-width: 0;
-    font-weight: 650;
-  }
-
   .content {
     padding: var(--space-4);
   }

@@ -183,8 +183,8 @@
       <label class="check">
         <input
           type="checkbox"
-          checked={theme.settings.reduceMotion}
-          onchange={(e) => theme.update({ reduceMotion: e.currentTarget.checked })}
+          checked={theme.settings.motion === 'off'}
+          onchange={(e) => theme.update({ motion: e.currentTarget.checked ? 'off' : 'system' })}
         />
         {t('settings.reduceMotion')}
       </label>

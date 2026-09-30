@@ -51,6 +51,7 @@ const ko: Messages = {
     deleteFolder: '폴더 삭제',
     defaultFolderName: '새 폴더',
     encryptedFolder: '암호화된 폴더',
+    rename: '이름 바꾸기',
   },
 
   list: {
@@ -450,6 +451,13 @@ const ko: Messages = {
   },
 
   update: { ready: 'Noter 새 버전이 준비되었습니다. 지금 새로 고칠까요?' },
+  menu: {
+    moveTo: '이동',
+    markTemplate: '템플릿으로 사용',
+    unmarkTemplate: '템플릿 사용 중지',
+    showNotesTagged: '#{tag} 태그 노트 보기',
+    searchTag: '이 태그로 검색',
+  },
 }
 
 export default ko

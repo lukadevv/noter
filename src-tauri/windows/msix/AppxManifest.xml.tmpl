@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Microsoft Store package manifest, filled in by scripts/build-msix.ps1.
+
+  {{IDENTITY_NAME}}, {{PUBLISHER}} and {{PUBLISHER_DISPLAY_NAME}} must match
+  Partner Center → your app → Product management → Product identity exactly, or
+  the upload is rejected. The package is left unsigned: the Store signs it.
+-->
+<Package
+  xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+  xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+  xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+  IgnorableNamespaces="uap rescap">
+
+  <Identity
+    Name="{{IDENTITY_NAME}}"
+    Publisher="{{PUBLISHER}}"
+    Version="{{VERSION}}"
+    ProcessorArchitecture="x64" />
+
+  <Properties>
+    <DisplayName>Noter</DisplayName>
+    <PublisherDisplayName>{{PUBLISHER_DISPLAY_NAME}}</PublisherDisplayName>
+    <Logo>Assets\StoreLogo.png</Logo>
+    <Description>Local-first notes, timers, medication reminders and a password vault.</Description>
+  </Properties>
+
+  <Dependencies>
+    <!-- 1809: the oldest Windows 10 the WebView2 runtime and MSIX desktop apps both support well. -->
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.17763.0" MaxVersionTested="10.0.26100.0" />
+  </Dependencies>
+
+  <Resources>
+    <Resource Language="en-us" />
+    <Resource Language="es" />
+    <Resource Language="pt" />
+    <Resource Language="fr" />
+    <Resource Language="de" />
+    <Resource Language="it" />
+    <Resource Language="zh-cn" />
+    <Resource Language="ja" />
+    <Resource Language="ko" />
+    <Resource Language="ar" />
+  </Resources>
+
+  <Applications>
+    <Application Id="Noter" Executable="Noter.exe" EntryPoint="Windows.FullTrustApplication">
+      <uap:VisualElements
+        DisplayName="Noter"
+        Description="Local-first notes, timers, medication reminders and a password vault."
+        BackgroundColor="transparent"
+        Square150x150Logo="Assets\Square150x150Logo.png"
+        Square44x44Logo="Assets\Square44x44Logo.png">
+        <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" />
+        <uap:SplashScreen Image="Assets\SplashScreen.png" BackgroundColor="#17171c" />
+      </uap:VisualElements>
+    </Application>
+  </Applications>
+
+  <Capabilities>
+    <!-- Required for any packaged Win32 (desktop) app; Tauri apps are Win32. -->
+    <rescap:Capability Name="runFullTrust" />
+  </Capabilities>
+</Package>

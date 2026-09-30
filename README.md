@@ -75,22 +75,22 @@ yarn would build something that does not match CI.
 
 ## Commands
 
-| Command                      | What it does                                                     |
-| ---------------------------- | ---------------------------------------------------------------- |
-| `pnpm dev`                   | Dev server with hot reload                                       |
-| `pnpm build`                 | Type-check, build to `dist/`, and enforce the bundle budget      |
-| `pnpm build:fast`            | Build without the type-check and budget gate                     |
-| `pnpm preview`               | Serve the production build locally                               |
-| `pnpm check`                 | `svelte-check` over the whole project                            |
-| `pnpm test`                  | Unit tests (Vitest)                                              |
-| `pnpm test:e2e`              | End-to-end tests (Playwright)                                    |
-| `pnpm test:e2e:ui`           | Playwright's interactive runner                                  |
-| `pnpm test:all`              | Unit tests, then end-to-end                                      |
-| `node scripts/gen-icons.mjs` | Regenerate every icon and the social card from `assets/logo.png` |
-| `pnpm desktop:dev`           | Run the app in the desktop shell, with hot reload                |
-| `pnpm desktop:build`         | Build the desktop installers for the current platform            |
-| `pnpm android:sync`          | Build the web assets and copy them into the Android project      |
-| `pnpm android:open`          | Open the Android project in Android Studio                       |
+| Command                      | What it does                                                      |
+| ---------------------------- | ----------------------------------------------------------------- |
+| `pnpm dev`                   | Dev server with hot reload                                        |
+| `pnpm build`                 | Type-check, build to `dist/`, and enforce the bundle budget       |
+| `pnpm build:fast`            | Build without the type-check and budget gate                      |
+| `pnpm preview`               | Serve the production build locally                                |
+| `pnpm check`                 | `svelte-check` over the whole project                             |
+| `pnpm test`                  | Unit tests (Vitest)                                               |
+| `pnpm test:e2e`              | End-to-end tests (Playwright)                                     |
+| `pnpm test:e2e:ui`           | Playwright's interactive runner                                   |
+| `pnpm test:all`              | Unit tests, then end-to-end                                       |
+| `node scripts/gen-icons.mjs` | Regenerate every icon and the social card from `scripts/logo.mjs` |
+| `pnpm desktop:dev`           | Run the app in the desktop shell, with hot reload                 |
+| `pnpm desktop:build`         | Build the desktop installers for the current platform             |
+| `pnpm android:sync`          | Build the web assets and copy them into the Android project       |
+| `pnpm android:open`          | Open the Android project in Android Studio                        |
 
 Run one-off binaries with `pnpm exec`, never `npx`. The first e2e run needs the
 browser: `pnpm exec playwright install chromium`.
@@ -179,9 +179,11 @@ suite.
 
 ## Branding assets
 
-`assets/logo.png` is the only artwork maintained by hand. Everything under
-`public/` is generated from it by `scripts/gen-icons.mjs` and committed, so a
-clone builds without any image tooling:
+The logo is drawn in code, in `scripts/logo.mjs`: a squircle in the brand
+gradient holding three rounded bars (the blocks of a note) and a dot at the end
+of the last one (the cursor). `scripts/gen-icons.mjs` renders it with resvg into
+`assets/logo.svg`, `assets/logo-1024.png` and everything below, all committed, so
+a clone builds without any image tooling:
 
 | Output                                                        | Used for                                                         |
 | ------------------------------------------------------------- | ---------------------------------------------------------------- |
@@ -192,22 +194,19 @@ clone builds without any image tooling:
 | `icons/logo-64.png`                                           | The brand mark in the sidebar                                    |
 | `android/…/mipmap-*/ic_launcher*.png`                         | The Android launcher, flat and adaptive layers                   |
 | `og.png`                                                      | Link previews (1200×630)                                         |
+| `src-tauri/windows/msix/Assets/*`                             | Microsoft Store (MSIX) tiles, store logo and splash screen       |
 
 The maskable and Apple icons are full-bleed: those platforms apply their own
 mask, so an icon with rounded corners of its own gets clipped twice and looks
-smaller than its neighbours. Their corners are filled by extrapolating the logo's
-own gradient rather than by inventing a background, which is what keeps the join
-invisible.
-
-Regenerating needs ImageMagick (`sudo apt install imagemagick` /
-`brew install imagemagick`); the script says so if it is missing.
+smaller than its neighbours.
 
 The desktop shell keeps its own set, in the `.ico` and `.icns` containers
 Windows and macOS want. Those come from Tauri's own converter and change only
 when the logo does:
 
 ```bash
-pnpm exec tauri icon assets/logo.png -o src-tauri/icons
+pnpm exec tauri icon assets/logo-1024.png -o src-tauri/icons
+rm -rf src-tauri/icons/android src-tauri/icons/ios
 ```
 
 **Link previews need an absolute URL.** Set `VITE_SITE_URL` when building for a

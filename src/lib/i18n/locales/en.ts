@@ -67,6 +67,7 @@ export const en = {
     deleteFolder: 'Delete folder',
     defaultFolderName: 'New folder',
     encryptedFolder: 'Encrypted folder',
+    rename: 'Rename',
   },
 
   list: {
@@ -513,5 +514,12 @@ export const en = {
 
   update: {
     ready: 'A new version of Noter is ready. Reload now?',
+  },
+  menu: {
+    moveTo: 'Move to',
+    markTemplate: 'Use as template',
+    unmarkTemplate: 'Stop using as template',
+    showNotesTagged: 'Show notes tagged #{tag}',
+    searchTag: 'Search with this tag',
   },
 }

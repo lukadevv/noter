@@ -64,7 +64,34 @@
   --line-height: 1.55;
 
   --row-height: calc(30px * var(--density));
+
+  /* Type scale ------------------------------------------------------------ */
+  --text-xs: 11px;
+  --text-sm: 12px;
+  --text-md: 13px;
+  --text-lg: 15px;
+  --text-xl: 18px;
+  --text-2xl: 24px;
+  --text-3xl: 32px;
+
+  /* Motion ---------------------------------------------------------------- */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-1: 90ms;
+  --dur-2: 160ms;
+  --dur-3: 260ms;
   --transition: 120ms ease;
+
+  /* Layering: one ladder, so a menu opened from a dialog is never under it. */
+  --z-sticky: 10;
+  --z-nav: 20;
+  --z-dialog: 50;
+  --z-palette: 60;
+  --z-menu: 80;
+  --z-toast: 90;
+  --z-lightbox: 95;
+
+  --shadow-3: 0 18px 48px rgba(0, 0, 0, 0.45), 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 /* Reset ------------------------------------------------------------------- */
@@ -279,12 +306,90 @@ a:hover {
   margin: var(--space-2) 0;
 }
 
-/* Users who ask the OS for less motion get none, and the settings toggle can
-   force the same state without touching component code. */
+/* Shared dialog shell -------------------------------------------------------
+ * Used by src/components/ui/Dialog.svelte, which is portalled to <body>, so
+ * the rules are global rather than scoped. */
+
+.ui-backdrop {
+  position: fixed;
+  inset: 0;
+  background: var(--overlay);
+  z-index: var(--z-dialog);
+}
+
+.ui-dialog {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  z-index: var(--z-dialog);
+  display: flex;
+  flex-direction: column;
+  width: min(94vw, var(--dialog-w, 30rem));
+  height: fit-content;
+  max-height: min(90dvh, 48rem);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-3);
+  overflow: hidden;
+}
+
+.ui-dialog--sm {
+  --dialog-w: 24rem;
+}
+
+.ui-dialog--lg {
+  --dialog-w: 44rem;
+}
+
+.ui-dialog__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border);
+  font-weight: 600;
+}
+
+.ui-dialog__title {
+  flex: 1;
+  min-width: 0;
+}
+
+.ui-dialog__body {
+  padding: var(--space-4);
+  overflow: auto;
+}
+
+.ui-dialog__body--flush {
+  padding: 0;
+}
+
+.ui-dialog__foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--border);
+}
+
+@media (max-width: 560px) {
+  /* Phones get a bottom sheet: easier to reach, and the keyboard pushes it up. */
+  .ui-dialog {
+    inset: auto 0 0 0;
+    width: 100%;
+    max-height: 92dvh;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  }
+}
+
+/* Motion. `data-motion` is resolved from the setting and the OS preference by
+   src/lib/ui/motion.svelte.ts; before it is set (first paint), the OS decides.
+   Reduced keeps colour fades but drops anything that moves; off drops it all. */
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  :root:not([data-motion]) *,
+  :root:not([data-motion]) *::before,
+  :root:not([data-motion]) *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
@@ -292,11 +397,21 @@ a:hover {
   }
 }
 
-:root[data-reduce-motion='true'] *,
-:root[data-reduce-motion='true'] *::before,
-:root[data-reduce-motion='true'] *::after {
+:root[data-motion='reduced'] *,
+:root[data-motion='reduced'] *::before,
+:root[data-motion='reduced'] *::after {
   animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  scroll-behavior: auto !important;
+}
+
+:root[data-motion='off'] *,
+:root[data-motion='off'] *::before,
+:root[data-motion='off'] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
   transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
 }
 
 /* Reading view ------------------------------------------------------------

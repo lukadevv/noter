@@ -1,6 +1,6 @@
 <script lang="ts">
   import Icon from './Icon.svelte'
-  import Menu from './Menu.svelte'
+  import { menu } from '$lib/stores/menu.svelte'
   import type { MenuItem } from '$lib/ui-types'
   import {
     addCard,
@@ -25,7 +25,6 @@
   let drafts = $state<Record<number, string>>({})
   let dragging = $state<number | null>(null)
   let dropTarget = $state<{ column: number; index: number } | null>(null)
-  let menu = $state<{ x: number; y: number; items: MenuItem[] } | null>(null)
 
   /**
    * Cards can also be moved from a menu.
@@ -34,28 +33,24 @@
    * touch, so it cannot be the only way to move a card between columns.
    */
   function openCardMenu(event: MouseEvent, cardLine: number, fromColumn: number) {
-    const anchor = (event.currentTarget as HTMLElement).getBoundingClientRect()
-    menu = {
-      x: anchor.left,
-      y: anchor.bottom + 4,
-      items: [
-        ...columns
-          .map((column, index) => ({ column, index }))
-          .filter(({ index }) => index !== fromColumn)
-          .map(({ column, index }) => ({
-            label: t('board.moveTo', { column: column.title }),
-            icon: 'layout-grid',
-            run: () => onchange(moveCard(body, cardLine, index, column.cards.length)),
-          })),
-        {
-          label: t('board.deleteCard'),
-          icon: 'trash',
-          danger: true,
-          separatorBefore: true,
-          run: () => onchange(removeCard(body, cardLine)),
-        },
-      ],
-    }
+    const items: MenuItem[] = [
+      ...columns
+        .map((column, index) => ({ column, index }))
+        .filter(({ index }) => index !== fromColumn)
+        .map(({ column, index }) => ({
+          label: t('board.moveTo', { column: column.title }),
+          icon: 'layout-grid',
+          run: () => onchange(moveCard(body, cardLine, index, column.cards.length)),
+        })),
+      {
+        label: t('board.deleteCard'),
+        icon: 'trash',
+        danger: true,
+        separatorBefore: true,
+        run: () => onchange(removeCard(body, cardLine)),
+      },
+    ]
+    menu.open(items, event.currentTarget as HTMLElement, t('board.cardActions'))
   }
 
   function submitCard(columnIndex: number) {
@@ -191,10 +186,6 @@
     <p class="faint">{t('board.noHeadings')}</p>
   {/if}
 </div>
-
-{#if menu}
-  <Menu items={menu.items} x={menu.x} y={menu.y} onclose={() => (menu = null)} />
-{/if}
 
 <style>
   .board {

@@ -83,7 +83,8 @@ export function structuredData(siteUrl: string, version: string): string {
     isAccessibleForFree: true,
     offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
     featureList: FEATURES,
-    permissions: 'No account, no network access, no personal data collected.',
+    permissions:
+      'No account and no server. Data stays on the device; the network is only used to fetch images you link.',
   }
 
   const website = {

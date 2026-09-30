@@ -1,400 +1,118 @@
 /**
- * Generates every icon and social image from one source logo.
+ * Generates every icon and social image from the logo in `scripts/logo.mjs`.
  *
- * The source (`assets/logo.png`) is the only artwork kept by hand; everything
- * under `public/` is derived and committed, so a clone needs no image tooling to
- * build. Regenerating does need ImageMagick, which is why the script checks for
- * it up front and says so plainly.
+ * Everything under `public/`, `android/` and the MSIX assets is derived and
+ * committed, so a clone needs no image tooling to build. Rendering uses resvg
+ * (a devDependency), so there is no system dependency either.
  *
  * Two families come out of this:
  *
  *  - **Transparent, rounded** — the logo as drawn. Favicons and the PWA's
  *    `purpose: any` icons, which sit on backgrounds we do not control.
- *  - **Full-bleed square** — the logo over a matching gradient that fills the
- *    corners. Android crops maskable icons to its own shape and iOS applies its
- *    own rounding, so an icon with rounded corners of its own gets clipped
- *    twice and ends up visibly smaller than its neighbours.
+ *  - **Full-bleed square** — the gradient to the edges with the glyph inset.
+ *    Android crops maskable icons to its own shape and iOS applies its own
+ *    rounding, so an icon with rounded corners of its own gets clipped twice.
+ *
+ * Tauri's desktop icons are produced afterwards with
+ * `pnpm exec tauri icon assets/logo-1024.png -o src-tauri/icons`.
  */
-import { execFileSync } from 'node:child_process'
-import { existsSync, mkdirSync, rmSync } from 'node:fs'
+import { Resvg } from '@resvg/resvg-js'
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import {
+  BRAND_BOTTOM,
+  BRAND_TOP,
+  foregroundSvg,
+  fullBleedSvg,
+  glyph,
+  logoSvg,
+  squirclePath,
+  wideSvg,
+} from './logo.mjs'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
-const SOURCE = join(ROOT, 'assets/logo.png')
 const PUBLIC = join(ROOT, 'public')
 const ICONS = join(PUBLIC, 'icons')
+const MSIX = join(ROOT, 'src-tauri/windows/msix/Assets')
 
-/** The app's dark background, so the social card matches the product. */
 const CARD_BACKGROUND = '#17171c'
 const CARD_TEXT = '#edecf2'
 const CARD_MUTED = '#a8a6b4'
-const TAGLINE = 'Local-first notes that work offline'
+const TAGLINE = 'Local-first notes, timers, meds and a vault'
 
-function run(args) {
-  return execFileSync('convert', args, { encoding: 'utf8' })
-}
-
-function requireImageMagick() {
-  try {
-    execFileSync('convert', ['-version'], { stdio: 'ignore' })
-  } catch {
-    console.error(
-      [
-        '',
-        '  ImageMagick is required to regenerate the icons.',
-        '',
-        '    Debian/Ubuntu:  sudo apt install imagemagick',
-        '    macOS:          brew install imagemagick',
-        '',
-        '  The generated files are committed, so this is only needed when the',
-        '  logo itself changes.',
-        '',
-      ].join('\n'),
-    )
-    process.exit(1)
-  }
-}
-
-/** A font for the social card's wordmark, or null when none is installed. */
-function findFont() {
-  for (const candidate of ['DejaVu-Sans-Bold', 'FreeSans-Bold', 'Helvetica-Bold', 'Nimbus-Sans-Bold']) {
-    try {
-      const list = execFileSync('convert', ['-list', 'font'], { encoding: 'utf8' })
-      if (list.includes(`Font: ${candidate}`)) return candidate
-    } catch {
-      return null
-    }
-  }
-  return null
-}
-
-/** The logo at `size`, keeping its transparent corners. */
-function transparent(size, output) {
-  run([SOURCE, '-resize', `${size}x${size}`, '-strip', output])
-}
-
-/**
- * Reads one pixel as `[r, g, b]`, 0-255.
- *
- * The alpha channel is left on: with `-alpha off` this artwork reports every
- * pixel as black, because the stored colour channels are premultiplied.
- */
-function samplePixel(x, y) {
-  const value = execFileSync('convert', [SOURCE, '-format', `%[pixel:p{${x},${y}}]`, 'info:'], {
-    encoding: 'utf8',
+function png(svg, width, height = width) {
+  const resvg = new Resvg(svg, {
+    fitTo: { mode: 'width', value: width },
+    font: { loadSystemFonts: true, defaultFontFamily: 'DejaVu Sans' },
   })
-  const match = /\(?([\d.]+)%?,\s*([\d.]+)%?,\s*([\d.]+)%?/.exec(value)
-  if (!match) throw new Error(`Could not read pixel ${x},${y}: ${value}`)
-
-  const percent = value.includes('%')
-  return match.slice(1, 4).map((n) => Math.round((Number(n) / (percent ? 100 : 255)) * 255))
+  const image = resvg.render()
+  if (image.height !== height)
+    throw new Error(`Expected ${width}x${height}, got ${image.width}x${image.height}`)
+  return image.asPng()
 }
-
-/**
- * Vertical extent of the artwork, as a fraction of the source canvas.
- *
- * Measured from the alpha of the centre column rather than with `-trim`: the
- * export carries faint near-transparent speckles in the corners, and trim treats
- * those as content, reporting a shape that fills almost the whole canvas.
- */
-function shapeExtent() {
-  const size = parseInt(execFileSync('identify', ['-format', '%h', SOURCE], { encoding: 'utf8' }), 10)
-  const middle = Math.round(size / 2)
-
-  const column = execFileSync(
-    'convert',
-    [SOURCE, '-alpha', 'extract', '-crop', `1x${size}+${middle}+0`, '+repage', '-depth', '8', 'txt:-'],
-    { encoding: 'utf8' },
-  )
-
-  const opaque = []
-  for (const line of column.split('\n').slice(1)) {
-    const match = /^0,(\d+):\s*\((\d+)/.exec(line)
-    if (match && Number(match[2]) > 250) opaque.push(Number(match[1]))
-  }
-  if (opaque.length === 0) throw new Error('The logo appears to be fully transparent')
-
-  const top = Math.min(...opaque)
-  const bottom = Math.max(...opaque)
-  return { top: top / size, bottom: (bottom + 1) / size, size, topPx: top, bottomPx: bottom }
-}
-
-function hex([r, g, b]) {
-  return `#${[r, g, b]
-    .map((n) =>
-      Math.max(0, Math.min(255, Math.round(n)))
-        .toString(16)
-        .padStart(2, '0'),
-    )
-    .join('')}`
-}
-
-/**
- * The logo on a full-bleed square, for maskable and iOS icons.
- *
- * Those platforms apply their own mask, so an icon that also has rounded corners
- * of its own is clipped twice and ends up visibly smaller than its neighbours.
- *
- * The corners are filled by *extending the logo's own gradient* rather than by
- * inventing a background. A gradient drawn across the canvas does not line up
- * with one drawn across the smaller rounded square, which leaves a seam at every
- * corner; extrapolating from the colours at the artwork's own top and bottom
- * edges continues the same line, so the join is invisible.
- *
- * The logo is inset to 80% so the glyph lands at roughly 41% of the canvas —
- * comfortably inside the 56% square that fits in Android's 80% safe circle.
- * Filling the frame edge to edge instead would push the glyph's corners out to
- * 98% and get them clipped.
- */
-const LOGO_INSET = 0.8
-
-function fullBleed(size, output, { opaque = false } = {}) {
-  const shape = shapeExtent()
-  const middle = Math.round(shape.size / 2)
-
-  const top = samplePixel(middle, shape.topPx + 3)
-  const bottom = samplePixel(middle, shape.bottomPx - 3)
-
-  // Where the artwork's own edges land once it is inset into the target canvas.
-  const inset = (1 - LOGO_INSET) / 2
-  const topAt = inset + shape.top * LOGO_INSET
-  const bottomAt = inset + shape.bottom * LOGO_INSET
-  const slope = top.map((c, i) => (bottom[i] - c) / (bottomAt - topAt))
-
-  const canvasTop = top.map((c, i) => c - slope[i] * topAt)
-  const canvasBottom = bottom.map((c, i) => c + slope[i] * (1 - bottomAt))
-
-  const inner = Math.round(size * LOGO_INSET)
-  const args = [
-    '-size',
-    `${size}x${size}`,
-    `gradient:${hex(canvasTop)}-${hex(canvasBottom)}`,
-    '(',
-    SOURCE,
-    '-resize',
-    `${inner}x${inner}`,
-    ')',
-    '-gravity',
-    'center',
-    '-composite',
-  ]
-  // iOS composites any transparency onto black, so that variant is flattened.
-  if (opaque) args.push('-background', hex(canvasTop), '-alpha', 'remove', '-alpha', 'off')
-  args.push('-strip', output)
-  run(args)
-}
-
-/**
- * The logo centred on transparency, for the foreground layer of an adaptive icon.
- *
- * Android masks that layer to its own shape and shifts it around while
- * animating, keeping only the inner 72 of 108 density-independent pixels
- * guaranteed visible, so the artwork is inset well inside the canvas instead of
- * filling it.
- */
-const ADAPTIVE_INSET = 0.6
-
-function adaptiveForeground(size, output) {
-  const inner = Math.round(size * ADAPTIVE_INSET)
-  run([
-    '-size',
-    `${size}x${size}`,
-    'xc:none',
-    '(',
-    SOURCE,
-    '-resize',
-    `${inner}x${inner}`,
-    ')',
-    '-gravity',
-    'center',
-    '-composite',
-    '-strip',
-    output,
-  ])
-}
-
-/** Multi-resolution favicon: browsers and OS shortcuts pick the size they need. */
-function favicon(output) {
-  run([SOURCE, '-strip', '-define', 'icon:auto-resize=48,32,16', output])
-}
-
-/** Renders text to its own image and reports the size, so nothing is guessed. */
-function renderText(text, font, pointsize, fill, output) {
-  run([
-    '-background',
-    'none',
-    '-font',
-    font,
-    '-pointsize',
-    String(pointsize),
-    '-fill',
-    fill,
-    `label:${text}`,
-    output,
-  ])
-  const [width, height] = execFileSync('identify', ['-format', '%w %h', output], { encoding: 'utf8' })
-    .split(' ')
-    .map(Number)
-  return { width, height }
-}
-
-/**
- * 1200x630 card for link previews, matching the app's dark surface.
- *
- * The wordmark and tagline are measured rather than positioned by eye: font
- * metrics differ between machines, and a hard-coded offset that fits here would
- * run off the edge somewhere else.
- */
-function socialCard(output) {
-  const font = findFont()
-  const logo = join(PUBLIC, '.og-logo.png')
-  const LOGO_SIZE = 260
-  const GAP = 44
-  const WIDTH = 1200
-  const HEIGHT = 630
-  const MARGIN = 80
-
-  transparent(LOGO_SIZE, logo)
-
-  if (!font) {
-    // No usable font: a centred logo still reads as a deliberate card.
-    run([
-      '-size',
-      `${WIDTH}x${HEIGHT}`,
-      `xc:${CARD_BACKGROUND}`,
-      '(',
-      logo,
-      '-resize',
-      '320x320',
-      ')',
-      '-gravity',
-      'center',
-      '-composite',
-      '-strip',
-      output,
-    ])
-    rmSync(logo, { force: true })
-    return false
-  }
-
-  const available = WIDTH - MARGIN * 2 - LOGO_SIZE - GAP
-  const wordmarkFile = join(PUBLIC, '.og-wordmark.png')
-  const taglineFile = join(PUBLIC, '.og-tagline.png')
-
-  const wordmark = renderText('Noter', font, 104, CARD_TEXT, wordmarkFile)
-
-  // Shrink the tagline until it fits beside the logo rather than truncating it.
-  let taglineSize = 36
-  let tagline = renderText(TAGLINE, font, taglineSize, CARD_MUTED, taglineFile)
-  while (tagline.width > available && taglineSize > 20) {
-    taglineSize -= 2
-    tagline = renderText(TAGLINE, font, taglineSize, CARD_MUTED, taglineFile)
-  }
-
-  const textWidth = Math.max(wordmark.width, tagline.width)
-  const blockWidth = LOGO_SIZE + GAP + textWidth
-  const left = Math.round((WIDTH - blockWidth) / 2)
-  const textLeft = left + LOGO_SIZE + GAP
-
-  // Vertically centre the logo, and the text block against it.
-  const logoTop = Math.round((HEIGHT - LOGO_SIZE) / 2)
-  const textHeight = wordmark.height + 12 + tagline.height
-  const textTop = Math.round((HEIGHT - textHeight) / 2)
-
-  run([
-    '-size',
-    `${WIDTH}x${HEIGHT}`,
-    `xc:${CARD_BACKGROUND}`,
-    '(',
-    logo,
-    ')',
-    '-geometry',
-    `+${left}+${logoTop}`,
-    '-composite',
-    '(',
-    wordmarkFile,
-    ')',
-    '-geometry',
-    `+${textLeft}+${textTop}`,
-    '-composite',
-    '(',
-    taglineFile,
-    ')',
-    '-geometry',
-    `+${textLeft}+${textTop + wordmark.height + 12}`,
-    '-composite',
-    '-strip',
-    output,
-  ])
-
-  for (const file of [logo, wordmarkFile, taglineFile]) rmSync(file, { force: true })
-  return true
-}
-
-// ---------------------------------------------------------------------------
-
-requireImageMagick()
-
-if (!existsSync(SOURCE)) {
-  console.error(`\n  Source logo not found: ${SOURCE}\n`)
-  process.exit(1)
-}
-
-mkdirSync(ICONS, { recursive: true })
 
 const outputs = []
+function write(file, data) {
+  mkdirSync(dirname(file), { recursive: true })
+  writeFileSync(file, data)
+  outputs.push(file)
+}
+
+/** An .ico holding PNG images, which every Windows since Vista reads. */
+function ico(sizes) {
+  const images = sizes.map((size) => png(logoSvg(), size))
+  const header = Buffer.alloc(6 + 16 * images.length)
+  header.writeUInt16LE(0, 0)
+  header.writeUInt16LE(1, 2)
+  header.writeUInt16LE(images.length, 4)
+  let offset = header.length
+  images.forEach((image, i) => {
+    const entry = 6 + i * 16
+    const size = sizes[i]
+    header.writeUInt8(size >= 256 ? 0 : size, entry)
+    header.writeUInt8(size >= 256 ? 0 : size, entry + 1)
+    header.writeUInt16LE(1, entry + 4)
+    header.writeUInt16LE(32, entry + 6)
+    header.writeUInt32LE(image.length, entry + 8)
+    header.writeUInt32LE(offset, entry + 12)
+    offset += image.length
+  })
+  return Buffer.concat([header, ...images])
+}
+
+function socialCard() {
+  const svg =
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630">` +
+    `<rect width="1200" height="630" fill="${CARD_BACKGROUND}"/>` +
+    `<g transform="translate(120 175) scale(0.273)">${logoSvg().replace(/^<svg[^>]*>|<\/svg>$/g, '')}</g>` +
+    `<text x="440" y="300" font-family="DejaVu Sans" font-weight="bold" font-size="112" fill="${CARD_TEXT}">Noter</text>` +
+    `<text x="444" y="380" font-family="DejaVu Sans" font-size="30" fill="${CARD_MUTED}">${TAGLINE}</text>` +
+    `</svg>`
+  return png(svg, 1200, 630)
+}
+
+// The editable source, for anyone who wants the vector.
+write(join(ROOT, 'assets/logo.svg'), logoSvg() + '\n')
+write(join(ROOT, 'assets/logo-1024.png'), png(logoSvg(), 1024))
 
 for (const size of [192, 512]) {
-  const file = join(ICONS, `icon-${size}.png`)
-  transparent(size, file)
-  outputs.push(file)
+  write(join(ICONS, `icon-${size}.png`), png(logoSvg(), size))
+  write(join(ICONS, `maskable-${size}.png`), png(fullBleedSvg(0.8), size))
 }
-
-for (const size of [192, 512]) {
-  const file = join(ICONS, `maskable-${size}.png`)
-  fullBleed(size, file)
-  outputs.push(file)
-}
-
-// iOS composites transparency onto black and applies its own mask, so this one
-// is opaque and full-bleed.
-const apple = join(ICONS, 'apple-touch-icon.png')
-fullBleed(180, apple, { opaque: true })
-outputs.push(apple)
-
-for (const size of [16, 32]) {
-  const file = join(ICONS, `favicon-${size}.png`)
-  transparent(size, file)
-  outputs.push(file)
-}
-
-// The brand mark in the sidebar. Rendered at 18px, so 64 covers hi-dpi screens
-// while staying a couple of kilobytes.
-const brand = join(ICONS, 'logo-64.png')
-transparent(64, brand)
-outputs.push(brand)
-
-const ico = join(PUBLIC, 'favicon.ico')
-favicon(ico)
-outputs.push(ico)
-
-const og = join(PUBLIC, 'og.png')
-const hasWordmark = socialCard(og)
-outputs.push(og)
+// iOS composites transparency onto black and applies its own mask.
+write(join(ICONS, 'apple-touch-icon.png'), png(fullBleedSvg(0.78), 180))
+for (const size of [16, 32]) write(join(ICONS, `favicon-${size}.png`), png(logoSvg(), size))
+write(join(ICONS, 'logo-64.png'), png(logoSvg(), 64))
+write(join(PUBLIC, 'favicon.ico'), ico([16, 32, 48]))
+write(join(PUBLIC, 'og.png'), socialCard())
 
 /**
- * Android launcher icons, for the shell in `android/`.
- *
- * Android 8 and later compose two layers of their own: the logo on
- * transparency over the gradient declared in `ic_launcher_gradient.xml`, which
- * continues the same colours the maskable icons use. `ic_launcher.png` is the
- * flat fallback for older launchers, and is full-bleed for the same reason the
- * maskable icons are.
+ * Android launcher icons. Android 8+ composes the glyph on transparency over
+ * the gradient in `ic_launcher_gradient.xml`; `ic_launcher.png` is the flat
+ * fallback for older launchers.
  */
 const ANDROID_RES = join(ROOT, 'android/app/src/main/res')
-
-// Density, legacy icon size, and the 108dp adaptive layer at that density.
 const ANDROID_DENSITIES = [
   ['mdpi', 48, 108],
   ['hdpi', 72, 162],
@@ -402,30 +120,76 @@ const ANDROID_DENSITIES = [
   ['xxhdpi', 144, 324],
   ['xxxhdpi', 192, 432],
 ]
-
 if (existsSync(ANDROID_RES)) {
   for (const [density, legacy, adaptive] of ANDROID_DENSITIES) {
     const dir = join(ANDROID_RES, `mipmap-${density}`)
-    mkdirSync(dir, { recursive: true })
-
-    const flat = join(dir, 'ic_launcher.png')
-    fullBleed(legacy, flat)
-    // Round launchers mask the same artwork; a separate file is only needed
-    // because the manifest points at both names.
-    const round = join(dir, 'ic_launcher_round.png')
-    fullBleed(legacy, round)
-
-    const foreground = join(dir, 'ic_launcher_foreground.png')
-    adaptiveForeground(adaptive, foreground)
-
-    outputs.push(flat, round, foreground)
+    write(join(dir, 'ic_launcher.png'), png(fullBleedSvg(0.8), legacy))
+    write(join(dir, 'ic_launcher_round.png'), png(fullBleedSvg(0.72), legacy))
+    write(join(dir, 'ic_launcher_foreground.png'), png(foregroundSvg(0.6), adaptive))
   }
+  write(
+    join(ANDROID_RES, 'drawable/ic_launcher_gradient.xml'),
+    `<?xml version="1.0" encoding="utf-8"?>
+<!-- Generated by scripts/gen-icons.mjs: the brand gradient behind the adaptive icon. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <gradient android:angle="270" android:startColor="${BRAND_TOP}" android:endColor="${BRAND_BOTTOM}" />
+</shape>
+`,
+  )
 }
 
-for (const file of outputs) {
-  console.log(`  ${file.slice(ROOT.length + 1)}`)
-}
+/** Microsoft Store (MSIX) visual assets referenced by the AppxManifest. */
+write(join(MSIX, 'Square44x44Logo.png'), png(logoSvg(), 44))
+write(join(MSIX, 'Square44x44Logo.targetsize-256_altform-unplated.png'), png(logoSvg(), 256))
+write(join(MSIX, 'Square150x150Logo.png'), png(wideSvg(150, 150, 104), 150))
+write(join(MSIX, 'Wide310x150Logo.png'), png(wideSvg(310, 150, 104), 310, 150))
+write(join(MSIX, 'StoreLogo.png'), png(logoSvg(), 50))
+write(join(MSIX, 'SplashScreen.png'), png(wideSvg(620, 300, 200), 620, 300))
 
-if (!hasWordmark) {
-  console.log('\n  No bold sans font found; the social card was generated without its wordmark.')
-}
+for (const file of outputs) console.log(`  ${file.slice(ROOT.length + 1)}`)
+
+/**
+ * The inline sidebar mark. Kept as a component (not an <img>) so it themes and
+ * never flashes; generated here so it cannot drift from the icons.
+ */
+const logoComponent = `<script lang="ts">
+  /**
+   * The Noter mark, inline so it themes and never flashes while an image loads.
+   * Generated from scripts/logo.mjs by scripts/gen-icons.mjs; edit the logo
+   * there, not here.
+   */
+  interface Props {
+    size?: number
+    /** 'color' is the full logo; 'mono' draws the glyph in currentColor. */
+    variant?: 'color' | 'mono'
+  }
+
+  let { size = 20, variant = 'color' }: Props = $props()
+  const id = \`logo-\${Math.random().toString(36).slice(2, 8)}\`
+</script>
+
+<svg class="logo logo--{variant}" width={size} height={size} viewBox="0 0 1024 1024" aria-hidden="true">
+  {#if variant === 'color'}
+    <defs>
+      <linearGradient {id} x1="0" y1="0" x2="0.35" y2="1">
+        <stop offset="0" stop-color="${BRAND_TOP}" />
+        <stop offset="1" stop-color="${BRAND_BOTTOM}" />
+      </linearGradient>
+    </defs>
+    <path d="${squirclePath(1024, 24)}" fill="url(#{id})" />
+  {/if}
+  ${glyph({ bar: 'var(--logo-bar, #fff)', dot: 'var(--logo-dot, #ffc857)' })}
+</svg>
+
+<style>
+  .logo {
+    flex: none;
+  }
+
+  .logo--mono {
+    --logo-bar: currentColor;
+    --logo-dot: var(--accent);
+  }
+</style>
+`
+write(join(ROOT, 'src/components/Logo.svelte'), logoComponent)

@@ -50,6 +50,7 @@ const fr: Messages = {
     deleteFolder: 'Supprimer le dossier',
     defaultFolderName: 'Nouveau dossier',
     encryptedFolder: 'Dossier chiffré',
+    rename: 'Renommer',
   },
 
   list: {
@@ -493,6 +494,13 @@ const fr: Messages = {
   },
 
   update: { ready: 'Une nouvelle version de Noter est prête. Recharger maintenant ?' },
+  menu: {
+    moveTo: 'Déplacer vers',
+    markTemplate: 'Utiliser comme modèle',
+    unmarkTemplate: 'Ne plus utiliser comme modèle',
+    showNotesTagged: 'Voir les notes marquées #{tag}',
+    searchTag: 'Rechercher avec ce tag',
+  },
 }
 
 export default fr

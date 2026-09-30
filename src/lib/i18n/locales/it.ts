@@ -50,6 +50,7 @@ const it: Messages = {
     deleteFolder: 'Elimina cartella',
     defaultFolderName: 'Nuova cartella',
     encryptedFolder: 'Cartella cifrata',
+    rename: 'Rinomina',
   },
 
   list: {
@@ -492,6 +493,13 @@ const it: Messages = {
   },
 
   update: { ready: 'È pronta una nuova versione di Noter. Ricaricare ora?' },
+  menu: {
+    moveTo: 'Sposta in',
+    markTemplate: 'Usa come modello',
+    unmarkTemplate: 'Non usare più come modello',
+    showNotesTagged: 'Mostra le note con #{tag}',
+    searchTag: 'Cerca con questo tag',
+  },
 }
 
 export default it

@@ -6,7 +6,6 @@
   import GalleryView from './GalleryView.svelte'
   import BoardView from './BoardView.svelte'
   import CodeView from './CodeView.svelte'
-  import Menu from './Menu.svelte'
   import Backlinks from './Backlinks.svelte'
   import Lazy from './Lazy.svelte'
   import type { MenuItem } from '$lib/ui-types'
@@ -22,13 +21,14 @@
   import UnlockPrompt from './UnlockPrompt.svelte'
   import type { ViewMode } from '$lib/db/schema'
   import { t } from '$lib/i18n/index.svelte'
+  import { menu } from '$lib/stores/menu.svelte'
+  import { dialogs } from '$lib/stores/dialogs.svelte'
+  import { noteMenuItems } from '$lib/menus/note'
+  import { contextmenu } from '$lib/ui/contextmenu'
 
   let note = $derived(notes.activeNote)
   let mode = $state<'edit' | 'read'>('edit')
-  let menu = $state<{ x: number; y: number; items: MenuItem[] } | null>(null)
   let dropActive = $state(false)
-  let historyOpen = $state(false)
-  let shareOpen = $state(false)
   /** Title as it was when the field gained focus, so renames can repoint links. */
   let titleBeforeEdit = ''
 
@@ -95,74 +95,42 @@
     append(note.id, await insertImages(files, 'file'))
   }
 
-  function openMenu(event: MouseEvent) {
-    if (!note) return
+  /** The note menu, plus what only the open note can do (it holds the plaintext). */
+  function menuItems(): MenuItem[] {
+    if (!note) return []
     const current = note
-    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect()
+    if (current.deletedAt) return noteMenuItems(current)
+    return noteMenuItems(current, {
+      extra: [
+        {
+          id: 'view',
+          label: t('note.view'),
+          icon: 'layout-grid',
+          separatorBefore: true,
+          submenu: VIEWS.map((view) => ({
+            id: view.id,
+            label: t(`note.views.${view.id}`),
+            icon: view.icon,
+            checked: current.view === view.id,
+            run: () => void notes.update(current.id, { view: view.id }),
+          })),
+        },
+        {
+          id: 'images',
+          label: t('note.menu.addImages'),
+          icon: 'image',
+          run: async () => append(current.id, await pickImages()),
+        },
+      ],
+    }).map((item) =>
+      item.id === 'share' && locked
+        ? { ...item, run: () => ui.toast(t('toast.unlockToShare'), 'warn') }
+        : item,
+    )
+  }
 
-    const viewItems: MenuItem[] = VIEWS.map((view, index) => ({
-      label: `${t(`note.views.${view.id}`)}${current.view === view.id ? ' ✓' : ''}`,
-      icon: view.icon,
-      separatorBefore: index === 0,
-      run: () => void notes.update(current.id, { view: view.id }),
-    }))
-
-    menu = {
-      x: rect.right - 200,
-      y: rect.bottom + 4,
-      items: current.deletedAt
-        ? [
-            { label: t('common.restore'), icon: 'restore', run: () => void notes.restore(current.id) },
-            {
-              label: t('note.menu.deleteForever'),
-              icon: 'trash',
-              danger: true,
-              separatorBefore: true,
-              run: () => void notes.deleteForever(current.id),
-            },
-          ]
-        : [
-            {
-              label: t(current.pinned ? 'note.menu.unpin' : 'note.menu.pin'),
-              icon: 'pin',
-              run: () => void notes.togglePin(current.id),
-            },
-            {
-              label: t(current.archivedAt ? 'note.menu.unarchive' : 'note.menu.archive'),
-              icon: 'archive',
-              run: () => void notes.setArchived(current.id, current.archivedAt === 0),
-            },
-            ...viewItems,
-            {
-              label: t('note.menu.addImages'),
-              icon: 'image',
-              separatorBefore: true,
-              run: async () => append(current.id, await pickImages()),
-            },
-            { label: t('note.menu.history'), icon: 'restore', run: () => (historyOpen = true) },
-            {
-              label: t('note.menu.share'),
-              icon: 'link',
-              run: () => {
-                if (locked) ui.toast(t('toast.unlockToShare'), 'warn')
-                else shareOpen = true
-              },
-            },
-            {
-              label: t('note.menu.trash'),
-              icon: 'trash',
-              danger: true,
-              separatorBefore: true,
-              run: () => {
-                void notes.trash(current.id)
-                ui.toast(t('toast.movedToTrash'), 'info', {
-                  label: t('toast.undo'),
-                  run: () => void notes.restore(current.id),
-                })
-              },
-            },
-          ],
-    }
+  function openMenu(event: MouseEvent) {
+    menu.open(menuItems(), event.currentTarget as HTMLElement, t('note.noteActions'))
   }
 </script>
 
@@ -183,7 +151,7 @@
 >
   {#if note}
     {@const current = note}
-    <header class="head">
+    <header class="head" use:contextmenu={menuItems}>
       {#if ui.narrow}
         <button
           class="btn btn--ghost btn--icon"
@@ -375,29 +343,25 @@
   {/if}
 </section>
 
-{#if menu}
-  <Menu items={menu.items} x={menu.x} y={menu.y} onclose={() => (menu = null)} />
-{/if}
-
-{#if historyOpen && note}
+{#if note && dialogs.is('history', note.id)}
   <Lazy
     load={() => import('./HistoryDialog.svelte')}
     props={{
       noteId: note.id,
       currentTitle: content?.title ?? note.title,
       currentBody: text,
-      onclose: () => (historyOpen = false),
+      onclose: () => dialogs.close(),
     }}
   />
 {/if}
 
-{#if shareOpen && note && !locked}
+{#if note && !locked && dialogs.is('share', note.id)}
   <Lazy
     load={() => import('./ShareDialog.svelte')}
     props={{
       note: { ...note, title: content?.title ?? note.title },
       body: text,
-      onclose: () => (shareOpen = false),
+      onclose: () => dialogs.close(),
     }}
   />
 {/if}

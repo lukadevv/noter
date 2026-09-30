@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Icon from './Icon.svelte'
+  import Dialog from './ui/Dialog.svelte'
   import { diffLines, diffSummary, listVersions } from '$lib/db/repo/versions'
   import { relativeTime } from '$lib/utils/dates'
   import { notes } from '$lib/stores/notes.svelte'
@@ -53,23 +53,7 @@
   }
 </script>
 
-<div class="backdrop" role="presentation" onpointerdown={onclose}></div>
-
-<div
-  class="dialog"
-  data-testid="history-dialog"
-  role="dialog"
-  aria-modal="true"
-  aria-label={t('history.title')}
->
-  <header class="head">
-    <Icon name="restore" size={16} />
-    <span class="title">{t('history.title')}</span>
-    <button class="btn btn--ghost btn--icon" aria-label={t('common.close')} onclick={onclose}>
-      <Icon name="x" size={15} />
-    </button>
-  </header>
-
+<Dialog label={t('history.title')} {onclose} size="lg" flush icon="restore" testid="history-dialog">
   <div class="body">
     <aside class="list">
       {#if loading}
@@ -128,33 +112,9 @@
       {t('history.restoreVersion')}
     </button>
   </footer>
-</div>
+</Dialog>
 
 <style>
-  .backdrop {
-    position: fixed;
-    inset: 0;
-    z-index: 52;
-    background: var(--overlay);
-  }
-
-  .dialog {
-    position: fixed;
-    z-index: 53;
-    inset: 50% auto auto 50%;
-    transform: translate(-50%, -50%);
-    width: min(96vw, 52rem);
-    height: min(86vh, 40rem);
-    display: flex;
-    flex-direction: column;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    background: var(--surface);
-    box-shadow: var(--shadow-2);
-    overflow: hidden;
-  }
-
-  .head,
   .foot {
     display: flex;
     align-items: center;
@@ -162,19 +122,10 @@
     padding: var(--space-2) var(--space-3);
   }
 
-  .head {
-    border-bottom: 1px solid var(--border);
-  }
-
   .foot {
     border-top: 1px solid var(--border);
     font-size: 12px;
     flex-wrap: wrap;
-  }
-
-  .title {
-    flex: 1;
-    font-weight: 650;
   }
 
   .spacer {

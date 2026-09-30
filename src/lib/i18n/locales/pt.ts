@@ -50,6 +50,7 @@ const pt: Messages = {
     deleteFolder: 'Excluir pasta',
     defaultFolderName: 'Nova pasta',
     encryptedFolder: 'Pasta criptografada',
+    rename: 'Renomear',
   },
 
   list: {
@@ -488,6 +489,13 @@ const pt: Messages = {
   },
 
   update: { ready: 'Uma nova versão do Noter está pronta. Recarregar agora?' },
+  menu: {
+    moveTo: 'Mover para',
+    markTemplate: 'Usar como modelo',
+    unmarkTemplate: 'Deixar de usar como modelo',
+    showNotesTagged: 'Ver notas com #{tag}',
+    searchTag: 'Pesquisar com esta etiqueta',
+  },
 }
 
 export default pt
