@@ -1,5 +1,6 @@
 import { db } from '../db'
 import type { MotionSetting } from '$lib/ui/motion.svelte'
+export type { Sound } from '../schema'
 
 export type Density = 'compact' | 'cozy' | 'comfortable'
 export type FontChoice = 'system' | 'sans' | 'serif' | 'mono'
@@ -11,6 +12,16 @@ export interface DailyNoteSettings {
   /** Date pattern for the note title, e.g. 'YYYY-MM-DD'. */
   titleFormat: string
   templateId: string | null
+}
+
+export interface TimerSettings {
+  /** 0–1, applied on top of each sound's own volume. */
+  volume: number
+  /** How long an alarm keeps ringing before it goes quiet, in seconds. */
+  ringSeconds: number
+  defaultSoundId: string
+  /** Default presets are created once; deleting them all must not bring them back. */
+  seeded: boolean
 }
 
 export interface AppSettings {
@@ -31,6 +42,9 @@ export interface AppSettings {
   sidebarCollapsed: boolean
   /** What opening the app shows first. */
   startSection: 'home' | 'notes'
+  timers: TimerSettings
+  /** Show a system notification when a timer or a dose is due. */
+  notifications: boolean
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
@@ -53,6 +67,8 @@ export const DEFAULT_SETTINGS: AppSettings = {
   listWidth: 320,
   sidebarCollapsed: false,
   startSection: 'home',
+  timers: { volume: 0.8, ringSeconds: 60, defaultSoundId: 'classic', seeded: false },
+  notifications: true,
 }
 
 const KEY = 'app'

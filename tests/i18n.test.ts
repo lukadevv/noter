@@ -174,6 +174,9 @@ describe('catalogues', () => {
           'app.name',
           'settings.daily.formatTokens',
           'icons.emoji',
+          'timers.quickPlaceholder',
+          // The French word is spelled the same.
+          'settings.sections.notifications',
           'settings.about.version',
         ])
         const identical = [...english.entries()].filter(

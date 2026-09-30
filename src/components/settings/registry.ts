@@ -52,6 +52,20 @@ export const SETTINGS_SECTIONS: SettingsSectionEntry[] = [
     load: () => import('./DailySettings.svelte'),
   },
   {
+    id: 'timers',
+    icon: 'timer',
+    label: 'settings.sections.timers',
+    keywords: ['settings.timers.alarm', 'settings.timers.customSounds', 'settings.timers.defaultSound'],
+    load: () => import('./TimerSettings.svelte'),
+  },
+  {
+    id: 'notifications',
+    icon: 'bell',
+    label: 'settings.sections.notifications',
+    keywords: ['settings.notifications.enable'],
+    load: () => import('./NotificationSettings.svelte'),
+  },
+  {
     id: 'backup',
     icon: 'archive',
     label: 'settings.sections.backup',

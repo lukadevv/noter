@@ -1,5 +1,6 @@
 import { migrateBodyForView, needsMigration } from '$lib/md/migrate'
 import { deflateSync, inflateSync } from 'fflate'
+import type { Table } from 'dexie'
 import { db } from '$lib/db/db'
 import type { Asset, Folder, Note, SmartFolder, Theme, Version } from '$lib/db/schema'
 import { deriveKey, decryptBytes, encryptBytes, newKdfParams, type KdfParams } from '$lib/crypto/vault'
@@ -26,7 +27,11 @@ import { loadSettings, saveSettings, type AppSettings } from '$lib/db/repo/setti
  */
 
 const MAGIC = new Uint8Array([0x4e, 0x4f, 0x54, 0x45, 0x52]) // "NOTER"
-const FORMAT_VERSION = 1
+/**
+ * 2: adds `extra`, the tables registered in BACKUP_TABLES (timers, medication,
+ * the secrets vault, activity). Version 1 files still import.
+ */
+const FORMAT_VERSION = 2
 const FLAG_ENCRYPTED = 0x01
 
 export interface VaultHeader {
@@ -53,7 +58,29 @@ interface Manifest {
   versions: Version[]
   settings: AppSettings
   assets: AssetRecord[]
+  /** Tables added after format 1, by table name. Absent in version 1 files. */
+  extra?: Record<string, unknown[]>
 }
+
+/**
+ * Tables that travel in a backup beyond the original seven.
+ *
+ * Registering a table here is all a feature needs to do to be backed up and
+ * restored. `merge` decides what a merge import does when a record exists on
+ * both sides: keep the newer `updatedAt`, or let the backup win. Tables a file
+ * carries but this build does not know are ignored, so an older build can
+ * still read a newer backup's notes. Running timers are deliberately absent:
+ * a countdown restored on another machine hours later means nothing.
+ */
+/** A registered table by name. Read as a property (not `db.table()`) so tests can swap it. */
+function tableOf(name: string): Table<Record<string, unknown>, string> {
+  return (db as unknown as Record<string, Table<Record<string, unknown>, string>>)[name]!
+}
+
+export const BACKUP_TABLES: { name: string; merge: 'newer' | 'put' }[] = [
+  { name: 'timerPresets', merge: 'newer' },
+  { name: 'sounds', merge: 'newer' },
+]
 
 function concat(parts: Uint8Array[]): Uint8Array<ArrayBuffer> {
   const total = parts.reduce((sum, part) => sum + part.length, 0)
@@ -99,6 +126,9 @@ async function buildBody(): Promise<{ body: Uint8Array; counts: VaultHeader['cou
     assetRecords.push({ ...rest, blobBytes: blob.length, thumbBytes: thumb.length })
   }
 
+  const extra: Record<string, unknown[]> = {}
+  for (const { name } of BACKUP_TABLES) extra[name] = await tableOf(name).toArray()
+
   const manifest: Manifest = {
     notes,
     folders,
@@ -107,6 +137,7 @@ async function buildBody(): Promise<{ body: Uint8Array; counts: VaultHeader['cou
     versions,
     settings,
     assets: assetRecords,
+    extra,
   }
 
   const json = new TextEncoder().encode(JSON.stringify(manifest))
@@ -256,9 +287,11 @@ export async function importVault(
 
   const result: ImportResult = { notes: 0, folders: 0, assets: 0, skipped: 0 }
 
+  const extraTables = BACKUP_TABLES.map(({ name }) => tableOf(name))
+
   await db.transaction(
     'rw',
-    [db.notes, db.folders, db.smartFolders, db.themes, db.versions, db.assets, db.settings],
+    [db.notes, db.folders, db.smartFolders, db.themes, db.versions, db.assets, db.settings, ...extraTables],
     async () => {
       if (mode === 'replace') {
         await Promise.all([
@@ -268,6 +301,7 @@ export async function importVault(
           db.themes.clear(),
           db.versions.clear(),
           db.assets.clear(),
+          ...extraTables.map((table) => table.clear()),
         ])
       }
 
@@ -329,6 +363,19 @@ export async function importVault(
             ? { ...version, body: migrateBodyForView(owner.view, version.body, owner.lang) }
             : version,
         )
+      }
+
+      for (const { name, merge } of BACKUP_TABLES) {
+        const table = tableOf(name)
+        const primaryKey = table.schema.primKey.keyPath as string
+        for (const record of (manifest.extra?.[name] ?? []) as Record<string, unknown>[]) {
+          if (mode === 'merge' && merge === 'newer') {
+            const existing = (await table.get(record[primaryKey] as string)) as
+              { updatedAt?: number } | undefined
+            if (existing && (existing.updatedAt ?? 0) >= ((record.updatedAt as number) ?? 0)) continue
+          }
+          await table.put(record)
+        }
       }
 
       if (mode === 'replace' && manifest.settings) await saveSettings(manifest.settings)

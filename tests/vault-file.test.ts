@@ -161,3 +161,47 @@ describe('vault file', () => {
     expect(await db.notes.get(stray.id)).toBeUndefined()
   })
 })
+
+describe('vault file, format 2 tables', () => {
+  beforeEach(async () => {
+    await useFreshDb('noter-vault-extra')
+  })
+
+  it('carries timer presets and custom sounds through a round trip', async () => {
+    await db.timerPresets.add({
+      id: 'p1',
+      label: 'Oven',
+      seconds: 600,
+      soundId: 'bell',
+      color: null,
+      repeat: 0,
+      order: 1,
+      createdAt: 1,
+      updatedAt: 1,
+    })
+    const file = await exportVault()
+    await db.timerPresets.clear()
+
+    await importVault(file, 'merge')
+    expect(await db.timerPresets.get('p1')).toMatchObject({ label: 'Oven', seconds: 600 })
+  })
+
+  it('does not back up running timers', async () => {
+    await db.timers.add({
+      id: 't1',
+      presetId: null,
+      label: 'Eggs',
+      seconds: 300,
+      endAt: Date.now() + 1000,
+      pausedRemaining: null,
+      soundId: 'classic',
+      repeat: 0,
+      firedAt: 0,
+      createdAt: 1,
+    })
+    const file = await exportVault()
+    await db.timers.clear()
+    await importVault(file, 'replace')
+    expect(await db.timers.count()).toBe(0)
+  })
+})

@@ -16,4 +16,5 @@ export interface SectionEntry {
 export const SECTIONS: SectionEntry[] = [
   { id: 'home', icon: 'house', label: 'nav.home', shortcut: 'Mod+1' },
   { id: 'notes', icon: 'notebook', label: 'nav.notes', shortcut: 'Mod+2' },
+  { id: 'timers', icon: 'timer', label: 'nav.timers', shortcut: 'Mod+3' },
 ]

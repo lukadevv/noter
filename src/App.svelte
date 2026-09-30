@@ -36,6 +36,8 @@
   import { FolderLockedError } from '$lib/crypto/keyring.svelte'
 
   let paletteOpen = $state(false)
+  /** The reminder engine has loaded, so the ringing dialog can be mounted. */
+  let remindersReady = $state(false)
   /** The daily note the user is currently looking at, if any. */
   let openDailyId: string | null = null
   /** Non-null while a shared link is open, which replaces the whole shell. */
@@ -97,6 +99,15 @@
     })
     applyRoute(currentRoute())
     void requestPersistence()
+    // Timers ring from any section, so their engine starts with the app — but
+    // at idle, after the first paint, and from its own chunk.
+    const idle = window.requestIdleCallback ?? ((fn: () => void) => setTimeout(fn, 800))
+    idle(() => {
+      void import('$lib/timers/store.svelte').then(({ timers }) => {
+        timers.start()
+        remindersReady = true
+      })
+    })
     void maybeRunScheduledBackup()
     void purgeExpiredTrash().then(async (count) => {
       if (count > 0) ui.toast(t('toast.trashPurged', { count }), 'info')
@@ -348,6 +359,10 @@
               >
                 {#snippet fallback()}<Skeleton rows={6} />{/snippet}
               </Lazy>
+            {:else if ui.section === 'timers'}
+              <Lazy load={() => import('$components/sections/Timers.svelte')}>
+                {#snippet fallback()}<Skeleton rows={6} />{/snippet}
+              </Lazy>
             {:else if ui.section === 'settings'}
               <Lazy load={() => import('$components/settings/SettingsPage.svelte')}>
                 {#snippet fallback()}<Skeleton rows={6} />{/snippet}
@@ -387,6 +402,11 @@
       props={{ folder, onclose: () => dialogs.close() }}
     />
   {/if}
+{/if}
+
+{#if remindersReady}
+  <!-- Rings over any section; loaded once the reminder engine is up. -->
+  <Lazy load={() => import('$components/timers/RingingDialog.svelte')} />
 {/if}
 
 <ContextMenu />

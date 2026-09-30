@@ -173,3 +173,62 @@ export function now(): number {
 export function flag(value: boolean): Flag {
   return value ? 1 : 0
 }
+
+// --- Timers ------------------------------------------------------------------
+
+/** A synthesised alarm sound: a short note pattern played on an oscillator. */
+export interface SoundRecipe {
+  wave: 'sine' | 'square' | 'triangle' | 'sawtooth'
+  /** Pitches in Hz, played in turn; 0 is a rest. */
+  notes: number[]
+  /** Length of each note, ms. */
+  noteMs: number
+  /** Silence after the whole pattern before it repeats, ms. */
+  gapMs: number
+  /** 0–1. Multiplied by the global alarm volume. */
+  volume: number
+  /** A soft attack and a longer release make a bell; short ones make a beep. */
+  attackMs: number
+  releaseMs: number
+}
+
+export interface Sound {
+  id: string
+  name: string
+  recipe: SoundRecipe
+  createdAt: number
+  updatedAt: number
+}
+
+/** A timer you start with one tap: "Oven, 10 min". */
+export interface TimerPreset {
+  id: string
+  label: string
+  seconds: number
+  /** A built-in sound id ('classic', 'bell'…) or a custom Sound id. */
+  soundId: string
+  color: string | null
+  /** Starts again by itself when it rings, e.g. "stand up every 45 minutes". */
+  repeat: Flag
+  order: number
+  createdAt: number
+  updatedAt: number
+}
+
+/** A timer that is counting down (or paused, or ringing). */
+export interface RunningTimer {
+  id: string
+  presetId: string | null
+  label: string
+  /** The full duration, for the progress ring. */
+  seconds: number
+  /** When it rings, as a timestamp; 0 while paused. */
+  endAt: number
+  /** Milliseconds left while paused; null while running. */
+  pausedRemaining: number | null
+  soundId: string
+  repeat: Flag
+  /** When it rang, 0 until then. Claimed in a transaction so only one tab rings. */
+  firedAt: number
+  createdAt: number
+}

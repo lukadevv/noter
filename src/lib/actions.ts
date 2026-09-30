@@ -192,6 +192,14 @@ export function buildActions(open: { settings: () => void; daily: () => void }):
       run: () => goTo('home'),
     },
     {
+      id: 'go.timers',
+      label: t('actions.goTimers'),
+      icon: 'timer',
+      hint: 'Mod+3',
+      group: 'Go',
+      run: () => goTo('timers'),
+    },
+    {
       id: 'note.lock',
       label: t('actions.toggleLock'),
       icon: 'lock-keyhole',

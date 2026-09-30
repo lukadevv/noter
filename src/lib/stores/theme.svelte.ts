@@ -33,6 +33,10 @@ class ThemeStore {
 
   #themeSub: Subscription | null = null
 
+  #resolveReady: () => void = () => {}
+  /** Resolves once the stored settings have been read (not just the defaults). */
+  ready: Promise<void> = new Promise((resolve) => (this.#resolveReady = resolve))
+
   #persist = debounce(() => {
     void saveSettings($state.snapshot(this.settings))
   }, 300)
@@ -68,6 +72,7 @@ class ThemeStore {
         this.applyThemeId(this.settings.themeId, false)
     })
     this.applyAll()
+    this.#resolveReady()
   }
 
   stop(): void {

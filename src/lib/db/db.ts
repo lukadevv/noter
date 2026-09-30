@@ -1,6 +1,17 @@
 import Dexie, { type Table } from 'dexie'
 import { migrateBodyForView, needsMigration } from '$lib/md/migrate'
-import type { Asset, Folder, Note, Setting, SmartFolder, Theme, Version } from './schema'
+import type {
+  Asset,
+  Folder,
+  Note,
+  RunningTimer,
+  Setting,
+  SmartFolder,
+  Sound,
+  Theme,
+  TimerPreset,
+  Version,
+} from './schema'
 
 /**
  * Schema versions are append-only: never edit a past `.version()` block, add a
@@ -14,6 +25,9 @@ export class NoterDB extends Dexie {
   smartFolders!: Table<SmartFolder, string>
   themes!: Table<Theme, string>
   settings!: Table<Setting, string>
+  timerPresets!: Table<TimerPreset, string>
+  timers!: Table<RunningTimer, string>
+  sounds!: Table<Sound, string>
 
   constructor(name = 'noter') {
     super(name)
@@ -60,6 +74,13 @@ export class NoterDB extends Dexie {
             version.body = migrateBodyForView(source.view, version.body, source.lang)
           })
       })
+
+    // v3: timers, their presets and custom alarm sounds.
+    this.version(3).stores({
+      timerPresets: 'id, order',
+      timers: 'id, endAt, firedAt',
+      sounds: 'id',
+    })
   }
 }
 

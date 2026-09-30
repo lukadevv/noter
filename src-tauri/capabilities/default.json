@@ -3,5 +3,5 @@
   "identifier": "default",
   "description": "What the Noter window is allowed to ask the Rust side for.",
   "windows": ["main"],
-  "permissions": ["core:default", "dialog:default"]
+  "permissions": ["core:default", "dialog:default", "notification:default"]
 }
