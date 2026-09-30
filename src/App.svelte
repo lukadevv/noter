@@ -1,7 +1,8 @@
 <script lang="ts">
-  import Sidebar from '$components/Sidebar.svelte'
-  import NoteList from '$components/NoteList.svelte'
-  import NoteView from '$components/NoteView.svelte'
+  import NotesShell from '$components/shell/NotesShell.svelte'
+  import NavRail from '$components/shell/NavRail.svelte'
+  import BottomBar from '$components/shell/BottomBar.svelte'
+  import Skeleton from '$components/ui/Skeleton.svelte'
   import Toasts from '$components/Toasts.svelte'
   import Lightbox from '$components/Lightbox.svelte'
   import Lazy from '$components/Lazy.svelte'
@@ -9,8 +10,18 @@
   import { dialogs } from '$lib/stores/dialogs.svelte'
   import { notes } from '$lib/stores/notes.svelte'
   import { theme } from '$lib/stores/theme.svelte'
+  import { SECTIONS } from '$lib/sections'
   import { ui } from '$lib/stores/ui.svelte'
-  import { currentRoute, onRouteChange, replaceRoute, type Route } from './routes/router'
+  import {
+    ALL_NOTES,
+    currentRoute,
+    onRouteChange,
+    replaceRoute,
+    sectionOf,
+    type Route,
+  } from './routes/router'
+  import { goTo, openSettings } from '$lib/nav'
+  import { fadeIn } from '$lib/ui/motion.svelte'
   import { snapshot } from '$lib/db/repo/versions'
   import { purgeExpiredTrash } from '$lib/db/repo/notes'
   import * as notesRepo from '$lib/db/repo/notes'
@@ -24,7 +35,6 @@
   import { hexToOklch } from '$lib/theme/oklch'
   import { FolderLockedError } from '$lib/crypto/keyring.svelte'
 
-  let settingsOpen = $state(false)
   let paletteOpen = $state(false)
   /** The daily note the user is currently looking at, if any. */
   let openDailyId: string | null = null
@@ -36,6 +46,8 @@
   function applyRoute(route: Route) {
     applyingRoute = true
     if (route.kind !== 'share') sharedPayload = null
+    const section = sectionOf(route)
+    if (section) ui.section = section
     switch (route.kind) {
       case 'notes':
         notes.setScope({ kind: 'folder', id: route.folderId })
@@ -62,7 +74,8 @@
         notes.select(route.noteId)
         break
       case 'settings':
-        settingsOpen = true
+        ui.section = 'settings'
+        ui.settingsSection = route.section
         break
       case 'share':
         sharedPayload = route.payload
@@ -76,7 +89,12 @@
     const stopViewport = ui.watchViewport()
     const stopRoute = onRouteChange(applyRoute)
 
-    void theme.load()
+    // Opening the app with no address shows the start section the user chose.
+    // Settings are loaded first so that choice is known before the first route.
+    void theme.load().then(() => {
+      if (!location.hash && theme.settings.startSection === 'notes') replaceRoute(ALL_NOTES)
+      applyRoute(currentRoute())
+    })
     applyRoute(currentRoute())
     void requestPersistence()
     void maybeRunScheduledBackup()
@@ -116,12 +134,13 @@
     if (!settings.enabled) {
       ui.toast(t('toast.dailyOff'), 'info', {
         label: t('sidebar.settings'),
-        run: () => (settingsOpen = true),
+        run: () => openSettings('daily'),
       })
       return
     }
     const note = await notes.openDaily(todayKey(), settings)
     openDailyId = note.id
+    goTo('notes')
     if (ui.narrow) ui.showPane('note')
   }
 
@@ -161,7 +180,9 @@
   $effect(() => {
     const scope = notes.scope
     const noteId = notes.selectedNoteId
-    if (applyingRoute || sharedPayload) return
+    // Only while the notes are on screen: elsewhere this would drag the
+    // address back to a notes route and throw the user out of their section.
+    if (applyingRoute || sharedPayload || ui.section !== 'notes') return
     switch (scope.kind) {
       case 'folder':
         replaceRoute({ kind: 'notes', folderId: scope.id, noteId })
@@ -234,12 +255,25 @@
     }
     if (meta && key === 'n' && !event.shiftKey) {
       event.preventDefault()
-      void notes.newNote()
+      void newNote()
       return
     }
     if (meta && key === ',') {
       event.preventDefault()
-      settingsOpen = true
+      openSettings()
+      return
+    }
+    if (meta && key === '\\') {
+      event.preventDefault()
+      theme.update({ sidebarCollapsed: !theme.settings.sidebarCollapsed })
+      return
+    }
+    if (meta && !event.shiftKey && !event.altKey && /^[1-9]$/.test(event.key)) {
+      const entry = SECTIONS[Number(event.key) - 1]
+      if (entry) {
+        event.preventDefault()
+        goTo(entry.id)
+      }
       return
     }
     if (meta && event.shiftKey && key === 'd') {
@@ -251,14 +285,18 @@
       event.preventDefault()
       void notes.openScratchpad().then((note) => {
         notes.select(note.id)
+        goTo('notes')
         if (ui.narrow) ui.showPane('note')
       })
       return
     }
-    if (event.key === 'Escape') {
-      if (paletteOpen) paletteOpen = false
-      else if (settingsOpen) settingsOpen = false
-    }
+    if (event.key === 'Escape' && paletteOpen) paletteOpen = false
+  }
+
+  /** New notes always land in the notes section, wherever they were started from. */
+  async function newNote() {
+    await notes.newNote()
+    if (ui.narrow) ui.showPane('note')
   }
 </script>
 
@@ -284,22 +322,45 @@
   <!-- Reading a shared link is a rare path, so its decoder is fetched on demand. -->
   <Lazy load={() => import('$components/SharedNote.svelte')} props={{ payload: sharedPayload }} />
 {:else}
-  <div
-    class="shell"
-    data-testid="app-shell"
-    class:shell--narrow={ui.narrow}
-    data-pane={ui.pane}
-    style="--sidebar-w: {theme.settings.sidebarWidth}px; --list-w: {theme.settings.listWidth}px"
-  >
-    <div class="pane pane--folders">
-      <Sidebar onopensettings={() => (settingsOpen = true)} onopenpalette={() => (paletteOpen = true)} />
-    </div>
-    <div class="pane pane--list">
-      <NoteList />
-    </div>
-    <div class="pane pane--note">
-      <NoteView />
-    </div>
+  <div class="app" class:app--narrow={ui.narrow} data-testid="app-shell">
+    {#if !ui.narrow}
+      <NavRail onsearch={() => (paletteOpen = true)} />
+    {/if}
+
+    <main class="content">
+      <!-- The notes stay mounted while other sections are open, so the editor
+           keeps its cursor, scroll and undo history across a trip to Home. -->
+      <div class="section" class:section--hidden={ui.section !== 'notes'} inert={ui.section !== 'notes'}>
+        <NotesShell onopenpalette={() => (paletteOpen = true)} />
+      </div>
+
+      {#key ui.section}
+        {#if ui.section !== 'notes'}
+          <div class="section section--scroll" in:fadeIn={{ duration: 140 }}>
+            {#if ui.section === 'home'}
+              <Lazy
+                load={() => import('$components/sections/Home.svelte')}
+                props={{
+                  onnewnote: () => void newNote(),
+                  ontoday: () => void openToday(),
+                  onsearch: () => (paletteOpen = true),
+                }}
+              >
+                {#snippet fallback()}<Skeleton rows={6} />{/snippet}
+              </Lazy>
+            {:else if ui.section === 'settings'}
+              <Lazy load={() => import('$components/settings/SettingsPage.svelte')}>
+                {#snippet fallback()}<Skeleton rows={6} />{/snippet}
+              </Lazy>
+            {/if}
+          </div>
+        {/if}
+      {/key}
+    </main>
+
+    {#if ui.narrow && !(ui.section === 'notes' && ui.pane === 'note')}
+      <BottomBar />
+    {/if}
   </div>
 {/if}
 
@@ -308,16 +369,9 @@
     load={() => import('$components/Palette.svelte')}
     props={{
       onclose: () => (paletteOpen = false),
-      onsettings: () => (settingsOpen = true),
+      onsettings: () => openSettings(),
       ondaily: () => void openToday(),
     }}
-  />
-{/if}
-
-{#if settingsOpen}
-  <Lazy
-    load={() => import('$components/Settings.svelte')}
-    props={{ onclose: () => (settingsOpen = false) }}
   />
 {/if}
 
@@ -340,30 +394,35 @@
 <Toasts />
 
 <style>
-  .shell {
+  .app {
     display: grid;
-    grid-template-columns: var(--sidebar-w) var(--list-w) minmax(0, 1fr);
+    grid-template-columns: auto minmax(0, 1fr);
     height: 100dvh;
     overflow: hidden;
   }
 
-  .pane {
+  .app--narrow {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto;
+  }
+
+  .content {
+    position: relative;
     min-width: 0;
     min-height: 0;
   }
 
-  /* Narrow layout: one pane at a time, driven by ui.pane. */
-  .shell--narrow {
-    grid-template-columns: 1fr;
+  .section {
+    position: absolute;
+    inset: 0;
   }
 
-  .shell--narrow .pane {
-    display: none;
+  .section--hidden {
+    visibility: hidden;
   }
 
-  .shell--narrow[data-pane='folders'] .pane--folders,
-  .shell--narrow[data-pane='list'] .pane--list,
-  .shell--narrow[data-pane='note'] .pane--note {
-    display: block;
+  .section--scroll {
+    overflow-y: auto;
+    background: var(--bg);
   }
 </style>

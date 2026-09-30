@@ -21,6 +21,7 @@ const ko: Messages = {
     minutesAgo: '{count}분 전',
     hoursAgo: '{count}시간 전',
     daysAgo: '{count}일 전',
+    back: '뒤로',
   },
 
   sidebar: {
@@ -221,6 +222,7 @@ const ko: Messages = {
       formatTokens: 'YYYY, MM, DD, MMM, MMMM, DDD, DDDD',
       template: '서식',
       shortcut: '{shortcut} 로 오늘의 노트를 엽니다.',
+      shortcutLabel: '오늘 노트 열기 단축키',
     },
 
     storage: {
@@ -239,15 +241,15 @@ const ko: Messages = {
     backup: {
       title: '백업과 이전',
       about:
-        'Vault 파일은 노트·폴더·이미지·테마·설정을 하나의 파일에 담아 컴퓨터 사이를 옮길 때 씁니다. Markdown 압축본은 읽을 수 있는 .md 파일들의 zip으로, 어떤 편집기에서도 열립니다.',
+        '.noter 백업은 노트, 폴더, 이미지, 테마, 설정을 모두 파일 하나에 담아 다른 컴퓨터로 옮길 수 있게 합니다. Markdown 압축 파일은 어떤 편집기로도 열 수 있는 .md 파일 묶음입니다.',
       stale: '마지막 백업이 {count}일 전입니다.',
-      passphrase: 'Vault 암호문 (선택)',
+      passphrase: '암호로 암호화(선택)',
       passphrasePlaceholder: '비워 두면 암호화하지 않은 파일이 됩니다',
       passphraseHint:
         '암호문을 넣으면 파일이 AES-GCM으로 암호화됩니다. 넣지 않아도 이진 파일로 압축되지만, 그것은 난독화이지 보안이 아닙니다.',
-      exportVault: 'Vault 내보내기',
+      exportVault: '.noter 백업 내보내기',
       preparing: '준비 중…',
-      importVault: 'Vault 가져오기…',
+      importVault: '.noter 백업 가져오기…',
       exportMarkdown: 'Markdown zip 내보내기',
       importMarkdown: 'Markdown zip 가져오기…',
       restoreTitle: '이 백업을 복원할까요?',
@@ -276,7 +278,49 @@ const ko: Messages = {
       lastBackup: '마지막 백업: {date}',
       never: '아직 백업이 없습니다.',
       unsupported:
-        '이 브라우저는 폴더에 직접 쓸 수 없습니다 (Chrome과 Edge만 지원). 위의 「Vault 내보내기」로 파일을 안전한 곳에 보관하세요. 백업이 2주를 넘으면 여기에 알림이 표시됩니다.',
+        '이 브라우저는 폴더에 직접 쓸 수 없습니다(Chrome과 Edge만 지원). 위에서 .noter 백업을 내보내 안전한 곳에 보관하세요. 백업이 2주보다 오래되면 여기에 알림이 표시됩니다.',
+    },
+    sections: {
+      general: '일반',
+      appearance: '모양',
+      editor: '편집기',
+      daily: '데일리 노트',
+      backup: '백업',
+      storage: '저장 공간',
+      about: '정보',
+    },
+    search: '설정 검색',
+    noResults: '일치하는 설정이 없습니다.',
+    startSection: '시작 화면',
+    startSectionHint: '앱을 열 때 처음 보이는 화면입니다.',
+    layout: '레이아웃과 글꼴',
+    motion: '애니메이션',
+    motionHint:
+      '요소가 어디서 나타나는지 보여 주는 짧고 가벼운 전환입니다. ‘시스템’은 기기의 동작 줄이기 설정을 따릅니다.',
+    motions: {
+      system: '시스템',
+      full: '전체',
+      reduced: '줄임',
+      off: '끔',
+    },
+    editorTextSizeLabel: '편집기 글자 크기',
+    about: {
+      version: '버전 {version}',
+      privacy: '개인정보',
+      privacySummary: '모든 데이터는 이 기기에만 저장됩니다. 계정도 서버도 없고, 앱에서 추적하지 않습니다.',
+      privacyPolicy: '개인정보 처리방침',
+      source: '소스 코드',
+      license: '라이선스',
+      shortcuts: '키보드 단축키',
+      keys: {
+        palette: '검색 및 명령',
+        home: '홈으로 이동',
+        notes: '노트로 이동',
+        sidebar: '폴더 표시/숨기기',
+        reorder: '폴더 위/아래로 이동',
+        rename: '폴더 이름 바꾸기',
+        menu: '컨텍스트 메뉴 열기',
+      },
     },
   },
 
@@ -457,6 +501,28 @@ const ko: Messages = {
     unmarkTemplate: '템플릿 사용 중지',
     showNotesTagged: '#{tag} 태그 노트 보기',
     searchTag: '이 태그로 검색',
+  },
+  nav: {
+    main: '주 탐색',
+    home: '홈',
+    notes: '노트',
+    search: '검색',
+    alerts: { other: '알림 {count}개' },
+    resizeSidebar: '폴더 사이드바 크기 조절',
+    resizeList: '노트 목록 크기 조절',
+    collapseSidebar: '폴더 숨기기',
+    expandSidebar: '폴더 표시',
+  },
+  home: {
+    greeting: {
+      night: '아직 안 주무세요?',
+      morning: '좋은 아침이에요',
+      afternoon: '좋은 오후예요',
+      evening: '좋은 저녁이에요',
+    },
+    alerts: '확인 필요',
+    recent: '최근 노트',
+    noNotes: '아직 작성한 내용이 없습니다. 새 노트로 시작하세요.',
   },
 }
 

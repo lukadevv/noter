@@ -21,6 +21,7 @@ const ja: Messages = {
     minutesAgo: '{count} 分前',
     hoursAgo: '{count} 時間前',
     daysAgo: '{count} 日前',
+    back: '戻る',
   },
 
   sidebar: {
@@ -234,6 +235,7 @@ const ja: Messages = {
       formatTokens: 'YYYY, MM, DD, MMM, MMMM, DDD, DDDD',
       template: 'テンプレート',
       shortcut: '{shortcut} で今日のノートを開けます。',
+      shortcutLabel: '今日のノートを開くショートカット',
     },
 
     storage: {
@@ -252,15 +254,15 @@ const ja: Messages = {
     backup: {
       title: 'バックアップと移行',
       about:
-        'Vault ファイルはノート・フォルダ・画像・テーマ・設定のすべてを1つのファイルにまとめ、パソコン間の移行に使えます。Markdown アーカイブは読める .md ファイルの zip で、どんなエディタでも開けます。',
+        '.noter バックアップは、ノート・フォルダ・画像・テーマ・設定をすべて 1 つのファイルにまとめ、別のコンピュータへ移せます。Markdown アーカイブは、どのエディタでも開ける .md ファイルの zip です。',
       stale: '前回のバックアップは {count} 日前です。',
-      passphrase: 'Vault のパスフレーズ（任意）',
+      passphrase: 'パスフレーズで暗号化（任意）',
       passphrasePlaceholder: '空欄なら暗号化しないファイルになります',
       passphraseHint:
         'パスフレーズを設定するとファイルは AES-GCM で暗号化されます。設定しなくてもバイナリで圧縮されますが、それは難読化であって安全性ではありません。',
-      exportVault: 'Vault を書き出す',
+      exportVault: '.noter バックアップを書き出す',
       preparing: '準備中…',
-      importVault: 'Vault を読み込む…',
+      importVault: '.noter バックアップを読み込む…',
       exportMarkdown: 'Markdown の zip を書き出す',
       importMarkdown: 'Markdown の zip を読み込む…',
       restoreTitle: 'このバックアップを復元しますか？',
@@ -289,7 +291,50 @@ const ja: Messages = {
       lastBackup: '前回のバックアップ: {date}',
       never: 'まだバックアップは作られていません。',
       unsupported:
-        'このブラウザはフォルダへ直接書き込めません（Chrome と Edge のみ対応）。上の「Vault を書き出す」を使い、ファイルを安全な場所に保存してください。バックアップが2週間を超えると、ここに注意が表示されます。',
+        'このブラウザはフォルダに直接書き込めません（対応は Chrome と Edge のみ）。上で .noter バックアップを書き出し、安全な場所に保存してください。2 週間以上経つとここに通知が表示されます。',
+    },
+    sections: {
+      general: '一般',
+      appearance: '外観',
+      editor: 'エディタ',
+      daily: 'デイリーノート',
+      backup: 'バックアップ',
+      storage: 'ストレージ',
+      about: '情報',
+    },
+    search: '設定を検索',
+    noResults: '一致する設定はありません。',
+    startSection: '起動時に開く',
+    startSectionHint: 'アプリを開いたときに最初に表示される画面。',
+    layout: 'レイアウトと文字',
+    motion: 'アニメーション',
+    motionHint:
+      '要素の出どころがわかる、短く軽いトランジション。「システム」は端末の視差効果を減らす設定に従います。',
+    motions: {
+      system: 'システム',
+      full: 'すべて',
+      reduced: '控えめ',
+      off: 'オフ',
+    },
+    editorTextSizeLabel: 'エディタの文字サイズ',
+    about: {
+      version: 'バージョン {version}',
+      privacy: 'プライバシー',
+      privacySummary:
+        'すべてこの端末に保存されます。アカウントもサーバーも不要で、アプリ内の追跡もありません。',
+      privacyPolicy: 'プライバシーポリシー',
+      source: 'ソースコード',
+      license: 'ライセンス',
+      shortcuts: 'キーボードショートカット',
+      keys: {
+        palette: '検索とコマンド',
+        home: 'ホームへ',
+        notes: 'ノートへ',
+        sidebar: 'フォルダの表示/非表示',
+        reorder: 'フォルダを上下に移動',
+        rename: 'フォルダ名を変更',
+        menu: 'コンテキストメニューを開く',
+      },
     },
   },
 
@@ -473,6 +518,28 @@ const ja: Messages = {
     unmarkTemplate: 'テンプレートを解除',
     showNotesTagged: '#{tag} のノートを表示',
     searchTag: 'このタグで検索',
+  },
+  nav: {
+    main: 'メインナビゲーション',
+    home: 'ホーム',
+    notes: 'ノート',
+    search: '検索',
+    alerts: { other: '{count} 件のお知らせ' },
+    resizeSidebar: 'フォルダバーの幅を変更',
+    resizeList: 'ノート一覧の幅を変更',
+    collapseSidebar: 'フォルダを隠す',
+    expandSidebar: 'フォルダを表示',
+  },
+  home: {
+    greeting: {
+      night: 'まだ起きていますか？',
+      morning: 'おはようございます',
+      afternoon: 'こんにちは',
+      evening: 'こんばんは',
+    },
+    alerts: '確認が必要',
+    recent: '最近のノート',
+    noNotes: 'まだ何も書かれていません。新しいノートから始めましょう。',
   },
 }
 

@@ -17,6 +17,8 @@ test.describe('languages', () => {
 
   test('lists every language in its own script', async ({ page }) => {
     await openSettings(page)
+    // Settings sections load on demand; wait for this one before reading it.
+    await expect(page.getByTestId('language-select')).toBeVisible()
     const options = await page.getByTestId('language-select').locator('option').allTextContents()
 
     expect(options).toEqual(

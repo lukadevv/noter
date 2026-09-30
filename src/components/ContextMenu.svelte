@@ -30,7 +30,10 @@
       if (!element || panel.position) return
       const rect = element.getBoundingClientRect()
       panel.position = placeMenu(panel.anchor, rect, { width: innerWidth, height: innerHeight })
-      element.focus({ preventScroll: true })
+      // Hidden elements cannot take focus; wait until the placed panel is shown.
+      requestAnimationFrame(() => {
+        if (panel.active < 0) element.focus({ preventScroll: true })
+      })
     })
   })
 

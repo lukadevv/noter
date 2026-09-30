@@ -6,9 +6,9 @@ import {
   createFolder,
   createNoteWith,
   noteMenu,
+  openSettingsSection,
   notePersisted,
   openApp,
-  openSettings,
   TINY_PNG,
 } from './helpers'
 
@@ -47,20 +47,23 @@ test.describe('backup and restore', () => {
   test('round-trips an encrypted vault into a clean browser', async ({ page, browser }) => {
     await seedWorkspace(page)
 
-    await openSettings(page)
-    await page.getByLabel('Vault passphrase (optional)').fill(VAULT_PASSPHRASE)
-    const vault = await downloadTo(page, () => page.getByRole('button', { name: 'Export vault' }).click())
+    await openSettingsSection(page, 'backup')
+    await page.getByLabel('Encrypt with a passphrase (optional)').fill(VAULT_PASSPHRASE)
+    const vault = await downloadTo(page, () =>
+      page.getByRole('button', { name: 'Export .noter backup' }).click(),
+    )
 
     // A brand-new context has an empty origin: nothing carries over but the file.
     const fresh = await browser.newContext()
     const restored = await fresh.newPage()
-    await restored.goto('/')
+    await restored.goto('/#/notes')
     await restored.waitForSelector('[data-testid="view-all"]')
     await expect(restored.getByTestId('note-item')).toHaveCount(0)
 
     await restored.getByTestId('open-settings').click()
+    await restored.getByTestId('settings-section-backup').click()
     const chooser = restored.waitForEvent('filechooser')
-    await restored.getByRole('button', { name: 'Import vault…' }).click()
+    await restored.getByRole('button', { name: 'Import .noter backup…' }).click()
     await (await chooser).setFiles(vault)
 
     await expect(restored.getByTestId('restore-preview')).toBeVisible()
@@ -87,18 +90,21 @@ test.describe('backup and restore', () => {
   test('refuses an encrypted vault with the wrong passphrase', async ({ page, browser }) => {
     await createNoteWith(page, 'Protected note\nContents.')
 
-    await openSettings(page)
-    await page.getByLabel('Vault passphrase (optional)').fill(VAULT_PASSPHRASE)
-    const vault = await downloadTo(page, () => page.getByRole('button', { name: 'Export vault' }).click())
+    await openSettingsSection(page, 'backup')
+    await page.getByLabel('Encrypt with a passphrase (optional)').fill(VAULT_PASSPHRASE)
+    const vault = await downloadTo(page, () =>
+      page.getByRole('button', { name: 'Export .noter backup' }).click(),
+    )
 
     const fresh = await browser.newContext()
     const restored = await fresh.newPage()
-    await restored.goto('/')
+    await restored.goto('/#/notes')
     await restored.waitForSelector('[data-testid="view-all"]')
 
     await restored.getByTestId('open-settings').click()
+    await restored.getByTestId('settings-section-backup').click()
     const chooser = restored.waitForEvent('filechooser')
-    await restored.getByRole('button', { name: 'Import vault…' }).click()
+    await restored.getByRole('button', { name: 'Import .noter backup…' }).click()
     await (await chooser).setFiles(vault)
 
     await restored.getByLabel('Backup passphrase').fill('wrong passphrase entirely')
@@ -114,17 +120,20 @@ test.describe('backup and restore', () => {
   test('exports an unencrypted vault and restores it', async ({ page, browser }) => {
     await createNoteWith(page, 'Plain backup\nNo passphrase used.')
 
-    await openSettings(page)
-    const vault = await downloadTo(page, () => page.getByRole('button', { name: 'Export vault' }).click())
+    await openSettingsSection(page, 'backup')
+    const vault = await downloadTo(page, () =>
+      page.getByRole('button', { name: 'Export .noter backup' }).click(),
+    )
 
     const fresh = await browser.newContext()
     const restored = await fresh.newPage()
-    await restored.goto('/')
+    await restored.goto('/#/notes')
     await restored.waitForSelector('[data-testid="view-all"]')
 
     await restored.getByTestId('open-settings').click()
+    await restored.getByTestId('settings-section-backup').click()
     const chooser = restored.waitForEvent('filechooser')
-    await restored.getByRole('button', { name: 'Import vault…' }).click()
+    await restored.getByRole('button', { name: 'Import .noter backup…' }).click()
     await (await chooser).setFiles(vault)
 
     // No passphrase field for an unencrypted backup.
@@ -142,8 +151,10 @@ test.describe('backup and restore', () => {
   test('merging keeps the copy that was edited most recently', async ({ page }) => {
     await createNoteWith(page, 'Original text\nVersion one.')
 
-    await openSettings(page)
-    const vault = await downloadTo(page, () => page.getByRole('button', { name: 'Export vault' }).click())
+    await openSettingsSection(page, 'backup')
+    const vault = await downloadTo(page, () =>
+      page.getByRole('button', { name: 'Export .noter backup' }).click(),
+    )
     await page.getByLabel('Close settings').click()
 
     // Edit after the backup was taken; a merge must not overwrite the newer text.
@@ -153,9 +164,9 @@ test.describe('backup and restore', () => {
     await page.keyboard.type(' Version two.')
     await expect(page.getByTestId('note-item').first()).toContainText('Version two')
 
-    await openSettings(page)
+    await openSettingsSection(page, 'backup')
     const chooser = page.waitForEvent('filechooser')
-    await page.getByRole('button', { name: 'Import vault…' }).click()
+    await page.getByRole('button', { name: 'Import .noter backup…' }).click()
     await (await chooser).setFiles(vault)
     await expect(page.getByTestId('restore-preview')).toBeVisible()
     // Merge is the default mode.
@@ -168,9 +179,9 @@ test.describe('backup and restore', () => {
   })
 
   test('rejects a file that is not a vault', async ({ page }) => {
-    await openSettings(page)
+    await openSettingsSection(page, 'backup')
     const chooser = page.waitForEvent('filechooser')
-    await page.getByRole('button', { name: 'Import vault…' }).click()
+    await page.getByRole('button', { name: 'Import .noter backup…' }).click()
     await (
       await chooser
     ).setFiles({
@@ -187,17 +198,18 @@ test.describe('backup and restore', () => {
     await createFolder(page, 'Archived project')
     await createNoteWith(page, 'Markdown note\nPlain text body.')
 
-    await openSettings(page)
+    await openSettingsSection(page, 'backup')
     const zip = await downloadTo(page, () =>
       page.getByRole('button', { name: 'Export Markdown zip' }).click(),
     )
 
     const fresh = await browser.newContext()
     const restored = await fresh.newPage()
-    await restored.goto('/')
+    await restored.goto('/#/notes')
     await restored.waitForSelector('[data-testid="view-all"]')
 
     await restored.getByTestId('open-settings').click()
+    await restored.getByTestId('settings-section-backup').click()
     const chooser = restored.waitForEvent('filechooser')
     await restored.getByRole('button', { name: 'Import Markdown zip…' }).click()
     await (await chooser).setFiles(zip)

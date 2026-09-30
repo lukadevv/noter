@@ -25,6 +25,7 @@ import {
 } from '$lib/crypto/keyring.svelte'
 import { buildContext, matches } from '$lib/search/evaluate'
 import { parseQuery, textTerms } from '$lib/search/query'
+import { ui } from '$lib/stores/ui.svelte'
 
 export type ListScope =
   | { kind: 'folder'; id: string | null }
@@ -190,11 +191,17 @@ class NotesStore {
     }
   }
 
+  /**
+   * Opening a note or a list always brings the notes section on screen, from
+   * whichever section the command came: the palette, Home, a shortcut.
+   */
   select(noteId: string | null): void {
     this.selectedNoteId = noteId
+    if (noteId !== null) ui.section = 'notes'
   }
 
   setScope(scope: ListScope): void {
+    ui.section = 'notes'
     this.scope = scope
     // A selection made in one folder means nothing in the next one.
     this.marked = []
@@ -273,7 +280,7 @@ class NotesStore {
   async newNote(): Promise<Note> {
     const folderId = this.scope.kind === 'folder' ? (this.scope.id ?? ROOT) : ROOT
     const note = await this.create({ folderId })
-    this.selectedNoteId = note.id
+    this.select(note.id)
     return note
   }
 

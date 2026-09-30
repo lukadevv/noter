@@ -19,7 +19,8 @@ export const APP_READY = '[data-testid="app-shell"]'
  * single pane is the wrong thing to wait for.
  */
 export async function openApp(page: Page): Promise<void> {
-  await page.goto('/')
+  // Straight to the notes: the app itself opens on Home.
+  await page.goto('/#/notes')
   await page.waitForSelector(APP_READY)
   // The panes stay in the DOM and are hidden by CSS, so "attached" is the check
   // that holds in both layouts.
@@ -221,6 +222,12 @@ export async function noteMenu(page: Page, item: string | RegExp): Promise<void>
 export async function openSettings(page: Page): Promise<void> {
   await page.getByTestId('open-settings').click()
   await expect(page.getByTestId('settings-dialog')).toBeVisible()
+}
+
+/** Opens the settings page on one of its sections, e.g. 'backup'. */
+export async function openSettingsSection(page: Page, section: string): Promise<void> {
+  await openSettings(page)
+  await page.getByTestId(`settings-section-${section}`).click()
 }
 
 export async function closeSettings(page: Page): Promise<void> {

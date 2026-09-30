@@ -24,6 +24,7 @@ const zh: Messages = {
     minutesAgo: '{count} 分钟前',
     hoursAgo: '{count} 小时前',
     daysAgo: '{count} 天前',
+    back: '返回',
   },
 
   sidebar: {
@@ -222,6 +223,7 @@ const zh: Messages = {
       formatTokens: 'YYYY、MM、DD、MMM、MMMM、DDD、DDDD',
       template: '模板',
       shortcut: '用 {shortcut} 打开今天的笔记。',
+      shortcutLabel: '打开今日笔记的快捷键',
     },
 
     storage: {
@@ -240,15 +242,15 @@ const zh: Messages = {
     backup: {
       title: '备份与迁移',
       about:
-        'Vault 文件把全部内容——笔记、文件夹、图片、主题和设置——装进一个文件，便于在电脑之间迁移。Markdown 压缩包则是一堆可读的 .md 文件，任何编辑器都能打开。',
+        '一个 .noter 备份把笔记、文件夹、图片、主题和设置全部放进一个文件，便于在电脑之间迁移。Markdown 归档是可读的 .md 文件压缩包，任何编辑器都能打开。',
       stale: '你上次备份是在 {count} 天前。',
-      passphrase: 'Vault 口令（可选）',
+      passphrase: '用密码加密（可选）',
       passphrasePlaceholder: '留空则生成未加密的文件',
       passphraseHint:
         '设置口令后文件会用 AES-GCM 加密。不设置的话它仍是压缩后的二进制文件，但那只是混淆，不是安全。',
-      exportVault: '导出 Vault',
+      exportVault: '导出 .noter 备份',
       preparing: '准备中…',
-      importVault: '导入 Vault…',
+      importVault: '导入 .noter 备份…',
       exportMarkdown: '导出 Markdown 压缩包',
       importMarkdown: '导入 Markdown 压缩包…',
       restoreTitle: '要恢复这个备份吗？',
@@ -277,7 +279,48 @@ const zh: Messages = {
       lastBackup: '上次备份：{date}。',
       never: '还没有写入过备份。',
       unsupported:
-        '此浏览器无法直接写入文件夹（只有 Chrome 和 Edge 支持）。请用上面的「导出 Vault」并把文件存到安全的地方——备份超过两周时这里会出现提醒。',
+        '此浏览器无法直接写入文件夹（仅 Chrome 和 Edge 支持）。请在上方导出 .noter 备份并妥善保存——备份超过两周时这里会出现提醒。',
+    },
+    sections: {
+      general: '通用',
+      appearance: '外观',
+      editor: '编辑器',
+      daily: '每日笔记',
+      backup: '备份',
+      storage: '存储',
+      about: '关于',
+    },
+    search: '搜索设置',
+    noResults: '没有匹配的设置。',
+    startSection: '启动时打开',
+    startSectionHint: '打开应用时首先看到的页面。',
+    layout: '布局与文字',
+    motion: '动画',
+    motionHint: '简短轻量的过渡，说明元素从何而来。“系统”会遵循设备的减少动态效果设置。',
+    motions: {
+      system: '系统',
+      full: '完整',
+      reduced: '减少',
+      off: '关闭',
+    },
+    editorTextSizeLabel: '编辑器字号',
+    about: {
+      version: '版本 {version}',
+      privacy: '隐私',
+      privacySummary: '所有数据都留在本设备。无需账户，没有服务器，应用内不追踪。',
+      privacyPolicy: '隐私政策',
+      source: '源代码',
+      license: '许可证',
+      shortcuts: '键盘快捷键',
+      keys: {
+        palette: '搜索与命令',
+        home: '前往首页',
+        notes: '前往笔记',
+        sidebar: '显示或隐藏文件夹',
+        reorder: '上移或下移文件夹',
+        rename: '重命名文件夹',
+        menu: '打开上下文菜单',
+      },
     },
   },
 
@@ -454,6 +497,28 @@ const zh: Messages = {
     unmarkTemplate: '不再用作模板',
     showNotesTagged: '显示带有 #{tag} 的笔记',
     searchTag: '用此标签搜索',
+  },
+  nav: {
+    main: '主导航',
+    home: '首页',
+    notes: '笔记',
+    search: '搜索',
+    alerts: { other: '{count} 条提醒' },
+    resizeSidebar: '调整文件夹侧栏宽度',
+    resizeList: '调整笔记列表宽度',
+    collapseSidebar: '隐藏文件夹',
+    expandSidebar: '显示文件夹',
+  },
+  home: {
+    greeting: {
+      night: '还没睡？',
+      morning: '早上好',
+      afternoon: '下午好',
+      evening: '晚上好',
+    },
+    alerts: '需要关注',
+    recent: '最近的笔记',
+    noNotes: '还没有内容。先写一篇新笔记吧。',
   },
 }
 

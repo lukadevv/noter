@@ -8,6 +8,7 @@
   import { computeRange } from '$lib/utils/virtual'
   import { emptyTrash } from '$lib/db/repo/notes'
   import { t } from '$lib/i18n/index.svelte'
+  import { theme } from '$lib/stores/theme.svelte'
 
   /** Kept in sync with the fixed row height in NoteListItem's styles. */
   const ROW_HEIGHT = 62
@@ -98,6 +99,15 @@
         class="btn btn--ghost btn--icon"
         aria-label={t('note.backToFolders')}
         onclick={() => ui.back()}
+      >
+        <Icon name="panel-left" size={16} />
+      </button>
+    {:else if theme.settings.sidebarCollapsed}
+      <button
+        class="btn btn--ghost btn--icon"
+        aria-label={t('nav.expandSidebar')}
+        title={t('nav.expandSidebar')}
+        onclick={() => theme.update({ sidebarCollapsed: false })}
       >
         <Icon name="panel-left" size={16} />
       </button>

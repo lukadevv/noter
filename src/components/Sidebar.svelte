@@ -10,13 +10,15 @@
   import { nudge, smartFolderMenuItems, tagMenuItems } from '$lib/menus/folder'
   import { contextmenu } from '$lib/ui/contextmenu'
   import { t } from '$lib/i18n/index.svelte'
+  import Kbd from './ui/Kbd.svelte'
+  import { theme } from '$lib/stores/theme.svelte'
+  import { openSettings } from '$lib/nav'
 
   interface Props {
-    onopensettings: () => void
     onopenpalette: () => void
   }
 
-  let { onopensettings, onopenpalette }: Props = $props()
+  let { onopenpalette }: Props = $props()
 
   let tagsOpen = $state(true)
 
@@ -75,12 +77,23 @@
 
 <aside class="sidebar" data-testid="sidebar">
   <header class="head">
-    <div class="brand">
-      <!-- The product mark, not a generic icon: this is the one place the app
-           names itself. Inline SVG, so it is there on the first frame. -->
-      <Logo size={18} />
-      <span>{t('app.name')}</span>
-    </div>
+    {#if ui.narrow}
+      <div class="brand">
+        <!-- On phones there is no navigation rail, so the sidebar names the app. -->
+        <Logo size={18} />
+        <span>{t('app.name')}</span>
+      </div>
+    {:else}
+      <button
+        class="btn btn--ghost btn--icon"
+        aria-label={t('nav.collapseSidebar')}
+        title={t('nav.collapseSidebar')}
+        onclick={() => theme.update({ sidebarCollapsed: true })}
+      >
+        <Icon name="panel-left" size={16} />
+      </button>
+      <h2 class="heading">{t('nav.notes')}</h2>
+    {/if}
     <button
       class="btn btn--ghost btn--icon"
       aria-label={t('sidebar.newFolder')}
@@ -94,7 +107,7 @@
   <button class="search" data-testid="open-search" onclick={onopenpalette}>
     <Icon name="search" size={15} />
     <span class="truncate">{t('sidebar.search')}</span>
-    <kbd>Ctrl K</kbd>
+    <Kbd keys="Mod+K" />
   </button>
 
   <nav class="views">
@@ -220,12 +233,15 @@
     {/if}
   {/if}
 
-  <footer class="foot">
-    <button class="view" data-testid="open-settings" onclick={onopensettings}>
-      <Icon name="settings" size={15} />
-      <span class="truncate">{t('sidebar.settings')}</span>
-    </button>
-  </footer>
+  {#if ui.narrow}
+    <!-- Wide layouts reach settings from the navigation rail. -->
+    <footer class="foot">
+      <button class="view" data-testid="open-settings" onclick={() => openSettings()}>
+        <Icon name="settings" size={15} />
+        <span class="truncate">{t('sidebar.settings')}</span>
+      </button>
+    </footer>
+  {/if}
 </aside>
 
 <style>
@@ -245,6 +261,13 @@
     justify-content: space-between;
     gap: var(--space-2);
     padding: var(--space-1) var(--space-2) var(--space-2);
+  }
+
+  .heading {
+    flex: 1;
+    min-width: 0;
+    font-size: var(--text-md);
+    font-weight: 650;
   }
 
   .brand {
@@ -279,14 +302,6 @@
   .search span {
     flex: 1;
     min-width: 0;
-  }
-
-  kbd {
-    padding: 1px 5px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    font-family: var(--font-mono);
-    font-size: 10px;
   }
 
   .section {

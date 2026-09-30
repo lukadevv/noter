@@ -27,6 +27,10 @@ export interface AppSettings {
   lastNoteId: string | null
   sidebarWidth: number
   listWidth: number
+  /** The folder sidebar folded away on wide screens (Mod+\\). */
+  sidebarCollapsed: boolean
+  /** What opening the app shows first. */
+  startSection: 'home' | 'notes'
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
@@ -47,6 +51,8 @@ export const DEFAULT_SETTINGS: AppSettings = {
   lastNoteId: null,
   sidebarWidth: 240,
   listWidth: 320,
+  sidebarCollapsed: false,
+  startSection: 'home',
 }
 
 const KEY = 'app'

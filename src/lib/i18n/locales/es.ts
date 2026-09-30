@@ -23,6 +23,7 @@ const es: Messages = {
     minutesAgo: 'hace {count} min',
     hoursAgo: 'hace {count} h',
     daysAgo: 'hace {count} d',
+    back: 'Atrás',
   },
 
   sidebar: {
@@ -244,6 +245,7 @@ const es: Messages = {
       formatTokens: 'YYYY, MM, DD, MMM, MMMM, DDD, DDDD',
       template: 'Plantilla',
       shortcut: 'Abrí la nota de hoy con {shortcut}.',
+      shortcutLabel: 'Abrí la nota de hoy con',
     },
 
     storage: {
@@ -266,15 +268,15 @@ const es: Messages = {
     backup: {
       title: 'Copias de seguridad y traslado',
       about:
-        'Un archivo vault contiene todo (notas, carpetas, imágenes, temas y ajustes) en un solo archivo, para moverte entre computadoras. El archivo Markdown es un zip de archivos .md legibles que se abre en cualquier editor.',
+        'Una copia .noter guarda todo —notas, carpetas, imágenes, temas y ajustes— en un solo archivo, para pasar de una computadora a otra. El archivo Markdown es un zip de archivos .md legibles que abre cualquier editor.',
       stale: 'Tu última copia de seguridad fue hace {count} días.',
-      passphrase: 'Frase de contraseña del vault (opcional)',
+      passphrase: 'Cifrar con una contraseña (opcional)',
       passphrasePlaceholder: 'Dejalo vacío para un archivo sin cifrar',
       passphraseHint:
         'Con una frase de contraseña el archivo se cifra con AES-GCM. Sin ella igual queda binario y comprimido, pero eso es ofuscación, no seguridad.',
-      exportVault: 'Exportar vault',
+      exportVault: 'Exportar copia .noter',
       preparing: 'Preparando…',
-      importVault: 'Importar vault…',
+      importVault: 'Importar copia .noter…',
       exportMarkdown: 'Exportar zip Markdown',
       importMarkdown: 'Importar zip Markdown…',
       restoreTitle: '¿Restaurar esta copia?',
@@ -304,7 +306,49 @@ const es: Messages = {
       lastBackup: 'Última copia: {date}.',
       never: 'Todavía no se escribió ninguna copia.',
       unsupported:
-        'Este navegador no puede escribir directamente en una carpeta (solo Chrome y Edge lo implementan). Usá Exportar vault arriba y guardá el archivo en un lugar seguro: acá aparece un recordatorio cuando la copia tiene más de dos semanas.',
+        'Este navegador no puede escribir directo en una carpeta (solo Chrome y Edge lo implementan). Exportá una copia .noter arriba y guardá el archivo en un lugar seguro: acá aparece un recordatorio cuando la copia tiene más de dos semanas.',
+    },
+    sections: {
+      general: 'General',
+      appearance: 'Apariencia',
+      editor: 'Editor',
+      daily: 'Nota diaria',
+      backup: 'Copias de seguridad',
+      storage: 'Almacenamiento',
+      about: 'Acerca de',
+    },
+    search: 'Buscar ajustes',
+    noResults: 'Ningún ajuste coincide.',
+    startSection: 'Abrir en',
+    startSectionHint: 'Lo primero que ves al abrir la app.',
+    layout: 'Diseño y texto',
+    motion: 'Animaciones',
+    motionHint:
+      'Transiciones cortas y livianas que muestran de dónde viene cada cosa. “Sistema” sigue la opción de reducir movimiento de tu dispositivo.',
+    motions: {
+      system: 'Sistema',
+      full: 'Completas',
+      reduced: 'Reducidas',
+      off: 'Desactivadas',
+    },
+    editorTextSizeLabel: 'Tamaño del texto del editor',
+    about: {
+      version: 'Versión {version}',
+      privacy: 'Privacidad',
+      privacySummary: 'Todo queda en este dispositivo. Sin cuenta, sin servidor y sin rastreo en las apps.',
+      privacyPolicy: 'Política de privacidad',
+      source: 'Código fuente',
+      license: 'Licencia',
+      shortcuts: 'Atajos de teclado',
+      keys: {
+        palette: 'Buscar y comandos',
+        home: 'Ir a Inicio',
+        notes: 'Ir a Notas',
+        sidebar: 'Mostrar u ocultar carpetas',
+        reorder: 'Subir o bajar una carpeta',
+        rename: 'Renombrar una carpeta',
+        menu: 'Abrir el menú contextual',
+      },
     },
   },
 
@@ -510,6 +554,28 @@ const es: Messages = {
     unmarkTemplate: 'Dejar de usar como plantilla',
     showNotesTagged: 'Ver notas con #{tag}',
     searchTag: 'Buscar con esta etiqueta',
+  },
+  nav: {
+    main: 'Navegación principal',
+    home: 'Inicio',
+    notes: 'Notas',
+    search: 'Buscar',
+    alerts: { one: '{count} alerta', other: '{count} alertas' },
+    resizeSidebar: 'Cambiar el ancho de la barra de carpetas',
+    resizeList: 'Cambiar el ancho de la lista de notas',
+    collapseSidebar: 'Ocultar carpetas',
+    expandSidebar: 'Mostrar carpetas',
+  },
+  home: {
+    greeting: {
+      night: '¿Todavía despierto?',
+      morning: 'Buen día',
+      afternoon: 'Buenas tardes',
+      evening: 'Buenas noches',
+    },
+    alerts: 'Para tener en cuenta',
+    recent: 'Notas recientes',
+    noNotes: 'Todavía no escribiste nada. Empezá con una nota nueva.',
   },
 }
 

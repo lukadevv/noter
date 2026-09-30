@@ -1,4 +1,5 @@
 import { shortId } from '$lib/utils/uuid'
+import type { Section } from '../../routes/router'
 
 export type Pane = 'folders' | 'list' | 'note'
 
@@ -14,9 +15,12 @@ export interface Toast {
 export const MOBILE_BREAKPOINT = 860
 
 class UiStore {
+  /** The area on screen: a navigation section, or the settings page. */
+  section = $state<Section | 'settings'>('home')
+  /** The settings page's open section id, e.g. 'appearance'. */
+  settingsSection = $state<string | null>(null)
   /** Which pane is visible on narrow screens. Ignored on wide layouts. */
   pane = $state<Pane>('list')
-  sidebarCollapsed = $state(false)
   narrow = $state(false)
   toasts = $state<Toast[]>([])
   /** Set while a drag is in flight so drop targets can light up. */

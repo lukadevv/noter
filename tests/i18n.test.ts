@@ -170,7 +170,12 @@ describe('catalogues', () => {
       it('translates rather than copying English verbatim', () => {
         // Product names and format tokens are the same everywhere; everything
         // else being identical means the catalogue was never translated.
-        const SHARED = new Set(['app.name', 'settings.daily.formatTokens', 'icons.emoji'])
+        const SHARED = new Set([
+          'app.name',
+          'settings.daily.formatTokens',
+          'icons.emoji',
+          'settings.about.version',
+        ])
         const identical = [...english.entries()].filter(
           ([key, value]) =>
             typeof value === 'string' && value.length > 12 && !SHARED.has(key) && flat.get(key) === value,

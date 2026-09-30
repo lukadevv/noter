@@ -142,6 +142,21 @@ class ThemeStore {
     this.#persist()
   }
 
+  /**
+   * Applies a change on screen without persisting it: sliders call this on
+   * every `input` event and `update` once on `change`, so dragging does not
+   * rewrite the boot mirror and the settings row sixty times a second.
+   */
+  live(patch: Partial<AppSettings>): void {
+    this.settings = { ...this.settings, ...patch }
+    applyChrome({
+      density: this.settings.density,
+      font: this.settings.font,
+      editorFontSize: this.settings.editorFontSize,
+      radiusScale: this.settings.radiusScale,
+    })
+  }
+
   flush(): void {
     this.#persist.flush()
   }

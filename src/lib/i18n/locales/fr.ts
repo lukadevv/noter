@@ -20,6 +20,7 @@ const fr: Messages = {
     minutesAgo: 'il y a {count} min',
     hoursAgo: 'il y a {count} h',
     daysAgo: 'il y a {count} j',
+    back: 'Retour',
   },
 
   sidebar: {
@@ -238,6 +239,7 @@ const fr: Messages = {
       formatTokens: 'YYYY, MM, DD, MMM, MMMM, DDD, DDDD',
       template: 'Modèle',
       shortcut: 'Ouvrez la note du jour avec {shortcut}.',
+      shortcutLabel: 'Ouvrez la note du jour avec',
     },
 
     storage: {
@@ -257,15 +259,15 @@ const fr: Messages = {
     backup: {
       title: 'Sauvegarde et transfert',
       about:
-        "Un fichier vault contient tout — notes, dossiers, images, thèmes et paramètres — dans un seul fichier, pour passer d'un ordinateur à l'autre. L'archive Markdown est un zip de fichiers .md lisibles qui s'ouvre dans n'importe quel éditeur.",
+        'Une sauvegarde .noter contient tout — notes, dossiers, images, thèmes et réglages — dans un seul fichier, pour passer d’un ordinateur à l’autre. L’archive Markdown est un zip de fichiers .md lisibles dans n’importe quel éditeur.',
       stale: 'Votre dernière sauvegarde date de {count} jours.',
-      passphrase: 'Phrase secrète du vault (facultative)',
+      passphrase: 'Chiffrer avec une phrase secrète (facultatif)',
       passphrasePlaceholder: 'Laissez vide pour un fichier non chiffré',
       passphraseHint:
         "Avec une phrase secrète le fichier est chiffré en AES-GCM. Sans elle il reste binaire et compressé, mais c'est de l'obfuscation, pas de la sécurité.",
-      exportVault: 'Exporter le vault',
+      exportVault: 'Exporter la sauvegarde .noter',
       preparing: 'Préparation…',
-      importVault: 'Importer un vault…',
+      importVault: 'Importer une sauvegarde .noter…',
       exportMarkdown: 'Exporter le zip Markdown',
       importMarkdown: 'Importer un zip Markdown…',
       restoreTitle: 'Restaurer cette sauvegarde ?',
@@ -300,7 +302,50 @@ const fr: Messages = {
       lastBackup: 'Dernière sauvegarde : {date}.',
       never: 'Aucune sauvegarde écrite pour l’instant.',
       unsupported:
-        "Ce navigateur ne peut pas écrire directement dans un dossier (seuls Chrome et Edge le permettent). Utilisez Exporter le vault ci-dessus et rangez le fichier en lieu sûr — un rappel apparaît ici dès qu'une sauvegarde a plus de deux semaines.",
+        'Ce navigateur ne peut pas écrire directement dans un dossier (seuls Chrome et Edge le permettent). Exportez une sauvegarde .noter ci-dessus et gardez le fichier en lieu sûr — un rappel s’affiche ici quand elle a plus de deux semaines.',
+    },
+    sections: {
+      general: 'Général',
+      appearance: 'Apparence',
+      editor: 'Éditeur',
+      daily: 'Note du jour',
+      backup: 'Sauvegardes',
+      storage: 'Stockage',
+      about: 'À propos',
+    },
+    search: 'Rechercher un réglage',
+    noResults: 'Aucun réglage ne correspond.',
+    startSection: 'Ouvrir sur',
+    startSectionHint: 'Ce que vous voyez en premier à l’ouverture.',
+    layout: 'Mise en page et texte',
+    motion: 'Animations',
+    motionHint:
+      'Des transitions courtes et légères qui montrent d’où viennent les éléments. « Système » suit le réglage de réduction des animations de l’appareil.',
+    motions: {
+      system: 'Système',
+      full: 'Complètes',
+      reduced: 'Réduites',
+      off: 'Désactivées',
+    },
+    editorTextSizeLabel: 'Taille du texte de l’éditeur',
+    about: {
+      version: 'Version {version}',
+      privacy: 'Confidentialité',
+      privacySummary:
+        'Tout reste sur cet appareil. Pas de compte, pas de serveur, aucun suivi dans les applis.',
+      privacyPolicy: 'Politique de confidentialité',
+      source: 'Code source',
+      license: 'Licence',
+      shortcuts: 'Raccourcis clavier',
+      keys: {
+        palette: 'Recherche et commandes',
+        home: 'Aller à l’accueil',
+        notes: 'Aller aux notes',
+        sidebar: 'Afficher ou masquer les dossiers',
+        reorder: 'Monter ou descendre un dossier',
+        rename: 'Renommer un dossier',
+        menu: 'Ouvrir le menu contextuel',
+      },
     },
   },
 
@@ -500,6 +545,28 @@ const fr: Messages = {
     unmarkTemplate: 'Ne plus utiliser comme modèle',
     showNotesTagged: 'Voir les notes marquées #{tag}',
     searchTag: 'Rechercher avec ce tag',
+  },
+  nav: {
+    main: 'Navigation principale',
+    home: 'Accueil',
+    notes: 'Notes',
+    search: 'Rechercher',
+    alerts: { one: '{count} alerte', other: '{count} alertes' },
+    resizeSidebar: 'Redimensionner la barre des dossiers',
+    resizeList: 'Redimensionner la liste des notes',
+    collapseSidebar: 'Masquer les dossiers',
+    expandSidebar: 'Afficher les dossiers',
+  },
+  home: {
+    greeting: {
+      night: 'Encore debout ?',
+      morning: 'Bonjour',
+      afternoon: 'Bon après-midi',
+      evening: 'Bonsoir',
+    },
+    alerts: 'À voir',
+    recent: 'Notes récentes',
+    noNotes: 'Rien d’écrit pour l’instant. Commencez par une nouvelle note.',
   },
 }
 

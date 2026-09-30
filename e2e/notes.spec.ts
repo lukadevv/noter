@@ -192,6 +192,7 @@ test.describe('notes and folders', () => {
 
   test('applies a theme from settings', async ({ page }) => {
     await openSettings(page)
+    await page.getByTestId('settings-section-appearance').click()
     await page.selectOption('#theme-select', 'light')
 
     // The theme writes tokens onto the root element; that is the real assertion.

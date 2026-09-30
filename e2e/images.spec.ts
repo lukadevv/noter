@@ -104,6 +104,7 @@ test.describe('images', () => {
     await page.getByRole('button', { name: 'Empty trash' }).click()
 
     await page.getByTestId('open-settings').click()
+    await page.getByTestId('settings-section-storage').click()
     await page.getByRole('button', { name: 'Clean up unused images' }).click()
     // Several toasts can be stacked by this point, so match the one we mean.
     await expect(page.getByTestId('toast').filter({ hasText: 'unused image' })).toBeVisible()

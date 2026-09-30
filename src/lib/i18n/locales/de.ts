@@ -20,6 +20,7 @@ const de: Messages = {
     minutesAgo: 'vor {count} Min.',
     hoursAgo: 'vor {count} Std.',
     daysAgo: 'vor {count} T.',
+    back: 'Zurück',
   },
 
   sidebar: {
@@ -238,6 +239,7 @@ const de: Messages = {
       formatTokens: 'YYYY, MM, DD, MMM, MMMM, DDD, DDDD',
       template: 'Vorlage',
       shortcut: 'Öffne die heutige Notiz mit {shortcut}.',
+      shortcutLabel: 'Öffne die heutige Notiz mit',
     },
 
     storage: {
@@ -257,15 +259,15 @@ const de: Messages = {
     backup: {
       title: 'Sicherung und Übertragung',
       about:
-        'Eine Vault-Datei enthält alles — Notizen, Ordner, Bilder, Designs und Einstellungen — in einer Datei, zum Umziehen zwischen Rechnern. Das Markdown-Archiv ist ein ZIP aus lesbaren .md-Dateien, das sich in jedem Editor öffnen lässt.',
+        'Eine .noter-Sicherung enthält alles – Notizen, Ordner, Bilder, Designs und Einstellungen – in einer Datei, zum Umziehen zwischen Computern. Das Markdown-Archiv ist ein Zip mit lesbaren .md-Dateien für jeden Editor.',
       stale: 'Deine letzte Sicherung ist {count} Tage her.',
-      passphrase: 'Vault-Passphrase (optional)',
+      passphrase: 'Mit Passphrase verschlüsseln (optional)',
       passphrasePlaceholder: 'Leer lassen für eine unverschlüsselte Datei',
       passphraseHint:
         'Mit einer Passphrase wird die Datei mit AES-GCM verschlüsselt. Ohne sie bleibt sie binär und komprimiert — das ist Verschleierung, keine Sicherheit.',
-      exportVault: 'Vault exportieren',
+      exportVault: '.noter-Sicherung exportieren',
       preparing: 'Wird vorbereitet…',
-      importVault: 'Vault importieren…',
+      importVault: '.noter-Sicherung importieren…',
       exportMarkdown: 'Markdown-ZIP exportieren',
       importMarkdown: 'Markdown-ZIP importieren…',
       restoreTitle: 'Diese Sicherung wiederherstellen?',
@@ -295,7 +297,49 @@ const de: Messages = {
       lastBackup: 'Letzte Sicherung: {date}.',
       never: 'Noch keine Sicherung geschrieben.',
       unsupported:
-        'Dieser Browser kann nicht direkt in einen Ordner schreiben (nur Chrome und Edge können das). Nutze oben Vault exportieren und leg die Datei an einen sicheren Ort — hier erscheint eine Erinnerung, sobald eine Sicherung älter als zwei Wochen ist.',
+        'Dieser Browser kann nicht direkt in einen Ordner schreiben (nur Chrome und Edge können das). Exportiere oben eine .noter-Sicherung und bewahre die Datei sicher auf – hier erscheint eine Erinnerung, sobald sie älter als zwei Wochen ist.',
+    },
+    sections: {
+      general: 'Allgemein',
+      appearance: 'Darstellung',
+      editor: 'Editor',
+      daily: 'Tagesnotizen',
+      backup: 'Sicherungen',
+      storage: 'Speicher',
+      about: 'Über',
+    },
+    search: 'Einstellungen durchsuchen',
+    noResults: 'Keine passende Einstellung.',
+    startSection: 'Beim Start',
+    startSectionHint: 'Was du beim Öffnen der App zuerst siehst.',
+    layout: 'Layout und Text',
+    motion: 'Animationen',
+    motionHint:
+      'Kurze, leichte Übergänge, die zeigen, woher etwas kommt. „System“ folgt der Einstellung „Bewegung reduzieren“ deines Geräts.',
+    motions: {
+      system: 'System',
+      full: 'Voll',
+      reduced: 'Reduziert',
+      off: 'Aus',
+    },
+    editorTextSizeLabel: 'Textgröße im Editor',
+    about: {
+      version: 'Version {version}',
+      privacy: 'Datenschutz',
+      privacySummary: 'Alles bleibt auf diesem Gerät. Kein Konto, kein Server, kein Tracking in den Apps.',
+      privacyPolicy: 'Datenschutzerklärung',
+      source: 'Quellcode',
+      license: 'Lizenz',
+      shortcuts: 'Tastenkürzel',
+      keys: {
+        palette: 'Suche und Befehle',
+        home: 'Zum Start',
+        notes: 'Zu den Notizen',
+        sidebar: 'Ordner ein- oder ausblenden',
+        reorder: 'Ordner nach oben oder unten verschieben',
+        rename: 'Ordner umbenennen',
+        menu: 'Kontextmenü öffnen',
+      },
     },
   },
 
@@ -499,6 +543,28 @@ const de: Messages = {
     unmarkTemplate: 'Nicht mehr als Vorlage verwenden',
     showNotesTagged: 'Notizen mit #{tag} anzeigen',
     searchTag: 'Mit diesem Tag suchen',
+  },
+  nav: {
+    main: 'Hauptnavigation',
+    home: 'Start',
+    notes: 'Notizen',
+    search: 'Suchen',
+    alerts: { one: '{count} Hinweis', other: '{count} Hinweise' },
+    resizeSidebar: 'Ordnerleiste in der Breite ändern',
+    resizeList: 'Notizliste in der Breite ändern',
+    collapseSidebar: 'Ordner ausblenden',
+    expandSidebar: 'Ordner einblenden',
+  },
+  home: {
+    greeting: {
+      night: 'Noch wach?',
+      morning: 'Guten Morgen',
+      afternoon: 'Guten Tag',
+      evening: 'Guten Abend',
+    },
+    alerts: 'Braucht deine Aufmerksamkeit',
+    recent: 'Letzte Notizen',
+    noNotes: 'Noch nichts geschrieben. Fang mit einer neuen Notiz an.',
   },
 }
 

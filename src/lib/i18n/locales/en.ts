@@ -38,6 +38,7 @@ export const en = {
     minutesAgo: '{count}m ago',
     hoursAgo: '{count}h ago',
     daysAgo: '{count}d ago',
+    back: 'Back',
   },
 
   sidebar: {
@@ -257,6 +258,7 @@ export const en = {
       formatTokens: 'YYYY, MM, DD, MMM, MMMM, DDD, DDDD',
       template: 'Template',
       shortcut: 'Open today’s note with {shortcut}.',
+      shortcutLabel: 'Open today’s note with',
     },
 
     storage: {
@@ -278,15 +280,15 @@ export const en = {
     backup: {
       title: 'Backup and transfer',
       about:
-        'A vault file holds everything — notes, folders, images, themes and settings — in one file, for moving between computers. The Markdown archive is a zip of readable .md files that opens in any editor.',
+        'A .noter backup holds everything — notes, folders, images, themes and settings — in one file, for moving between computers. The Markdown archive is a zip of readable .md files that opens in any editor.',
       stale: 'Your last backup was {count} days ago.',
-      passphrase: 'Vault passphrase (optional)',
+      passphrase: 'Encrypt with a passphrase (optional)',
       passphrasePlaceholder: 'Leave empty for an unencrypted file',
       passphraseHint:
         'With a passphrase the file is encrypted with AES-GCM. Without one it is still binary and compressed, but that is obfuscation, not security.',
-      exportVault: 'Export vault',
+      exportVault: 'Export .noter backup',
       preparing: 'Preparing…',
-      importVault: 'Import vault…',
+      importVault: 'Import .noter backup…',
       exportMarkdown: 'Export Markdown zip',
       importMarkdown: 'Import Markdown zip…',
       restoreTitle: 'Restore this backup?',
@@ -315,7 +317,49 @@ export const en = {
       lastBackup: 'Last backup {date}.',
       never: 'No backup written yet.',
       unsupported:
-        'This browser cannot write to a folder directly (only Chrome and Edge implement it). Use Export vault above and save the file somewhere safe — a reminder appears here once a backup is more than two weeks old.',
+        'This browser cannot write to a folder directly (only Chrome and Edge implement it). Export a .noter backup above and save the file somewhere safe — a reminder appears here once a backup is more than two weeks old.',
+    },
+    sections: {
+      general: 'General',
+      appearance: 'Appearance',
+      editor: 'Editor',
+      daily: 'Daily notes',
+      backup: 'Backups',
+      storage: 'Storage',
+      about: 'About',
+    },
+    search: 'Search settings',
+    noResults: 'No settings match.',
+    startSection: 'Open on',
+    startSectionHint: 'What you see first when the app opens.',
+    layout: 'Layout and text',
+    motion: 'Animations',
+    motionHint:
+      'Short, light transitions that show where things come from. “System” follows your device’s reduce-motion setting.',
+    motions: {
+      system: 'System',
+      full: 'Full',
+      reduced: 'Reduced',
+      off: 'Off',
+    },
+    editorTextSizeLabel: 'Editor text size',
+    about: {
+      version: 'Version {version}',
+      privacy: 'Privacy',
+      privacySummary: 'Everything stays on this device. No account, no server, no tracking in the apps.',
+      privacyPolicy: 'Privacy policy',
+      source: 'Source code',
+      license: 'License',
+      shortcuts: 'Keyboard shortcuts',
+      keys: {
+        palette: 'Search and commands',
+        home: 'Go to Home',
+        notes: 'Go to Notes',
+        sidebar: 'Show or hide folders',
+        reorder: 'Move a folder up or down',
+        rename: 'Rename a folder',
+        menu: 'Open the context menu',
+      },
     },
   },
 
@@ -521,5 +565,27 @@ export const en = {
     unmarkTemplate: 'Stop using as template',
     showNotesTagged: 'Show notes tagged #{tag}',
     searchTag: 'Search with this tag',
+  },
+  nav: {
+    main: 'Main navigation',
+    home: 'Home',
+    notes: 'Notes',
+    search: 'Search',
+    alerts: plural({ one: '{count} alert', other: '{count} alerts' }),
+    resizeSidebar: 'Resize the folder sidebar',
+    resizeList: 'Resize the note list',
+    collapseSidebar: 'Hide folders',
+    expandSidebar: 'Show folders',
+  },
+  home: {
+    greeting: {
+      night: 'Still up?',
+      morning: 'Good morning',
+      afternoon: 'Good afternoon',
+      evening: 'Good evening',
+    },
+    alerts: 'Needs your attention',
+    recent: 'Recent notes',
+    noNotes: 'Nothing written yet. Start with a new note.',
   },
 }

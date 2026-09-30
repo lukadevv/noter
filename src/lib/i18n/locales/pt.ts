@@ -20,6 +20,7 @@ const pt: Messages = {
     minutesAgo: 'há {count} min',
     hoursAgo: 'há {count} h',
     daysAgo: 'há {count} d',
+    back: 'Voltar',
   },
 
   sidebar: {
@@ -237,6 +238,7 @@ const pt: Messages = {
       formatTokens: 'YYYY, MM, DD, MMM, MMMM, DDD, DDDD',
       template: 'Modelo',
       shortcut: 'Abra a nota de hoje com {shortcut}.',
+      shortcutLabel: 'Abra a nota de hoje com',
     },
 
     storage: {
@@ -256,15 +258,15 @@ const pt: Messages = {
     backup: {
       title: 'Backup e transferência',
       about:
-        'Um arquivo vault contém tudo — notas, pastas, imagens, temas e configurações — em um único arquivo, para mover entre computadores. O arquivo Markdown é um zip de arquivos .md legíveis que abre em qualquer editor.',
+        'Um backup .noter guarda tudo — notas, pastas, imagens, temas e configurações — em um arquivo, para levar a outro computador. O arquivo Markdown é um zip de arquivos .md legíveis que abre em qualquer editor.',
       stale: 'Seu último backup foi há {count} dias.',
-      passphrase: 'Frase secreta do vault (opcional)',
+      passphrase: 'Criptografar com uma senha (opcional)',
       passphrasePlaceholder: 'Deixe vazio para um arquivo sem criptografia',
       passphraseHint:
         'Com uma frase secreta o arquivo é criptografado com AES-GCM. Sem ela ele ainda é binário e comprimido, mas isso é ofuscação, não segurança.',
-      exportVault: 'Exportar vault',
+      exportVault: 'Exportar backup .noter',
       preparing: 'Preparando…',
-      importVault: 'Importar vault…',
+      importVault: 'Importar backup .noter…',
       exportMarkdown: 'Exportar zip Markdown',
       importMarkdown: 'Importar zip Markdown…',
       restoreTitle: 'Restaurar este backup?',
@@ -294,7 +296,49 @@ const pt: Messages = {
       lastBackup: 'Último backup: {date}.',
       never: 'Nenhum backup foi escrito ainda.',
       unsupported:
-        'Este navegador não consegue escrever direto em uma pasta (só Chrome e Edge implementam isso). Use Exportar vault acima e guarde o arquivo em um lugar seguro — um lembrete aparece aqui quando o backup tem mais de duas semanas.',
+        'Este navegador não consegue gravar diretamente numa pasta (só Chrome e Edge implementam isso). Exporte um backup .noter acima e guarde o arquivo em local seguro — um lembrete aparece aqui quando o backup tiver mais de duas semanas.',
+    },
+    sections: {
+      general: 'Geral',
+      appearance: 'Aparência',
+      editor: 'Editor',
+      daily: 'Nota diária',
+      backup: 'Backups',
+      storage: 'Armazenamento',
+      about: 'Sobre',
+    },
+    search: 'Pesquisar configurações',
+    noResults: 'Nenhuma configuração corresponde.',
+    startSection: 'Abrir em',
+    startSectionHint: 'O que você vê primeiro ao abrir o app.',
+    layout: 'Layout e texto',
+    motion: 'Animações',
+    motionHint:
+      'Transições curtas e leves que mostram de onde as coisas vêm. “Sistema” segue a opção de reduzir movimento do dispositivo.',
+    motions: {
+      system: 'Sistema',
+      full: 'Completas',
+      reduced: 'Reduzidas',
+      off: 'Desativadas',
+    },
+    editorTextSizeLabel: 'Tamanho do texto do editor',
+    about: {
+      version: 'Versão {version}',
+      privacy: 'Privacidade',
+      privacySummary: 'Tudo fica neste dispositivo. Sem conta, sem servidor e sem rastreamento nos apps.',
+      privacyPolicy: 'Política de privacidade',
+      source: 'Código-fonte',
+      license: 'Licença',
+      shortcuts: 'Atalhos de teclado',
+      keys: {
+        palette: 'Pesquisa e comandos',
+        home: 'Ir para o Início',
+        notes: 'Ir para Notas',
+        sidebar: 'Mostrar ou ocultar pastas',
+        reorder: 'Mover uma pasta para cima ou para baixo',
+        rename: 'Renomear uma pasta',
+        menu: 'Abrir o menu de contexto',
+      },
     },
   },
 
@@ -495,6 +539,28 @@ const pt: Messages = {
     unmarkTemplate: 'Deixar de usar como modelo',
     showNotesTagged: 'Ver notas com #{tag}',
     searchTag: 'Pesquisar com esta etiqueta',
+  },
+  nav: {
+    main: 'Navegação principal',
+    home: 'Início',
+    notes: 'Notas',
+    search: 'Pesquisar',
+    alerts: { one: '{count} alerta', other: '{count} alertas' },
+    resizeSidebar: 'Redimensionar a barra de pastas',
+    resizeList: 'Redimensionar a lista de notas',
+    collapseSidebar: 'Ocultar pastas',
+    expandSidebar: 'Mostrar pastas',
+  },
+  home: {
+    greeting: {
+      night: 'Ainda acordado?',
+      morning: 'Bom dia',
+      afternoon: 'Boa tarde',
+      evening: 'Boa noite',
+    },
+    alerts: 'Precisa da sua atenção',
+    recent: 'Notas recentes',
+    noNotes: 'Nada escrito ainda. Comece com uma nota nova.',
   },
 }
 

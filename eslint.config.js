@@ -22,7 +22,8 @@ export default ts.config(
 
   {
     languageOptions: {
-      globals: { ...globals.browser, ...globals.es2021 },
+      // __APP_VERSION__ is injected by vite.config.ts `define`.
+      globals: { ...globals.browser, ...globals.es2021, __APP_VERSION__: 'readonly' },
     },
     rules: {
       // An unused variable is either a mistake or a leftover. A leading

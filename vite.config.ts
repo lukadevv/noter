@@ -168,6 +168,10 @@ function seo(): Plugin {
 }
 
 export default defineConfig({
+  define: {
+    // Shown in Settings → About; package.json is the one place a release is numbered.
+    __APP_VERSION__: JSON.stringify(version),
+  },
   plugins: [
     svelte(),
     csp(),
