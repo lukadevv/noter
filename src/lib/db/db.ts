@@ -1,4 +1,5 @@
 import Dexie, { type Table } from 'dexie'
+import { migrateBodyForView, needsMigration } from '$lib/md/migrate'
 import type { Asset, Folder, Note, Setting, SmartFolder, Theme, Version } from './schema'
 
 /**
@@ -28,6 +29,37 @@ export class NoterDB extends Dexie {
       themes: 'id, name',
       settings: 'key',
     })
+
+    // v2: notes are built from blocks instead of choosing one view. Plaintext
+    // notes (and their history) are rewritten here; encrypted ones cannot be
+    // read, so they keep their `view` and are converted when next revealed.
+    // `updatedAt` is left alone: this is not the user editing anything.
+    this.version(2)
+      .stores({})
+      .upgrade(async (tx) => {
+        const views = new Map<string, { view: Note['view']; lang: string | null }>()
+        await tx
+          .table<Note, string>('notes')
+          .toCollection()
+          .modify((note) => {
+            if (!needsMigration(note)) {
+              if (note.view === 'checklist' && !note.encrypted) note.view = 'doc'
+              return
+            }
+            views.set(note.id, { view: note.view, lang: note.lang })
+            if (note.encrypted) return
+            note.body = migrateBodyForView(note.view, note.body, note.lang)
+            note.view = 'doc'
+          })
+        await tx
+          .table<Version, string>('versions')
+          .toCollection()
+          .modify((version) => {
+            const source = views.get(version.noteId)
+            if (!source || version.body.startsWith('noter:enc:')) return
+            version.body = migrateBodyForView(source.view, version.body, source.lang)
+          })
+      })
   }
 }
 

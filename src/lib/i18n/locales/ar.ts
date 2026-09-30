@@ -93,21 +93,13 @@ const ar: Messages = {
     pin: 'تثبيت الملاحظة',
     unpin: 'إلغاء التثبيت',
     inTrash: 'هذه الملاحظة في المهملات. استعدها لمتابعة التحرير.',
-    placeholder: 'ابدأ الكتابة…',
+    placeholder: 'ابدأ الكتابة، أو اكتب / لإدراج الكتل…',
     loadingEditor: 'جارٍ تحميل المحرر…',
     rendering: 'جارٍ العرض…',
     selectOrCreate: 'اختر ملاحظة، أو أنشئ واحدة.',
     dropImages: 'أفلِت الصور هنا لإضافتها إلى هذه الملاحظة',
     previousDay: 'اليوم السابق',
     nextDay: 'اليوم التالي',
-    view: 'عرض الملاحظة',
-    views: {
-      doc: 'مستند',
-      checklist: 'قائمة مهام',
-      board: 'لوحة',
-      gallery: 'معرض',
-      code: 'شيفرة',
-    },
     menu: {
       pin: 'تثبيت',
       unpin: 'إلغاء التثبيت',
@@ -126,17 +118,6 @@ const ar: Messages = {
     unlockedToast: 'أُلغي قفل الملاحظة للتحرير.',
   },
 
-  checklist: {
-    showDone: 'إظهار المكتملة',
-    hideDone: 'إخفاء المكتملة',
-    clearDone: 'مسح المكتملة',
-    addTask: 'أضف مهمة',
-    emptyTask: 'مهمة فارغة',
-    deleteTask: 'حذف المهمة',
-    task: 'مهمة',
-    empty: 'لا مهام بعد. أضف واحدة بالأسفل، أو انتقل إلى عرض المستند للكتابة بحرية.',
-  },
-
   board: {
     moveTo: 'نقل إلى {column}',
     cardActions: 'إجراءات البطاقة',
@@ -145,6 +126,11 @@ const ar: Messages = {
     deleteCard: 'حذف البطاقة',
     newColumn: 'عمود جديد',
     noHeadings: 'لا تحتوي هذه الملاحظة على عناوين تصلح كأعمدة.',
+    columns: {
+      todo: 'للقيام به',
+      doing: 'قيد التنفيذ',
+      done: 'تم',
+    },
   },
 
   gallery: {
@@ -154,9 +140,8 @@ const ar: Messages = {
     openImage: 'فتح الصورة',
     missing: 'صورة مفقودة',
     notShared: 'الصورة غير مُضمَّنة في هذا الرابط',
+    remove: 'إزالة من المعرض',
   },
-
-  code: { language: 'اللغة', copy: 'نسخ', placeholder: 'الصق مقطعاً برمجياً…' },
 
   lightbox: {
     viewer: 'عارض الصور',
@@ -208,7 +193,6 @@ const ar: Messages = {
     emptyTrash: 'إفراغ المهملات',
     openSettings: 'فتح الإعدادات',
     toggleTheme: 'التبديل بين الفاتح والداكن',
-    switchView: 'تحويل هذه الملاحظة إلى عرض {view}',
     themeNamed: 'السمة: {name}',
     fromTemplate: 'ملاحظة جديدة من «{title}»',
     groups: {
@@ -219,6 +203,8 @@ const ar: Messages = {
       Appearance: 'المظهر',
       App: 'التطبيق',
     },
+    goHome: 'الانتقال إلى الرئيسية',
+    toggleLock: 'قفل التحرير أو فتحه',
   },
 
   settings: {
@@ -608,6 +594,32 @@ const ar: Messages = {
     alerts: 'يحتاج إلى انتباهك',
     recent: 'الملاحظات الأخيرة',
     noNotes: 'لم تكتب شيئًا بعد. ابدأ بملاحظة جديدة.',
+  },
+  blocks: {
+    text: 'نص',
+    h1: 'عنوان 1',
+    h2: 'عنوان 2',
+    h3: 'عنوان 3',
+    task: 'قائمة مهام',
+    bullet: 'قائمة نقطية',
+    numbered: 'قائمة مرقّمة',
+    quote: 'اقتباس',
+    callout: 'تنبيه بارز',
+    code: 'شيفرة',
+    board: 'لوحة',
+    gallery: 'معرض',
+    image: 'صورة',
+    table: 'جدول',
+    divider: 'فاصل',
+    date: 'تاريخ اليوم',
+    menu: 'إجراءات الكتلة',
+    turnInto: 'تحويل إلى',
+    duplicate: 'تكرار',
+    moveUp: 'نقل لأعلى',
+    moveDown: 'نقل لأسفل',
+    delete: 'حذف الكتلة',
+    editSource: 'التحرير بصيغة Markdown',
+    hint: 'اكتب / لإدراج الكتل',
   },
 }
 

@@ -189,6 +189,8 @@ export function preview(body: string, max = 160): string {
     .replace(/^#{1,6}\s+/gm, '')
     .replace(/^[-*+]\s+(\[[ xX]\]\s+)?/gm, '')
     .replace(/\[\[([^\]|]+)(\|[^\]]+)?\]\]/g, '$1')
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+    .replace(/^>\s*\[![a-z]+\]\s*/gim, '')
     .replace(/[*_`>]/g, '')
     .replace(/\s+/g, ' ')
     .trim()

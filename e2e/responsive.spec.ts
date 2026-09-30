@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { createNoteWith, openApp } from './helpers'
+import { createNoteWith, insertBlock, openApp } from './helpers'
 
 /**
  * Narrow-viewport behaviour. This spec runs under the `mobile` project, which
@@ -43,13 +43,19 @@ test.describe('narrow layout', () => {
     expect(overflow).toBeLessThanOrEqual(0)
   })
 
-  test('keeps the view switcher usable with labels collapsed', async ({ page }) => {
+  test('inserts a block from the / menu on a phone', async ({ page }) => {
     await openApp(page)
-    await createNoteWith(page, 'View switching on mobile')
-
-    // The labels are hidden below 640px, but the tabs still work.
-    await page.getByTestId('view-tab-checklist').click()
-    await expect(page.getByTestId('view-tab-checklist')).toHaveClass(/view--active/)
+    await createNoteWith(page, 'Blocks on mobile')
+    await page.locator('.cm-content').click()
+    await page.keyboard.press('ControlOrMeta+End')
+    await page.keyboard.press('Enter')
+    await insertBlock(page, 'board')
+    await expect(page.getByTestId('board-block')).toBeVisible()
+    // A board is wider than a phone; it scrolls inside itself, not the page.
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    )
+    expect(overflow).toBeLessThanOrEqual(0)
   })
 
   test('opens the command palette and search on a phone', async ({ page }) => {

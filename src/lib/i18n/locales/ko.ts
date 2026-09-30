@@ -87,15 +87,13 @@ const ko: Messages = {
     pin: '노트 고정',
     unpin: '고정 해제',
     inTrash: '이 노트는 휴지통에 있습니다. 계속 편집하려면 복원하세요.',
-    placeholder: '쓰기 시작하세요…',
+    placeholder: '작성을 시작하거나 / 를 입력해 블록을 추가하세요…',
     loadingEditor: '편집기를 불러오는 중…',
     rendering: '렌더링 중…',
     selectOrCreate: '노트를 선택하거나 새로 만드세요.',
     dropImages: '이미지를 여기에 놓으면 이 노트에 추가됩니다',
     previousDay: '이전 날',
     nextDay: '다음 날',
-    view: '노트 보기',
-    views: { doc: '문서', checklist: '체크리스트', board: '보드', gallery: '갤러리', code: '코드' },
     menu: {
       pin: '고정',
       unpin: '고정 해제',
@@ -114,17 +112,6 @@ const ko: Messages = {
     unlockedToast: '노트 잠금을 해제했습니다.',
   },
 
-  checklist: {
-    showDone: '완료 표시',
-    hideDone: '완료 숨기기',
-    clearDone: '완료 지우기',
-    addTask: '할 일 추가',
-    emptyTask: '빈 할 일',
-    deleteTask: '할 일 삭제',
-    task: '할 일',
-    empty: '아직 할 일이 없습니다. 아래에서 추가하거나, 문서 보기로 바꿔 자유롭게 쓰세요.',
-  },
-
   board: {
     moveTo: '{column}(으)로 이동',
     cardActions: '카드 작업',
@@ -133,6 +120,11 @@ const ko: Messages = {
     deleteCard: '카드 삭제',
     newColumn: '새 열',
     noHeadings: '이 노트에는 열로 쓸 제목이 없습니다.',
+    columns: {
+      todo: '할 일',
+      doing: '진행 중',
+      done: '완료',
+    },
   },
 
   gallery: {
@@ -142,9 +134,8 @@ const ko: Messages = {
     openImage: '이미지 열기',
     missing: '이미지 없음',
     notShared: '이 링크에는 이미지가 포함되지 않습니다',
+    remove: '갤러리에서 제거',
   },
-
-  code: { language: '언어', copy: '복사', placeholder: '코드 조각을 붙여넣으세요…' },
 
   lightbox: {
     viewer: '이미지 뷰어',
@@ -189,10 +180,11 @@ const ko: Messages = {
     emptyTrash: '휴지통 비우기',
     openSettings: '설정 열기',
     toggleTheme: '밝게/어둡게 전환',
-    switchView: '이 노트를 {view} 보기로 전환',
     themeNamed: '테마: {name}',
     fromTemplate: '「{title}」에서 새 노트',
     groups: { Create: '만들기', Note: '노트', Go: '이동', View: '보기', Appearance: '모양', App: '앱' },
+    goHome: '홈으로 이동',
+    toggleLock: '편집 잠금/해제',
   },
 
   settings: {
@@ -528,6 +520,32 @@ const ko: Messages = {
     alerts: '확인 필요',
     recent: '최근 노트',
     noNotes: '아직 작성한 내용이 없습니다. 새 노트로 시작하세요.',
+  },
+  blocks: {
+    text: '텍스트',
+    h1: '제목 1',
+    h2: '제목 2',
+    h3: '제목 3',
+    task: '체크리스트',
+    bullet: '글머리 기호 목록',
+    numbered: '번호 목록',
+    quote: '인용',
+    callout: '콜아웃',
+    code: '코드',
+    board: '보드',
+    gallery: '갤러리',
+    image: '이미지',
+    table: '표',
+    divider: '구분선',
+    date: '오늘 날짜',
+    menu: '블록 작업',
+    turnInto: '다음으로 변환',
+    duplicate: '복제',
+    moveUp: '위로 이동',
+    moveDown: '아래로 이동',
+    delete: '블록 삭제',
+    editSource: '마크다운으로 편집',
+    hint: '/ 를 입력해 블록 추가',
   },
 }
 

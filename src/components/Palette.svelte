@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { formatShortcut } from '$lib/ui/keys'
   import Icon from './Icon.svelte'
   import { buildActions, type Action } from '$lib/actions'
   import { fuzzyScore } from '$lib/utils/fuzzy'
@@ -167,7 +168,11 @@
         {#if row.kind === 'action'}
           <Icon name={row.action.icon ?? 'chevron-right'} size={15} />
           <span class="label truncate">{row.action.label}</span>
-          <span class="meta faint">{row.action.hint ?? t(`actions.groups.${row.action.group}`)}</span>
+          <span class="meta faint"
+            >{row.action.hint
+              ? formatShortcut(row.action.hint)
+              : t(`actions.groups.${row.action.group}`)}</span
+          >
         {:else if row.kind === 'note'}
           <Icon name="file-text" size={15} />
           <span class="label truncate">{row.title}</span>

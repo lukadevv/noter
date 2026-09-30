@@ -6,7 +6,7 @@ import { emptyTrash, derivedTitle } from '$lib/db/repo/notes'
 import { pickImages } from '$lib/images/insert'
 import { todayKey } from '$lib/db/repo/daily'
 import { addDays } from '$lib/utils/dates'
-import type { ViewMode } from '$lib/db/schema'
+import { goTo } from '$lib/nav'
 import { t } from '$lib/i18n/index.svelte'
 
 export interface Action {
@@ -34,7 +34,7 @@ export function buildActions(open: { settings: () => void; daily: () => void }):
     {
       id: 'note.new',
       label: t('actions.newNote'),
-      hint: 'Ctrl+N',
+      hint: 'Mod+N',
       icon: 'plus',
       group: 'Create',
       run: () => void notes.newNote(),
@@ -49,7 +49,7 @@ export function buildActions(open: { settings: () => void; daily: () => void }):
     {
       id: 'daily.today',
       label: t('actions.openToday'),
-      hint: 'Ctrl+Shift+D',
+      hint: 'Mod+Shift+D',
       icon: 'calendar',
       group: 'Create',
       available: () => theme.settings.dailyNotes.enabled,
@@ -58,7 +58,7 @@ export function buildActions(open: { settings: () => void; daily: () => void }):
     {
       id: 'scratchpad.open',
       label: t('actions.openScratchpad'),
-      hint: 'Ctrl+Shift+Space',
+      hint: 'Mod+Shift+Space',
       icon: 'lightbulb',
       group: 'Create',
       run: async () => {
@@ -168,7 +168,7 @@ export function buildActions(open: { settings: () => void; daily: () => void }):
     {
       id: 'settings.open',
       label: t('actions.openSettings'),
-      hint: 'Ctrl+,',
+      hint: 'Mod+,',
       icon: 'settings',
       group: 'App',
       run: () => open.settings(),
@@ -182,29 +182,28 @@ export function buildActions(open: { settings: () => void; daily: () => void }):
     },
   ]
 
-  // Per-view actions, so "switch this note to a checklist" is one command.
-  for (const view of ['doc', 'checklist', 'board', 'gallery', 'code'] as ViewMode[]) {
-    actions.push({
-      id: `view.${view}`,
-      label: t('actions.switchView', { view: t(`note.views.${view}`) }),
-      icon:
-        view === 'doc'
-          ? 'file-text'
-          : view === 'checklist'
-            ? 'check-square'
-            : view === 'board'
-              ? 'layout-grid'
-              : view === 'gallery'
-                ? 'image'
-                : 'code',
-      group: 'View',
-      available: () => current() !== null && current()!.view !== view,
+  actions.push(
+    {
+      id: 'go.home',
+      label: t('actions.goHome'),
+      icon: 'house',
+      hint: 'Mod+1',
+      group: 'Go',
+      run: () => goTo('home'),
+    },
+    {
+      id: 'note.lock',
+      label: t('actions.toggleLock'),
+      icon: 'lock-keyhole',
+      hint: 'Mod+Shift+L',
+      group: 'Note',
+      available: () => current() !== null && !current()!.deletedAt,
       run: () => {
         const note = current()
-        if (note) void notes.update(note.id, { view })
+        if (note) void notes.setEditLock(note.id, note.editLock !== 1)
       },
-    })
-  }
+    },
+  )
 
   for (const preset of PRESETS) {
     actions.push({

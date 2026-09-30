@@ -11,12 +11,18 @@ import {
 } from '@codemirror/view'
 import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirror/commands'
 import { bracketMatching, indentOnInput } from '@codemirror/language'
-import { markdown } from '@codemirror/lang-markdown'
+import { markdown, markdownLanguage } from '@codemirror/lang-markdown'
 import { search, searchKeymap } from '@codemirror/search'
-import { editorTheme, markdownHighlight } from './theme'
+import { codeHighlight, editorTheme, markdownHighlight } from './theme'
 import { taskCheckboxes } from './tasks'
 import { imageInput, inlineImages, type PasteHandlers } from './images'
-import { noterCompletion, wikiLinkHighlight, wikiLinkClicks, type CompletionSources } from './wikilinks'
+import { linkCompletions, wikiLinkHighlight, wikiLinkClicks, type CompletionSources } from './wikilinks'
+import { completions } from './completion'
+import { slashCompletions } from './slash'
+import { codeLanguages } from './code-languages'
+import { livePreview } from './live/preview'
+import { contentBlocks } from './blocks/fences.svelte'
+import { blockHandle, blockKeymap } from './blocks/handle'
 import { lockCompartment, lockExtension, lockGuard } from './lock'
 import { minimalChange } from './diff'
 
@@ -38,6 +44,8 @@ export interface EditorOptions {
   images?: PasteHandlers
   /** Live sources for `[[link]]` and `#tag` completion. */
   completion?: CompletionSources
+  /** Opens a file picker and returns `![[img:…]]` references (image and gallery blocks). */
+  pickImages?: () => Promise<string[]>
 }
 
 /** Marks changes that came from outside the editor (a history restore, a rename). */
@@ -86,13 +94,19 @@ export class NoteEditor {
       indentOnInput(),
       bracketMatching(),
       search({ top: true }),
-      markdown(),
+      // GFM (tables, task lists, strikethrough) plus highlighting inside code blocks.
+      markdown({ base: markdownLanguage, codeLanguages }),
       markdownHighlight,
+      codeHighlight,
+      livePreview,
       taskCheckboxes,
       inlineImages,
       wikiLinkHighlight,
+      contentBlocks({ pickImages: () => options.pickImages?.() ?? Promise.resolve([]) }),
+      blockHandle,
       editorTheme,
       EditorView.lineWrapping,
+      blockKeymap,
       keymap.of([...defaultKeymap, ...historyKeymap, ...searchKeymap, indentWithTab]),
       EditorView.updateListener.of((update) => {
         if (!update.docChanged) return
@@ -112,7 +126,13 @@ export class NoteEditor {
     ]
     if (options.placeholder) this.#extensions.push(placeholderExt(options.placeholder))
     if (options.images) this.#extensions.push(imageInput(options.images))
-    if (options.completion) this.#extensions.push(noterCompletion(options.completion))
+    // One autocompletion for everything: CodeMirror allows a single override list.
+    this.#extensions.push(
+      completions([
+        ...(options.completion ? [linkCompletions(options.completion)] : []),
+        slashCompletions({ pickImages: options.pickImages }),
+      ]),
+    )
     if (options.onBlocked) this.#extensions.push(lockGuard(options.onBlocked))
     if (options.onLink) this.#extensions.push(wikiLinkClicks(options.onLink))
 

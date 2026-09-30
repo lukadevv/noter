@@ -15,6 +15,7 @@ import { updateNote } from '$lib/db/repo/notes'
 import { updateFolder } from '$lib/db/repo/folders'
 import { extractTags } from '$lib/md/links'
 import { referencedAssetIds } from '$lib/db/repo/assets'
+import { migrateBodyForView, needsMigration } from '$lib/md/migrate'
 
 /** Locked folders re-lock after this long without activity. */
 const IDLE_TIMEOUT_MS = 15 * 60_000
@@ -121,8 +122,16 @@ export async function decryptFolder(folderId: string): Promise<number> {
   for (const note of notes) {
     if (!note.encrypted) continue
     const title = await revealText(key, note.title)
-    const body = await revealText(key, note.body)
-    await updateNote(note.id, { title, body, tags: extractTags(body), assetRefs: undefined, encrypted: 0 })
+    // A note encrypted before blocks existed is converted now that it can be read.
+    const body = migrateBodyForView(note.view, await revealText(key, note.body), note.lang)
+    await updateNote(note.id, {
+      title,
+      body,
+      tags: extractTags(body),
+      assetRefs: undefined,
+      encrypted: 0,
+      view: 'doc',
+    })
     await openVersions(key, note.id)
   }
 
@@ -212,16 +221,30 @@ export async function recryptForFolder(note: Note, targetFolderId: string): Prom
   return { ...sealed, tags: [], encrypted: 1 }
 }
 
-/** Decrypts a note for display, when its folder is unlocked. */
+/**
+ * Decrypts a note for display, when its folder is unlocked.
+ *
+ * An encrypted note written before blocks existed could not be converted by
+ * the database upgrade (it was ciphertext); it is converted here, the first
+ * time it is readable, and written back sealed.
+ */
 export async function revealNote(note: Note): Promise<{ title: string; body: string } | null> {
   if (!note.encrypted) return { title: note.title, body: note.body }
   const key = keyring.keyFor(note.folderId)
   if (!key) return null
+  let plain: { title: string; body: string }
   try {
-    return { title: await revealText(key, note.title), body: await revealText(key, note.body) }
+    plain = { title: await revealText(key, note.title), body: await revealText(key, note.body) }
   } catch {
     return null
   }
+  if (needsMigration(note)) {
+    plain = { ...plain, body: migrateBodyForView(note.view, plain.body, note.lang) }
+    const sealed = await sealNote(note.folderId, plain.title, plain.body)
+    // Not an edit by the user, so `updatedAt` stays as it was.
+    if (sealed) await db.notes.update(note.id, { ...sealed, view: 'doc' })
+  }
+  return plain
 }
 
 /** Re-encrypts an edited note before it is written back. */

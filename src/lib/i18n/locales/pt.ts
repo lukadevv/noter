@@ -86,21 +86,13 @@ const pt: Messages = {
     pin: 'Fixar nota',
     unpin: 'Desafixar nota',
     inTrash: 'Esta nota está na lixeira. Restaure-a para continuar editando.',
-    placeholder: 'Comece a escrever…',
+    placeholder: 'Comece a escrever, ou digite / para blocos…',
     loadingEditor: 'Carregando o editor…',
     rendering: 'Renderizando…',
     selectOrCreate: 'Selecione uma nota, ou crie uma.',
     dropImages: 'Solte imagens para adicioná-las a esta nota',
     previousDay: 'Dia anterior',
     nextDay: 'Próximo dia',
-    view: 'Visualização da nota',
-    views: {
-      doc: 'Documento',
-      checklist: 'Checklist',
-      board: 'Quadro',
-      gallery: 'Galeria',
-      code: 'Código',
-    },
     menu: {
       pin: 'Fixar',
       unpin: 'Desafixar',
@@ -119,18 +111,6 @@ const pt: Messages = {
     unlockedToast: 'Nota desbloqueada para edição.',
   },
 
-  checklist: {
-    showDone: 'Mostrar concluídas',
-    hideDone: 'Ocultar concluídas',
-    clearDone: 'Limpar concluídas',
-    addTask: 'Adicionar uma tarefa',
-    emptyTask: 'Tarefa vazia',
-    deleteTask: 'Excluir tarefa',
-    task: 'Tarefa',
-    empty:
-      'Ainda não há tarefas. Adicione uma abaixo, ou mude para a visualização de documento para escrever livremente.',
-  },
-
   board: {
     moveTo: 'Mover para {column}',
     cardActions: 'Ações do cartão',
@@ -139,6 +119,11 @@ const pt: Messages = {
     deleteCard: 'Excluir cartão',
     newColumn: 'Nova coluna',
     noHeadings: 'Esta nota não tem títulos para usar como colunas.',
+    columns: {
+      todo: 'A fazer',
+      doing: 'Fazendo',
+      done: 'Feito',
+    },
   },
 
   gallery: {
@@ -148,9 +133,8 @@ const pt: Messages = {
     openImage: 'Abrir imagem',
     missing: 'imagem ausente',
     notShared: 'A imagem não está incluída neste link',
+    remove: 'Remover da galeria',
   },
-
-  code: { language: 'Linguagem', copy: 'Copiar', placeholder: 'Cole um trecho…' },
 
   lightbox: {
     viewer: 'Visualizador de imagens',
@@ -198,7 +182,6 @@ const pt: Messages = {
     emptyTrash: 'Esvaziar a lixeira',
     openSettings: 'Abrir as configurações',
     toggleTheme: 'Alternar entre claro e escuro',
-    switchView: 'Mudar esta nota para a visualização {view}',
     themeNamed: 'Tema: {name}',
     fromTemplate: 'Nova nota a partir de “{title}”',
     groups: {
@@ -209,6 +192,8 @@ const pt: Messages = {
       Appearance: 'Aparência',
       App: 'Aplicativo',
     },
+    goHome: 'Ir para o Início',
+    toggleLock: 'Bloquear ou desbloquear a edição',
   },
 
   settings: {
@@ -566,6 +551,32 @@ const pt: Messages = {
     alerts: 'Precisa da sua atenção',
     recent: 'Notas recentes',
     noNotes: 'Nada escrito ainda. Comece com uma nota nova.',
+  },
+  blocks: {
+    text: 'Texto',
+    h1: 'Título 1',
+    h2: 'Título 2',
+    h3: 'Título 3',
+    task: 'Checklist',
+    bullet: 'Lista com marcadores',
+    numbered: 'Lista numerada',
+    quote: 'Citação',
+    callout: 'Destaque',
+    code: 'Código',
+    board: 'Quadro',
+    gallery: 'Galeria',
+    image: 'Imagem',
+    table: 'Tabela',
+    divider: 'Divisor',
+    date: 'Data de hoje',
+    menu: 'Ações do bloco',
+    turnInto: 'Transformar em',
+    duplicate: 'Duplicar',
+    moveUp: 'Mover para cima',
+    moveDown: 'Mover para baixo',
+    delete: 'Excluir bloco',
+    editSource: 'Editar como markdown',
+    hint: 'Digite / para blocos',
   },
 }
 

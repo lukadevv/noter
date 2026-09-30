@@ -86,21 +86,13 @@ const fr: Messages = {
     pin: 'Épingler la note',
     unpin: 'Désépingler la note',
     inTrash: 'Cette note est à la corbeille. Restaurez-la pour continuer à la modifier.',
-    placeholder: 'Commencez à écrire…',
+    placeholder: 'Commencez à écrire, ou tapez / pour les blocs…',
     loadingEditor: "Chargement de l'éditeur…",
     rendering: 'Rendu en cours…',
     selectOrCreate: 'Choisissez une note, ou créez-en une.',
     dropImages: 'Déposez des images pour les ajouter à cette note',
     previousDay: 'Jour précédent',
     nextDay: 'Jour suivant',
-    view: 'Affichage de la note',
-    views: {
-      doc: 'Document',
-      checklist: 'Liste de tâches',
-      board: 'Tableau',
-      gallery: 'Galerie',
-      code: 'Code',
-    },
     menu: {
       pin: 'Épingler',
       unpin: 'Désépingler',
@@ -119,18 +111,6 @@ const fr: Messages = {
     unlockedToast: 'Note déverrouillée pour modification.',
   },
 
-  checklist: {
-    showDone: 'Afficher les terminées',
-    hideDone: 'Masquer les terminées',
-    clearDone: 'Effacer les terminées',
-    addTask: 'Ajouter une tâche',
-    emptyTask: 'Tâche vide',
-    deleteTask: 'Supprimer la tâche',
-    task: 'Tâche',
-    empty:
-      "Pas encore de tâche. Ajoutez-en une ci-dessous, ou passez à l'affichage document pour écrire librement.",
-  },
-
   board: {
     moveTo: 'Déplacer vers {column}',
     cardActions: 'Actions de la carte',
@@ -139,6 +119,11 @@ const fr: Messages = {
     deleteCard: 'Supprimer la carte',
     newColumn: 'Nouvelle colonne',
     noHeadings: "Cette note n'a pas de titres à utiliser comme colonnes.",
+    columns: {
+      todo: 'À faire',
+      doing: 'En cours',
+      done: 'Terminé',
+    },
   },
 
   gallery: {
@@ -148,9 +133,8 @@ const fr: Messages = {
     openImage: "Ouvrir l'image",
     missing: 'image manquante',
     notShared: "L'image n'est pas incluse dans ce lien",
+    remove: 'Retirer de la galerie',
   },
-
-  code: { language: 'Langage', copy: 'Copier', placeholder: 'Collez un extrait…' },
 
   lightbox: {
     viewer: "Visionneuse d'images",
@@ -198,7 +182,6 @@ const fr: Messages = {
     emptyTrash: 'Vider la corbeille',
     openSettings: 'Ouvrir les paramètres',
     toggleTheme: 'Basculer entre clair et sombre',
-    switchView: "Passer cette note à l'affichage {view}",
     themeNamed: 'Thème : {name}',
     fromTemplate: 'Nouvelle note à partir de « {title} »',
     groups: {
@@ -209,6 +192,8 @@ const fr: Messages = {
       Appearance: 'Apparence',
       App: 'Application',
     },
+    goHome: 'Aller à l’accueil',
+    toggleLock: 'Verrouiller ou déverrouiller la modification',
   },
 
   settings: {
@@ -572,6 +557,32 @@ const fr: Messages = {
     alerts: 'À voir',
     recent: 'Notes récentes',
     noNotes: 'Rien d’écrit pour l’instant. Commencez par une nouvelle note.',
+  },
+  blocks: {
+    text: 'Texte',
+    h1: 'Titre 1',
+    h2: 'Titre 2',
+    h3: 'Titre 3',
+    task: 'Liste de tâches',
+    bullet: 'Liste à puces',
+    numbered: 'Liste numérotée',
+    quote: 'Citation',
+    callout: 'Encadré',
+    code: 'Code',
+    board: 'Tableau',
+    gallery: 'Galerie',
+    image: 'Image',
+    table: 'Tableau de données',
+    divider: 'Séparateur',
+    date: 'Date du jour',
+    menu: 'Actions du bloc',
+    turnInto: 'Transformer en',
+    duplicate: 'Dupliquer',
+    moveUp: 'Monter',
+    moveDown: 'Descendre',
+    delete: 'Supprimer le bloc',
+    editSource: 'Modifier en markdown',
+    hint: 'Tapez / pour les blocs',
   },
 }
 

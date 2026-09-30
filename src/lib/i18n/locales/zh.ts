@@ -89,15 +89,13 @@ const zh: Messages = {
     pin: '置顶笔记',
     unpin: '取消置顶',
     inTrash: '这条笔记在回收站里。恢复后才能继续编辑。',
-    placeholder: '开始写吧…',
+    placeholder: '开始写作，或输入 / 插入块…',
     loadingEditor: '正在加载编辑器…',
     rendering: '正在渲染…',
     selectOrCreate: '选择一条笔记，或者新建一条。',
     dropImages: '把图片拖到这里加入本笔记',
     previousDay: '前一天',
     nextDay: '后一天',
-    view: '笔记视图',
-    views: { doc: '文档', checklist: '清单', board: '看板', gallery: '相册', code: '代码' },
     menu: {
       pin: '置顶',
       unpin: '取消置顶',
@@ -116,17 +114,6 @@ const zh: Messages = {
     unlockedToast: '笔记已解锁，可以编辑。',
   },
 
-  checklist: {
-    showDone: '显示已完成',
-    hideDone: '隐藏已完成',
-    clearDone: '清除已完成',
-    addTask: '添加任务',
-    emptyTask: '空任务',
-    deleteTask: '删除任务',
-    task: '任务',
-    empty: '还没有任务。在下面添加一个，或者切换到文档视图自由书写。',
-  },
-
   board: {
     moveTo: '移动到{column}',
     cardActions: '卡片操作',
@@ -135,6 +122,11 @@ const zh: Messages = {
     deleteCard: '删除卡片',
     newColumn: '新建分栏',
     noHeadings: '这条笔记没有可作为分栏的标题。',
+    columns: {
+      todo: '待办',
+      doing: '进行中',
+      done: '已完成',
+    },
   },
 
   gallery: {
@@ -144,9 +136,8 @@ const zh: Messages = {
     openImage: '打开图片',
     missing: '图片缺失',
     notShared: '此链接不包含图片',
+    remove: '从图库移除',
   },
-
-  code: { language: '语言', copy: '复制', placeholder: '粘贴一段代码…' },
 
   lightbox: {
     viewer: '图片查看器',
@@ -191,10 +182,11 @@ const zh: Messages = {
     emptyTrash: '清空回收站',
     openSettings: '打开设置',
     toggleTheme: '切换浅色和深色',
-    switchView: '把这条笔记切换到{view}视图',
     themeNamed: '主题：{name}',
     fromTemplate: '从「{title}」新建笔记',
     groups: { Create: '创建', Note: '笔记', Go: '前往', View: '视图', Appearance: '外观', App: '应用' },
+    goHome: '前往首页',
+    toggleLock: '锁定或解锁编辑',
   },
 
   settings: {
@@ -524,6 +516,32 @@ const zh: Messages = {
     alerts: '需要关注',
     recent: '最近的笔记',
     noNotes: '还没有内容。先写一篇新笔记吧。',
+  },
+  blocks: {
+    text: '文本',
+    h1: '一级标题',
+    h2: '二级标题',
+    h3: '三级标题',
+    task: '清单',
+    bullet: '无序列表',
+    numbered: '有序列表',
+    quote: '引用',
+    callout: '提示框',
+    code: '代码',
+    board: '看板',
+    gallery: '图库',
+    image: '图片',
+    table: '表格',
+    divider: '分隔线',
+    date: '今天的日期',
+    menu: '块操作',
+    turnInto: '转换为',
+    duplicate: '复制',
+    moveUp: '上移',
+    moveDown: '下移',
+    delete: '删除块',
+    editSource: '以 Markdown 编辑',
+    hint: '输入 / 插入块',
   },
 }
 

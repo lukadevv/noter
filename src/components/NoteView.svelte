@@ -2,10 +2,6 @@
   import Icon from './Icon.svelte'
   import Editor from './Editor.svelte'
   import ReadingView from './ReadingView.svelte'
-  import ChecklistView from './ChecklistView.svelte'
-  import GalleryView from './GalleryView.svelte'
-  import BoardView from './BoardView.svelte'
-  import CodeView from './CodeView.svelte'
   import Backlinks from './Backlinks.svelte'
   import Lazy from './Lazy.svelte'
   import type { MenuItem } from '$lib/ui-types'
@@ -19,7 +15,6 @@
   import { addDays } from '$lib/utils/dates'
   import { keyring } from '$lib/crypto/keyring.svelte'
   import UnlockPrompt from './UnlockPrompt.svelte'
-  import type { ViewMode } from '$lib/db/schema'
   import { t } from '$lib/i18n/index.svelte'
   import { menu } from '$lib/stores/menu.svelte'
   import { dialogs } from '$lib/stores/dialogs.svelte'
@@ -66,14 +61,6 @@
   let text = $derived(content?.body ?? '')
   let readOnly = $derived(note !== null && (note.deletedAt > 0 || locked))
   let tasks = $derived(taskStats(text))
-
-  const VIEWS: { id: ViewMode; icon: string }[] = [
-    { id: 'doc', icon: 'file-text' },
-    { id: 'checklist', icon: 'check-square' },
-    { id: 'board', icon: 'layout-grid' },
-    { id: 'gallery', icon: 'image' },
-    { id: 'code', icon: 'code' },
-  ]
 
   /** Locked for editing by the user (not to be confused with an encrypted folder's lock). */
   let editLocked = $derived(note?.editLock === 1)
@@ -134,20 +121,8 @@
     return noteMenuItems(current, {
       extra: [
         {
-          id: 'view',
-          label: t('note.view'),
-          icon: 'layout-grid',
-          separatorBefore: true,
-          submenu: VIEWS.map((view) => ({
-            id: view.id,
-            label: t(`note.views.${view.id}`),
-            icon: view.icon,
-            checked: current.view === view.id,
-            run: () => void notes.update(current.id, { view: view.id }),
-          })),
-        },
-        {
           id: 'images',
+          separatorBefore: true,
           label: t('note.menu.addImages'),
           icon: 'image',
           run: async () => append(current.id, await pickImages()),
@@ -301,22 +276,6 @@
       </nav>
     {/if}
 
-    <nav class="views" aria-label={t('note.view')}>
-      {#each VIEWS as view (view.id)}
-        <button
-          class="view"
-          data-testid="view-tab-{view.id}"
-          class:view--active={current.view === view.id}
-          disabled={readOnly}
-          title={t(`note.views.${view.id}`)}
-          onclick={() => void notes.update(current.id, { view: view.id })}
-        >
-          <Icon name={view.icon} size={14} />
-          <span class="view-label">{t(`note.views.${view.id}`)}</span>
-        </button>
-      {/each}
-    </nav>
-
     {#if current.deletedAt > 0}
       <div class="banner">
         <Icon name="trash" size={14} />
@@ -330,20 +289,6 @@
     <div class="body">
       {#if locked}
         <UnlockPrompt folderId={current.folderId} />
-      {:else if current.view === 'checklist'}
-        <ChecklistView body={text} {readOnly} onchange={(b) => write(current.id, b)} />
-      {:else if current.view === 'board'}
-        <BoardView body={text} {readOnly} onchange={(b) => write(current.id, b)} />
-      {:else if current.view === 'gallery'}
-        <GalleryView body={text} {readOnly} onadd={async () => append(current.id, await pickImages())} />
-      {:else if current.view === 'code'}
-        <CodeView
-          body={text}
-          lang={current.lang}
-          {readOnly}
-          onchange={(b) => write(current.id, b)}
-          onlang={(lang) => void notes.update(current.id, { lang })}
-        />
       {:else if readOnly}
         <ReadingView
           body={text}
@@ -367,6 +312,7 @@
           onurl={(url) => insertUrl(url)}
           titles={() => notes.notes.map((n) => derivedTitle(n))}
           tags={() => [...notes.tagCounts.keys()]}
+          onpickimages={() => pickImages()}
         />
       {/if}
     </div>
@@ -524,59 +470,6 @@
   }
 
   /* View switcher: labels collapse away on narrow screens, icons remain. */
-  .views {
-    display: flex;
-    gap: 2px;
-    padding: 0 var(--space-3) var(--space-2);
-    border-bottom: 1px solid var(--border);
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
-
-  .views::-webkit-scrollbar {
-    display: none;
-  }
-
-  .view {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-    flex: none;
-    height: 26px;
-    padding: 0 var(--space-2);
-    border: none;
-    border-radius: var(--radius);
-    background: none;
-    color: var(--text-faint);
-    font-size: 12px;
-    cursor: pointer;
-  }
-
-  .view:hover:not(:disabled) {
-    background: var(--surface-2);
-    color: var(--text);
-  }
-
-  .view--active {
-    background: var(--accent-soft);
-    color: var(--text);
-  }
-
-  .view:disabled {
-    cursor: default;
-    opacity: 0.5;
-  }
-
-  @media (max-width: 640px) {
-    .view-label {
-      display: none;
-    }
-
-    .view {
-      padding: 0 var(--space-3);
-    }
-  }
-
   .daily {
     display: flex;
     align-items: center;

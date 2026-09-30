@@ -22,6 +22,8 @@
     /** Live sources for `[[link]]` and `#tag` completion. */
     titles?: () => string[]
     tags?: () => string[]
+    /** Picks images for image and gallery blocks; returns their references. */
+    onpickimages?: () => Promise<string[]>
   }
 
   let {
@@ -38,6 +40,7 @@
     onurl,
     titles,
     tags,
+    onpickimages,
   }: Props = $props()
 
   let host = $state<HTMLElement | null>(null)
@@ -69,6 +72,7 @@
             ? { onImages: (files) => onimages(files), onUrl: (url) => onurl(url) }
             : undefined,
         completion: titles && tags ? { titles, tags } : undefined,
+        pickImages: onpickimages,
       })
     })()
   })

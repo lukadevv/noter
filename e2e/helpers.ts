@@ -224,6 +224,19 @@ export async function openSettings(page: Page): Promise<void> {
   await expect(page.getByTestId('settings-dialog')).toBeVisible()
 }
 
+/**
+ * Inserts a block from the `/` menu at the cursor. Waits for the menu before
+ * pressing Enter: pressed too early, Enter just starts a new line.
+ */
+export async function insertBlock(page: Page, command: string): Promise<void> {
+  await page.keyboard.type(`/${command}`)
+  await expect(page.locator('.cm-tooltip-autocomplete')).toBeVisible()
+  // CodeMirror ignores Enter for 75 ms after the menu opens, so a fast typist
+  // does not accept a suggestion by accident; a test is faster than any typist.
+  await page.waitForTimeout(150)
+  await page.keyboard.press('Enter')
+}
+
 /** Opens the settings page on one of its sections, e.g. 'backup'. */
 export async function openSettingsSection(page: Page, section: string): Promise<void> {
   await openSettings(page)

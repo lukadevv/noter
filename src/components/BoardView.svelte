@@ -16,10 +16,12 @@
   interface Props {
     body: string
     readOnly?: boolean
+    /** Drawn inside a note (a ```board block) rather than filling a pane. */
+    inline?: boolean
     onchange: (body: string) => void
   }
 
-  let { body, readOnly = false, onchange }: Props = $props()
+  let { body, readOnly = false, inline = false, onchange }: Props = $props()
 
   let columns = $derived(parseBoard(body))
   let drafts = $state<Record<number, string>>({})
@@ -69,7 +71,7 @@
   }
 </script>
 
-<div class="board">
+<div class="board" class:board--inline={inline}>
   {#each columns as column, columnIndex (column.line)}
     <!-- svelte-ignore a11y_no_static_element_interactions -->
     <section
@@ -108,7 +110,11 @@
             class:card--dragging={dragging === card.line}
             draggable={!readOnly}
             role="listitem"
-            ondragstart={() => (dragging = card.line)}
+            ondragstart={(e) => {
+              // Firefox starts no drag without data; the payload itself is unused.
+              e.dataTransfer?.setData('text/plain', card.text)
+              dragging = card.line
+            }}
             ondragend={() => {
               dragging = null
               dropTarget = null
@@ -195,6 +201,17 @@
     padding: 0 var(--space-4) var(--space-4);
     overflow-x: auto;
     overflow-y: hidden;
+  }
+
+  .board--inline {
+    height: auto;
+    max-height: 520px;
+    padding: 0 0 var(--space-2);
+    overflow-y: auto;
+  }
+
+  .board--inline .column {
+    max-height: 500px;
   }
 
   .column {

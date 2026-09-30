@@ -488,7 +488,6 @@ class NotesStore {
       title: plain.title,
       body,
       folderId,
-      view: template.view,
       tags: extractTags(body),
     })
     this.select(note.id)

@@ -1,6 +1,6 @@
 import { Decoration, EditorView, ViewPlugin, type DecorationSet, type ViewUpdate } from '@codemirror/view'
 import { RangeSetBuilder } from '@codemirror/state'
-import { autocompletion, type CompletionContext, type CompletionResult } from '@codemirror/autocomplete'
+import type { CompletionContext, CompletionResult } from '@codemirror/autocomplete'
 
 const LINK = /\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g
 
@@ -74,8 +74,8 @@ export interface CompletionSources {
  * Both read from live getters rather than a snapshot, so a note created a moment
  * ago is immediately offered without rebuilding the editor.
  */
-export function noterCompletion(sources: CompletionSources) {
-  function complete(context: CompletionContext): CompletionResult | null {
+export function linkCompletions(sources: CompletionSources) {
+  return function complete(context: CompletionContext): CompletionResult | null {
     const link = context.matchBefore(/\[\[[^\]\n]*/)
     if (link) {
       const typed = link.text.slice(2)
@@ -103,6 +103,4 @@ export function noterCompletion(sources: CompletionSources) {
 
     return null
   }
-
-  return autocompletion({ override: [complete], icons: false, activateOnTyping: true })
 }

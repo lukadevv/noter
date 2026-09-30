@@ -1,3 +1,4 @@
+import { CONTENT_FENCES, findFences } from '$lib/md/fences'
 import type { Node } from './query'
 import type { Folder, Note } from '$lib/db/schema'
 import { taskStats } from '$lib/md/tasks'
@@ -37,6 +38,23 @@ function compareDate(timestamp: number, op: string, value: string, now: number):
   return Math.abs(timestamp - cutoff) < DAY_MS
 }
 
+function hasBlock(note: Note, kind: string): boolean {
+  if (note.encrypted) return false
+  switch (kind) {
+    case 'doc':
+      return true
+    case 'checklist':
+      return taskStats(note.body).total > 0
+    case 'board':
+    case 'gallery':
+      return findFences(note.body).some((f) => f.info === kind)
+    case 'code':
+      return findFences(note.body).some((f) => !CONTENT_FENCES.has(f.info))
+    default:
+      return false
+  }
+}
+
 function matchesField(note: Note, node: Extract<Node, { type: 'field' }>, context: EvalContext): boolean {
   const value = node.value.toLowerCase()
 
@@ -47,10 +65,15 @@ function matchesField(note: Note, node: Extract<Node, { type: 'field' }>, contex
       const name = context.folderNames.get(note.folderId)
       return name === value || note.folderId === node.value
     }
+    // Notes no longer have a single view; `view:board` and friends now mean
+    // "contains a block of that kind", so saved searches keep working.
     case 'view':
-      return note.view === value
+      return hasBlock(note, value)
     case 'lang':
-      return (note.lang ?? '').toLowerCase() === value
+      return (
+        (note.lang ?? '').toLowerCase() === value ||
+        (!note.encrypted && findFences(note.body).some((f) => f.info === value))
+      )
     case 'title':
       return note.title.toLowerCase().includes(value)
     case 'is':

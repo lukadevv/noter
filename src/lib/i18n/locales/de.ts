@@ -86,21 +86,13 @@ const de: Messages = {
     pin: 'Notiz anheften',
     unpin: 'Notiz lösen',
     inTrash: 'Diese Notiz liegt im Papierkorb. Stelle sie wieder her, um weiterzuschreiben.',
-    placeholder: 'Fang an zu schreiben…',
+    placeholder: 'Schreib los oder tippe / für Blöcke…',
     loadingEditor: 'Editor wird geladen…',
     rendering: 'Wird gerendert…',
     selectOrCreate: 'Wähle eine Notiz aus, oder lege eine an.',
     dropImages: 'Bilder hier ablegen, um sie dieser Notiz hinzuzufügen',
     previousDay: 'Vorheriger Tag',
     nextDay: 'Nächster Tag',
-    view: 'Notizansicht',
-    views: {
-      doc: 'Dokument',
-      checklist: 'Checkliste',
-      board: 'Board',
-      gallery: 'Galerie',
-      code: 'Code',
-    },
     menu: {
       pin: 'Anheften',
       unpin: 'Lösen',
@@ -119,18 +111,6 @@ const de: Messages = {
     unlockedToast: 'Notiz zum Bearbeiten entsperrt.',
   },
 
-  checklist: {
-    showDone: 'Erledigte anzeigen',
-    hideDone: 'Erledigte ausblenden',
-    clearDone: 'Erledigte entfernen',
-    addTask: 'Aufgabe hinzufügen',
-    emptyTask: 'Leere Aufgabe',
-    deleteTask: 'Aufgabe löschen',
-    task: 'Aufgabe',
-    empty:
-      'Noch keine Aufgaben. Füge unten eine hinzu, oder wechsle zur Dokumentansicht, um frei zu schreiben.',
-  },
-
   board: {
     moveTo: 'Nach {column} verschieben',
     cardActions: 'Kartenaktionen',
@@ -139,6 +119,11 @@ const de: Messages = {
     deleteCard: 'Karte löschen',
     newColumn: 'Neue Spalte',
     noHeadings: 'Diese Notiz hat keine Überschriften, die als Spalten dienen könnten.',
+    columns: {
+      todo: 'Zu erledigen',
+      doing: 'In Arbeit',
+      done: 'Erledigt',
+    },
   },
 
   gallery: {
@@ -148,9 +133,8 @@ const de: Messages = {
     openImage: 'Bild öffnen',
     missing: 'fehlendes Bild',
     notShared: 'Das Bild ist in diesem Link nicht enthalten',
+    remove: 'Aus der Galerie entfernen',
   },
-
-  code: { language: 'Sprache', copy: 'Kopieren', placeholder: 'Ein Snippet einfügen…' },
 
   lightbox: {
     viewer: 'Bildbetrachter',
@@ -198,7 +182,6 @@ const de: Messages = {
     emptyTrash: 'Papierkorb leeren',
     openSettings: 'Einstellungen öffnen',
     toggleTheme: 'Zwischen hell und dunkel wechseln',
-    switchView: 'Diese Notiz auf die Ansicht {view} umstellen',
     themeNamed: 'Design: {name}',
     fromTemplate: 'Neue Notiz aus „{title}“',
     groups: {
@@ -209,6 +192,8 @@ const de: Messages = {
       Appearance: 'Darstellung',
       App: 'App',
     },
+    goHome: 'Zum Start',
+    toggleLock: 'Bearbeiten sperren oder entsperren',
   },
 
   settings: {
@@ -570,6 +555,32 @@ const de: Messages = {
     alerts: 'Braucht deine Aufmerksamkeit',
     recent: 'Letzte Notizen',
     noNotes: 'Noch nichts geschrieben. Fang mit einer neuen Notiz an.',
+  },
+  blocks: {
+    text: 'Text',
+    h1: 'Überschrift 1',
+    h2: 'Überschrift 2',
+    h3: 'Überschrift 3',
+    task: 'Checkliste',
+    bullet: 'Aufzählung',
+    numbered: 'Nummerierte Liste',
+    quote: 'Zitat',
+    callout: 'Hinweisbox',
+    code: 'Code',
+    board: 'Board',
+    gallery: 'Galerie',
+    image: 'Bild',
+    table: 'Tabelle',
+    divider: 'Trennlinie',
+    date: 'Heutiges Datum',
+    menu: 'Blockaktionen',
+    turnInto: 'Umwandeln in',
+    duplicate: 'Duplizieren',
+    moveUp: 'Nach oben',
+    moveDown: 'Nach unten',
+    delete: 'Block löschen',
+    editSource: 'Als Markdown bearbeiten',
+    hint: 'Tippe / für Blöcke',
   },
 }
 

@@ -8,10 +8,14 @@
   interface Props {
     body: string
     readOnly?: boolean
+    /** Drawn inside a note (a ```gallery block) rather than filling a pane. */
+    inline?: boolean
     onadd?: () => void
+    /** Removes one image from the gallery (the stored image stays until unused). */
+    onremove?: (id: string) => void
   }
 
-  let { body, readOnly = false, onadd }: Props = $props()
+  let { body, readOnly = false, inline = false, onadd, onremove }: Props = $props()
 
   let ids = $derived(referencedAssetIds(body))
   let urls = $state<Record<string, string>>({})
@@ -32,7 +36,7 @@
   })
 </script>
 
-<div class="gallery">
+<div class="gallery" class:gallery--inline={inline}>
   {#if ids.length === 0}
     <div class="empty">
       <Icon name="image" size={22} />
@@ -59,6 +63,27 @@
           {:else}
             <span class="skeleton"></span>
           {/if}
+          {#if !readOnly && onremove}
+            <span
+              class="remove"
+              role="button"
+              tabindex="0"
+              aria-label={t('gallery.remove')}
+              onclick={(e) => {
+                e.stopPropagation()
+                onremove(id)
+              }}
+              onkeydown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  onremove(id)
+                }
+              }}
+            >
+              <Icon name="x" size={12} />
+            </span>
+          {/if}
         </button>
       {/each}
       {#if !readOnly && onadd}
@@ -75,6 +100,41 @@
     height: 100%;
     overflow-y: auto;
     padding: 0 var(--space-4) var(--space-6);
+  }
+
+  .gallery--inline {
+    height: auto;
+    padding: 0;
+  }
+
+  .gallery--inline .empty {
+    padding: var(--space-4);
+  }
+
+  .remove {
+    position: absolute;
+    top: 6px;
+    inset-inline-end: 6px;
+    display: grid;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--overlay);
+    color: #fff;
+    opacity: 0;
+    transition: opacity var(--dur-1);
+  }
+
+  .tile:hover .remove,
+  .remove:focus-visible {
+    opacity: 1;
+  }
+
+  @media (pointer: coarse) {
+    .remove {
+      opacity: 1;
+    }
   }
 
   .grid {

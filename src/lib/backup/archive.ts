@@ -5,6 +5,7 @@ import { derivedTitle, emptyNote } from '$lib/db/repo/notes'
 import { extractTags } from '$lib/md/links'
 import { folderPath, noteToMarkdown, parseMarkdown, restoreImageRefs, safeFileName } from './markdown'
 import { uuid } from '$lib/utils/uuid'
+import { migrateBodyForView } from '$lib/md/migrate'
 
 /**
  * Human-readable export: a folder tree of `.md` files plus the images they use.
@@ -158,7 +159,10 @@ export async function importMarkdownArchive(file: Blob): Promise<ImportSummary> 
       continue
     }
 
-    const body = restoreImageRefs(parsed.body).trimStart()
+    const lang = typeof parsed.meta.lang === 'string' ? parsed.meta.lang : null
+    // Archives from before blocks say which single view the note used.
+    const view = (parsed.meta.view as Note['view']) ?? 'doc'
+    const body = migrateBodyForView(view, restoreImageRefs(parsed.body).trimStart(), lang)
     const note: Note = {
       ...emptyNote(),
       id,
@@ -166,13 +170,13 @@ export async function importMarkdownArchive(file: Blob): Promise<ImportSummary> 
       folderId,
       body,
       tags: extractTags(body),
-      view: (parsed.meta.view as Note['view']) ?? 'doc',
+      view: 'doc',
       pinned: parsed.meta.pinned === true ? 1 : 0,
       template: parsed.meta.template === true ? 1 : 0,
       archivedAt: parsed.meta.archived === true ? Date.now() : 0,
       deletedAt: path.startsWith('trash/') ? Date.now() : 0,
       daily: typeof parsed.meta.daily === 'string' ? parsed.meta.daily : null,
-      lang: typeof parsed.meta.lang === 'string' ? parsed.meta.lang : null,
+      lang,
       createdAt: typeof parsed.meta.created === 'string' ? Date.parse(parsed.meta.created) : Date.now(),
       updatedAt: Number.isNaN(updated) ? Date.now() : updated,
     }

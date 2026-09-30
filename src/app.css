@@ -414,6 +414,85 @@ a:hover {
   scroll-behavior: auto !important;
 }
 
+/* Blocks in the reading view (trash, shared links) ----------------------- */
+
+.prose .md-board {
+  display: flex;
+  gap: var(--space-3);
+  overflow-x: auto;
+  margin: var(--space-3) 0;
+}
+
+.prose .md-board-column {
+  flex: none;
+  width: 230px;
+  padding: var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-2);
+}
+
+.prose .md-board-column h4 {
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-dim);
+}
+
+.prose .md-board-card {
+  margin-top: var(--space-2);
+  padding: var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+
+.prose .md-board-card--done {
+  color: var(--text-faint);
+  text-decoration: line-through;
+}
+
+.prose .md-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: var(--space-2);
+  margin: var(--space-3) 0;
+}
+
+.prose .md-gallery img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: var(--radius);
+}
+
+.prose blockquote.callout {
+  padding: var(--space-2) var(--space-3);
+  border-inline-start: 3px solid var(--accent);
+  border-radius: var(--radius);
+  background: var(--accent-soft);
+  color: var(--text);
+  font-style: normal;
+}
+
+.prose blockquote.callout--warning,
+.prose blockquote.callout--caution {
+  border-color: var(--warn);
+  background: var(--warn-soft);
+}
+
+.prose blockquote.callout--danger {
+  border-color: var(--danger);
+  background: var(--danger-soft);
+}
+
+.prose blockquote.callout--tip,
+.prose blockquote.callout--success {
+  border-color: var(--ok);
+  background: var(--ok-soft);
+}
+
 /* Reading view ------------------------------------------------------------
  * These rules are global on purpose: the rendered markdown is injected as HTML,
  * so component-scoped styles would never match it.

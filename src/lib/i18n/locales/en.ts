@@ -103,21 +103,13 @@ export const en = {
     pin: 'Pin note',
     unpin: 'Unpin note',
     inTrash: 'This note is in the trash. Restore it to keep editing.',
-    placeholder: 'Start writing…',
+    placeholder: 'Start writing, or type / for blocks…',
     loadingEditor: 'Loading editor…',
     rendering: 'Rendering…',
     selectOrCreate: 'Select a note, or create one.',
     dropImages: 'Drop images to add them to this note',
     previousDay: 'Previous day',
     nextDay: 'Next day',
-    view: 'Note view',
-    views: {
-      doc: 'Document',
-      checklist: 'Checklist',
-      board: 'Board',
-      gallery: 'Gallery',
-      code: 'Code',
-    },
     menu: {
       pin: 'Pin',
       unpin: 'Unpin',
@@ -136,17 +128,6 @@ export const en = {
     unlockedToast: 'Note unlocked for editing.',
   },
 
-  checklist: {
-    showDone: 'Show done',
-    hideDone: 'Hide done',
-    clearDone: 'Clear done',
-    addTask: 'Add a task',
-    emptyTask: 'Empty task',
-    deleteTask: 'Delete task',
-    task: 'Task',
-    empty: 'No tasks yet. Add one below, or switch to the document view to write freely.',
-  },
-
   board: {
     moveTo: 'Move to {column}',
     cardActions: 'Card actions',
@@ -155,6 +136,11 @@ export const en = {
     deleteCard: 'Delete card',
     newColumn: 'New column',
     noHeadings: 'This note has no headings to use as columns.',
+    columns: {
+      todo: 'To do',
+      doing: 'Doing',
+      done: 'Done',
+    },
   },
 
   gallery: {
@@ -164,12 +150,7 @@ export const en = {
     openImage: 'Open image',
     missing: 'missing image',
     notShared: 'Image not included in this link',
-  },
-
-  code: {
-    language: 'Language',
-    copy: 'Copy',
-    placeholder: 'Paste a snippet…',
+    remove: 'Remove from gallery',
   },
 
   lightbox: {
@@ -218,7 +199,6 @@ export const en = {
     emptyTrash: 'Empty the trash',
     openSettings: 'Open settings',
     toggleTheme: 'Toggle light and dark',
-    switchView: 'Switch this note to {view} view',
     themeNamed: 'Theme: {name}',
     fromTemplate: 'New note from “{title}”',
     groups: {
@@ -229,6 +209,8 @@ export const en = {
       Appearance: 'Appearance',
       App: 'App',
     },
+    goHome: 'Go to Home',
+    toggleLock: 'Lock or unlock editing',
   },
 
   settings: {
@@ -592,5 +574,31 @@ export const en = {
     alerts: 'Needs your attention',
     recent: 'Recent notes',
     noNotes: 'Nothing written yet. Start with a new note.',
+  },
+  blocks: {
+    text: 'Text',
+    h1: 'Heading 1',
+    h2: 'Heading 2',
+    h3: 'Heading 3',
+    task: 'Checklist',
+    bullet: 'Bulleted list',
+    numbered: 'Numbered list',
+    quote: 'Quote',
+    callout: 'Callout',
+    code: 'Code',
+    board: 'Board',
+    gallery: 'Gallery',
+    image: 'Image',
+    table: 'Table',
+    divider: 'Divider',
+    date: 'Today’s date',
+    menu: 'Block actions',
+    turnInto: 'Turn into',
+    duplicate: 'Duplicate',
+    moveUp: 'Move up',
+    moveDown: 'Move down',
+    delete: 'Delete block',
+    editSource: 'Edit as markdown',
+    hint: 'Type / for blocks',
   },
 }

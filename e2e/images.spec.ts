@@ -1,5 +1,13 @@
 import { expect, test, type Page } from '@playwright/test'
-import { createNote, createNoteWith, noteMenu, openApp, TINY_PNG, typeMarkdown } from './helpers'
+import {
+  TINY_PNG,
+  createNote,
+  createNoteWith,
+  insertBlock,
+  noteMenu,
+  openApp,
+  typeMarkdown,
+} from './helpers'
 
 /** Attaches an image through whichever file picker the app just opened. */
 async function attachImage(page: Page, open: () => Promise<void>) {
@@ -57,13 +65,11 @@ test.describe('images', () => {
     expect(assetCount).toBe(1)
   })
 
-  test('shows images in the gallery view and opens the lightbox', async ({ page }) => {
+  test('shows images in a gallery block and opens the lightbox', async ({ page }) => {
     await createNoteWith(page, 'Gallery note')
-    await page.getByTestId('view-tab-gallery').click()
-
-    await attachImage(page, async () => {
-      await page.getByRole('button', { name: 'Add images' }).first().click()
-    })
+    await page.keyboard.press('Enter')
+    // Choosing the gallery block opens the image picker straight away.
+    await attachImage(page, () => insertBlock(page, 'gallery'))
 
     await expect(page.getByTestId('gallery-tile')).toHaveCount(1)
     await page.getByTestId('gallery-tile').first().click()

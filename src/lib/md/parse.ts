@@ -1,5 +1,6 @@
 import MarkdownIt from 'markdown-it'
 import DOMPurify from 'dompurify'
+import { parseBoard } from './board'
 
 /**
  * Markdown rendering for the reading view.
@@ -104,6 +105,60 @@ md.core.ruler.after('inline', 'noter_tasklist', (state) => {
     token.children?.unshift(checkbox)
 
     grandparent.attrJoin('class', checked ? 'task-item task-item--done' : 'task-item')
+  }
+  return true
+})
+
+/**
+ * Board and gallery blocks render as what they are, not as code. Card text is
+ * rendered inline (links, emphasis) and everything is sanitised below.
+ */
+const defaultFence = md.renderer.rules.fence!
+md.renderer.rules.fence = (tokens, idx, options, env, self) => {
+  const token = tokens[idx]!
+  const kind = token.info.trim().split(/\s+/)[0]?.toLowerCase()
+  if (kind === 'board') {
+    const columns = parseBoard(token.content)
+    const html = columns
+      .map(
+        (column) =>
+          `<section class="md-board-column"><h4>${md.utils.escapeHtml(column.title)}</h4>` +
+          column.cards
+            .map(
+              (card) =>
+                `<div class="md-board-card${card.done ? ' md-board-card--done' : ''}">${md.renderInline(card.text)}</div>`,
+            )
+            .join('') +
+          '</section>',
+      )
+      .join('')
+    return `<div class="md-board">${html}</div>\n`
+  }
+  if (kind === 'gallery') {
+    const ids = [...token.content.matchAll(/!\[\[img:([0-9a-f-]{36})\]\]/g)].map((m) => m[1]!)
+    const html = ids.map((id) => `<img class="asset" loading="lazy" data-asset="${id}" alt="">`).join('')
+    return `<div class="md-gallery">${html}</div>\n`
+  }
+  return defaultFence(tokens, idx, options, env, self)
+}
+
+/** `> [!tip] Title` becomes a callout box: the marker turns into a class. */
+md.core.ruler.after('inline', 'noter_callout', (state) => {
+  const tokens = state.tokens
+  for (let i = 0; i < tokens.length; i++) {
+    if (tokens[i]!.type !== 'blockquote_open') continue
+    const inline = tokens[i + 2]
+    if (!inline || inline.type !== 'inline') continue
+    const match = /^\[!([a-z]+)\]\s*/i.exec(inline.content)
+    if (!match) continue
+    const kind = match[1]!.toLowerCase()
+    tokens[i]!.attrJoin('class', `callout callout--${kind}`)
+    inline.content = inline.content.slice(match[0].length)
+    const first = inline.children?.[0]
+    if (first && first.type === 'text') first.content = first.content.replace(/^\[![a-z]+\]\s*/i, '')
+    const label = new state.Token('html_inline', '', 0)
+    label.content = `<strong class="callout-label">${kind[0]!.toUpperCase()}${kind.slice(1)}</strong> `
+    inline.children?.unshift(label)
   }
   return true
 })

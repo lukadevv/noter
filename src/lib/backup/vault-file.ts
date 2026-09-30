@@ -1,3 +1,4 @@
+import { migrateBodyForView, needsMigration } from '$lib/md/migrate'
 import { deflateSync, inflateSync } from 'fflate'
 import { db } from '$lib/db/db'
 import type { Asset, Folder, Note, SmartFolder, Theme, Version } from '$lib/db/schema'
@@ -280,12 +281,23 @@ export async function importVault(
         result.folders++
       }
 
-      for (const note of manifest.notes) {
-        const existing = mode === 'merge' ? await db.notes.get(note.id) : undefined
-        if (existing && existing.updatedAt >= note.updatedAt) {
+      // Backups from before blocks carry notes with a single view; bring them
+      // (and their history) up to date the way the database upgrade does.
+      const views = new Map(manifest.notes.map((n) => [n.id, n]))
+      for (const incoming of manifest.notes) {
+        const existing = mode === 'merge' ? await db.notes.get(incoming.id) : undefined
+        if (existing && existing.updatedAt >= incoming.updatedAt) {
           result.skipped++
           continue
         }
+        const note =
+          needsMigration(incoming) && !incoming.encrypted
+            ? {
+                ...incoming,
+                body: migrateBodyForView(incoming.view, incoming.body, incoming.lang),
+                view: 'doc' as const,
+              }
+            : incoming
         await db.notes.put(note)
         result.notes++
       }
@@ -309,7 +321,15 @@ export async function importVault(
 
       for (const smart of manifest.smartFolders) await db.smartFolders.put(smart)
       for (const theme of manifest.themes) await db.themes.put(theme)
-      for (const version of manifest.versions) await db.versions.put(version)
+      for (const version of manifest.versions) {
+        const owner = views.get(version.noteId)
+        const migrate = owner && needsMigration(owner) && !version.body.startsWith('noter:enc:')
+        await db.versions.put(
+          migrate
+            ? { ...version, body: migrateBodyForView(owner.view, version.body, owner.lang) }
+            : version,
+        )
+      }
 
       if (mode === 'replace' && manifest.settings) await saveSettings(manifest.settings)
     },

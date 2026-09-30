@@ -17,7 +17,7 @@ describe('encodeNote', () => {
   })
 
   it('falls back to the derived title when none is set', () => {
-    const decoded = decodeNote(encodeNote({ title: '', body: '# Heading\nbody', view: 'doc' }).payload)
+    const decoded = decodeNote(encodeNote({ title: '', body: '# Heading\nbody' }).payload)
     expect(decoded?.t).toBe('Heading')
   })
 
@@ -25,7 +25,6 @@ describe('encodeNote', () => {
     const withImages = {
       title: 'Pictures',
       body: `one ![[img:${ASSET}]] two ![[img:22222222-2222-4222-8222-222222222222]]`,
-      view: 'doc' as const,
     }
     const result = encodeNote(withImages)
 
@@ -39,19 +38,27 @@ describe('encodeNote', () => {
 
   it('keeps the image references themselves in the text', () => {
     const body = `see ![[img:${ASSET}]]`
-    expect(decodeNote(encodeNote({ title: 'T', body, view: 'doc' }).payload)?.b).toBe(body)
+    expect(decodeNote(encodeNote({ title: 'T', body }).payload)?.b).toBe(body)
   })
 
   it('flags a payload too long to share reliably', () => {
     expect(encodeNote(note).tooLong).toBe(false)
     // Random text does not compress, so this reliably exceeds the limit.
     const noise = Array.from({ length: 40_000 }, () => Math.random().toString(36)[2]).join('')
-    expect(encodeNote({ title: 'Big', body: noise, view: 'doc' }).tooLong).toBe(true)
-    expect(encodeNote({ title: 'Big', body: noise, view: 'doc' }).length).toBeGreaterThan(MAX_URL_LENGTH)
+    expect(encodeNote({ title: 'Big', body: noise }).tooLong).toBe(true)
+    expect(encodeNote({ title: 'Big', body: noise }).length).toBeGreaterThan(MAX_URL_LENGTH)
   })
 })
 
 describe('decodeNote', () => {
+  it('turns a link made for an old board note into a board block', async () => {
+    const { compressToEncodedURIComponent } = await import('lz-string')
+    const payload = compressToEncodedURIComponent(
+      JSON.stringify({ v: 1, t: 'Old', b: '## A\n- x', m: 'board' }),
+    )
+    expect(decodeNote(payload)).toMatchObject({ b: '```board\n## A\n- x\n```', m: 'doc' })
+  })
+
   it('reads a well-formed payload', () => {
     const decoded = decodeNote(encode({ v: 1, t: 'Title', b: '# Body', m: 'doc' }))
     expect(decoded).toEqual({ v: 1, t: 'Title', b: '# Body', m: 'doc', i: undefined })

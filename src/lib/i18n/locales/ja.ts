@@ -87,21 +87,13 @@ const ja: Messages = {
     pin: 'ノートをピン留め',
     unpin: 'ピン留めを解除',
     inTrash: 'このノートはゴミ箱にあります。編集を続けるには復元してください。',
-    placeholder: '書き始めましょう…',
+    placeholder: '書き始めるか、/ でブロックを挿入…',
     loadingEditor: 'エディタを読み込み中…',
     rendering: '描画中…',
     selectOrCreate: 'ノートを選ぶか、新しく作ってください。',
     dropImages: '画像をここにドロップするとこのノートに追加されます',
     previousDay: '前の日',
     nextDay: '次の日',
-    view: 'ノートのビュー',
-    views: {
-      doc: 'ドキュメント',
-      checklist: 'チェックリスト',
-      board: 'ボード',
-      gallery: 'ギャラリー',
-      code: 'コード',
-    },
     menu: {
       pin: 'ピン留め',
       unpin: 'ピン留め解除',
@@ -120,17 +112,6 @@ const ja: Messages = {
     unlockedToast: 'ノートのロックを解除しました。',
   },
 
-  checklist: {
-    showDone: '完了を表示',
-    hideDone: '完了を隠す',
-    clearDone: '完了を消去',
-    addTask: 'タスクを追加',
-    emptyTask: '空のタスク',
-    deleteTask: 'タスクを削除',
-    task: 'タスク',
-    empty: 'まだタスクがありません。下から追加するか、ドキュメントビューに切り替えて自由に書いてください。',
-  },
-
   board: {
     moveTo: '{column} へ移動',
     cardActions: 'カードの操作',
@@ -139,6 +120,11 @@ const ja: Messages = {
     deleteCard: 'カードを削除',
     newColumn: '新しい列',
     noHeadings: 'このノートには列として使える見出しがありません。',
+    columns: {
+      todo: '未着手',
+      doing: '進行中',
+      done: '完了',
+    },
   },
 
   gallery: {
@@ -148,9 +134,8 @@ const ja: Messages = {
     openImage: '画像を開く',
     missing: '画像が見つかりません',
     notShared: 'このリンクに画像は含まれていません',
+    remove: 'ギャラリーから削除',
   },
-
-  code: { language: '言語', copy: 'コピー', placeholder: 'コード片を貼り付け…' },
 
   lightbox: {
     viewer: '画像ビューア',
@@ -195,7 +180,6 @@ const ja: Messages = {
     emptyTrash: 'ゴミ箱を空にする',
     openSettings: '設定を開く',
     toggleTheme: 'ライトとダークを切り替え',
-    switchView: 'このノートを{view}ビューに切り替え',
     themeNamed: 'テーマ: {name}',
     fromTemplate: '「{title}」から新しいノート',
     groups: {
@@ -206,6 +190,8 @@ const ja: Messages = {
       Appearance: '外観',
       App: 'アプリ',
     },
+    goHome: 'ホームへ',
+    toggleLock: '編集のロック/解除',
   },
 
   settings: {
@@ -545,6 +531,32 @@ const ja: Messages = {
     alerts: '確認が必要',
     recent: '最近のノート',
     noNotes: 'まだ何も書かれていません。新しいノートから始めましょう。',
+  },
+  blocks: {
+    text: 'テキスト',
+    h1: '見出し 1',
+    h2: '見出し 2',
+    h3: '見出し 3',
+    task: 'チェックリスト',
+    bullet: '箇条書き',
+    numbered: '番号付きリスト',
+    quote: '引用',
+    callout: 'コールアウト',
+    code: 'コード',
+    board: 'ボード',
+    gallery: 'ギャラリー',
+    image: '画像',
+    table: '表',
+    divider: '区切り線',
+    date: '今日の日付',
+    menu: 'ブロックの操作',
+    turnInto: '変換',
+    duplicate: '複製',
+    moveUp: '上へ移動',
+    moveDown: '下へ移動',
+    delete: 'ブロックを削除',
+    editSource: 'Markdown で編集',
+    hint: '/ でブロックを挿入',
   },
 }
 

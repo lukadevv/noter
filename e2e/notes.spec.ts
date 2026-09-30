@@ -135,15 +135,17 @@ test.describe('notes and folders', () => {
     await expect(page.getByTestId('note-item')).toHaveCount(1)
   })
 
-  test('switches a note between views without losing text', async ({ page }) => {
+  test('turns a block into another kind from the block menu', async ({ page }) => {
     await createNoteWith(page, 'Shape shifter')
-    await typeMarkdown(page, '\n- [ ] a task')
-    await expect(page.getByTestId('note-item').first()).toContainText('a task')
+    await typeMarkdown(page, '\n\nbuy milk')
+    await page.getByTestId('note-title').click()
 
-    await page.getByTestId('view-tab-checklist').click()
-    await expect(page.locator('.task')).toHaveCount(1)
+    await page.locator('.cm-line', { hasText: 'buy milk' }).hover()
+    await page.locator('.cm-block-handle--visible').click()
+    await page.getByRole('menuitem', { name: 'Turn into' }).click()
+    await page.getByRole('menuitem', { name: 'Checklist' }).click()
 
-    await page.getByTestId('view-tab-doc').click()
+    await expect(page.locator('.cm-task-checkbox')).toHaveCount(1)
     await expect(page.locator('.cm-content')).toContainText('Shape shifter')
   })
 

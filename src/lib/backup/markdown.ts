@@ -58,7 +58,6 @@ export function noteToMarkdown(note: Note): string {
     title: derivedTitle(note),
     created: new Date(note.createdAt).toISOString(),
     updated: new Date(note.updatedAt).toISOString(),
-    view: note.view,
   }
   if (note.tags.length > 0) meta.tags = note.tags
   if (note.pinned) meta.pinned = true
