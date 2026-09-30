@@ -1,0 +1,74 @@
+name: MSIX
+
+# Builds the Microsoft Store package without cutting a release. Partner Center
+# asks for the .msix on the first submission, before any tag exists; run this
+# from Actions → MSIX → Run workflow and download the `noter-msix` artifact.
+# It also runs on pull requests that change the MSIX packaging.
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - .github/workflows/msix.yml
+      - scripts/build-msix.ps1
+      - src-tauri/windows/msix/**
+
+permissions:
+  contents: read
+
+concurrency:
+  group: msix-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  msix:
+    name: Store package
+    runs-on: windows-latest
+    env:
+      MSIX_IDENTITY_NAME: ${{ vars.MSIX_IDENTITY_NAME }}
+      MSIX_PUBLISHER: ${{ vars.MSIX_PUBLISHER }}
+      MSIX_PUBLISHER_DISPLAY_NAME: ${{ vars.MSIX_PUBLISHER_DISPLAY_NAME }}
+    steps:
+      # Checked before twenty minutes of compiling, not after.
+      - name: Check the Partner Center identity
+        shell: pwsh
+        run: |
+          $missing = 'MSIX_IDENTITY_NAME', 'MSIX_PUBLISHER', 'MSIX_PUBLISHER_DISPLAY_NAME' |
+            Where-Object { -not (Get-Item "env:$_" -ErrorAction SilentlyContinue).Value }
+          if ($missing) {
+            Write-Output "::error::Missing repository variables: $($missing -join ', '). Copy them from Partner Center → Product management → Product identity into Settings → Secrets and variables → Actions → Variables (see docs/microsoft-store.md)."
+            exit 1
+          }
+
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # Only the executable is needed: the MSIX layout is assembled by the
+      # script below, so the NSIS and MSI bundles are skipped.
+      - name: Build the desktop app
+        run: |
+          node scripts/sync-native-version.mjs
+          pnpm tauri build --no-bundle
+
+      - name: Pack MSIX
+        shell: pwsh
+        run: ./scripts/build-msix.ps1
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: noter-msix
+          path: ${{ env.MSIX_PATH }}
+          if-no-files-found: error

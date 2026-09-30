@@ -1,52 +1,74 @@
-# Publicar Noter en Microsoft Store
+# Publishing Noter on the Microsoft Store
 
-Noter se publica en la Store como **MSIX**. Con MSIX, Microsoft firma el
-paquete gratis, así que no hace falta comprar un certificado de firma de código
-(el camino EXE/MSI sí lo exige).
+Noter ships to the Store as an **MSIX** package. Microsoft signs MSIX packages
+for free, so no code-signing certificate is needed (the EXE/MSI route requires
+one).
 
-## 1. Crear el producto en Partner Center
+The first submission asks for the package file on its **Packages** step, before
+any release exists. The **MSIX** workflow builds that file on demand, so the
+order is: reserve the name → copy the identity into the repo → run the workflow
+→ upload its file.
 
-1. En **Apps and games → New product**, elegí **"MSIX or PWA app"**. El tipo de
-   producto no se puede cambiar después.
-2. Si el nombre "Noter" quedó reservado en un producto "EXE or MSI app", borrá
-   ese producto (o liberá el nombre en _Product management → Manage app names_)
-   y reservalo en el nuevo.
+## 1. Create the product in Partner Center
 
-## 2. Conectar la identidad del paquete con el repo
+1. In **Apps and games → New product**, choose **"MSIX or PWA app"**. The product
+   type cannot be changed later.
+2. If the name "Noter" is already reserved by an "EXE or MSI app" product,
+   delete that product (or release the name under _Product management → Manage
+   app names_) and reserve it again in the new one.
 
-En **Product management → Product identity** copiá estos tres valores y
-guardalos como **repository variables** en GitHub
-(_Settings → Secrets and variables → Actions → Variables_):
+## 2. Store the package identity in the repository
 
-| Partner Center                            | Variable de GitHub            |
+Reserving the name is enough for Partner Center to assign the identity; no
+package upload is needed to see it. Open **Product management → Product
+identity**, copy these three values and save them as **repository variables**
+in GitHub (_Settings → Secrets and variables → Actions → Variables_):
+
+| Partner Center                            | GitHub variable               |
 | ----------------------------------------- | ----------------------------- |
 | `Package/Identity/Name`                   | `MSIX_IDENTITY_NAME`          |
 | `Package/Identity/Publisher` (`CN=…`)     | `MSIX_PUBLISHER`              |
 | `Package/Properties/PublisherDisplayName` | `MSIX_PUBLISHER_DISPLAY_NAME` |
 
-## 3. Generar el paquete
+Copy them exactly: Partner Center rejects a package whose identity differs by a
+single character.
 
-Al pushear un tag `vX.Y.Z` (o correr el workflow _Release_ a mano), el job de
-Windows arma el `.exe`, el `.msi` y además `Noter_X.Y.Z.0_x64.msix`, y lo sube al
-release de GitHub. El paquete no está firmado: sirve solo para subirlo a la
-Store, que lo firma. Localmente: `pnpm desktop:build` y después
-`pwsh scripts/build-msix.ps1` con las tres variables definidas.
+## 3. Build the package
 
-## 4. Completar la submission
+- **Without a release (first submission, or any time):** in GitHub, go to
+  _Actions → MSIX → Run workflow_. When it finishes, download the
+  **`noter-msix`** artifact from the run's summary page and unzip it; inside is
+  `Noter_X.Y.Z.0_x64.msix`. The workflow also runs on pull requests that touch
+  the MSIX packaging.
+- **With a release:** pushing a `vX.Y.Z` tag runs the _Release_ workflow, which
+  also attaches the `.msix` to the GitHub release.
+- **Locally (Windows):** `pnpm desktop:build`, then
+  `pwsh scripts/build-msix.ps1` with the three variables set in the
+  environment.
 
-- **Pricing and availability:** gratis, todos los mercados.
-- **Properties:** categorías, URL de privacidad y requisitos (abajo).
-- **Age ratings:** cuestionario IARC. Es una utilidad, sin chat entre usuarios,
-  sin compras y sin contenido generado compartido públicamente.
-- **Packages:** subí el `.msix`.
-- **Store listings:** descripción, al menos una captura (1366×768 o más) y el
-  logo (`assets/logo-1024.png`, con fondo transparente).
-- **Submission options → Notes for certification:** el texto de abajo.
+The package is unsigned on purpose: it is only for uploading to the Store, which
+signs it. An unsigned MSIX cannot be installed by double-clicking it.
 
-### Categorías
+The version comes from `package.json` (`1.0.0` becomes `1.0.0.0`). Every upload
+must have a higher version than the last package the Store accepted, so bump
+`version` in `package.json` before building an update.
 
-- **Principal:** Productivity
-- **Secundaria (opcional):** Utilities & tools
+## 4. Complete the submission
+
+- **Pricing and availability:** free, all markets.
+- **Properties:** categories, privacy policy URL and system requirements
+  (below).
+- **Age ratings:** the IARC questionnaire. Noter is a utility with no
+  user-to-user communication, no purchases and no publicly shared user content.
+- **Packages:** upload the `.msix` from step 3.
+- **Store listings:** description, at least one screenshot (1366×768 or larger)
+  and the logo (`assets/logo-1024.png`, transparent background).
+- **Submission options → Notes for certification:** the text below.
+
+### Categories
+
+- **Primary:** Productivity
+- **Secondary (optional):** Utilities & tools
 
 ### Privacy policy URL
 
@@ -54,18 +76,16 @@ Store, que lo firma. Localmente: `pnpm desktop:build` y después
 
 ### System requirements
 
-- **Minimum hardware:** no marcar nada, así la app se puede instalar en equipos
-  solo táctiles.
-- **Recommended hardware:** Keyboard y Mouse.
-- **Memory:** mínimo 2 GB, recomendado 4 GB.
-- **DirectX / Video memory:** no requeridos.
+- **Minimum hardware:** leave everything unticked, so the app can be installed
+  on touch-only devices.
+- **Recommended hardware:** Keyboard and Mouse.
+- **Memory:** minimum 2 GB, recommended 4 GB.
+- **DirectX / Video memory:** not required.
 - **Architecture:** x64.
-- **OS:** Windows 10 versión 1809 (build 17763) o posterior. Sale del manifest,
-  no hace falta cargarlo a mano.
+- **OS:** Windows 10 version 1809 (build 17763) or later. This comes from the
+  manifest; there is nothing to enter.
 
 ### Notes for certification
-
-(En inglés, porque lo leen los testers.)
 
 > Noter is a local-first notes app built with Tauri 2 (a Win32 app packaged as MSIX). No account or sign-in is required and no test credentials are needed; all data is stored locally on the device and the app works fully offline. The network is used only when the user pastes an image URL, to download that image.
 >
@@ -78,9 +98,19 @@ Store, que lo firma. Localmente: `pnpm desktop:build` y después
 >
 > Notifications are local only and require user permission. The app requires the Microsoft Edge WebView2 Runtime, which is included in Windows 11 and in up-to-date Windows 10. The runFullTrust capability is required because this is a desktop (Win32) application. There are no ads, no in-app purchases and no data collection.
 
-## 5. Avisar a los usuarios del .exe
+## 5. Troubleshooting
 
-La versión de la Store guarda sus datos en otra ubicación que la instalada con
-el `.exe`/`.msi`. Para pasar de una a otra: en la versión vieja,
-_Ajustes → Copias de seguridad → Exportar copia .noter_; en la nueva,
-_Importar copia .noter_.
+- **"The package identity doesn't match" / "Invalid package family name":** one
+  of the three repository variables differs from _Product identity_. Fix it and
+  run the workflow again.
+- **"A package with this version already exists" (or a lower one):** bump
+  `version` in `package.json` and rebuild.
+- **The MSIX workflow fails at "Check the Partner Center identity":** the
+  repository variables are not set yet (step 2).
+
+## 6. Tell users of the .exe
+
+The Store version keeps its data in a different location from the version
+installed with the `.exe`/`.msi`. To move over: in the old version, go to
+_Settings → Backups → Export .noter backup_; in the new one, use _Import .noter
+backup_.

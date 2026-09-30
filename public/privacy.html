@@ -65,15 +65,6 @@
       a {
         color: var(--accent);
       }
-      nav {
-        margin: 16px 0 32px;
-        font-size: 14px;
-      }
-      hr {
-        border: 0;
-        border-top: 1px solid var(--border);
-        margin: 48px 0;
-      }
     </style>
   </head>
   <body>
@@ -83,8 +74,6 @@
         <h1>Privacy policy</h1>
       </header>
       <p class="meta">Noter · Last updated: 30 September 2026</p>
-      <nav><a href="#en">English</a> · <a href="#es">Español</a></nav>
-
       <section id="en" lang="en">
         <h2>The short version</h2>
         <p>
@@ -152,82 +141,6 @@
         <h2>Changes and contact</h2>
         <p>
           If this policy changes, the new version will be published at this address with a new date. Questions:
-          <a href="https://github.com/lukadevv/noter/issues">github.com/lukadevv/noter/issues</a>.
-        </p>
-      </section>
-
-      <hr />
-
-      <section id="es" lang="es">
-        <h2>En resumen</h2>
-        <p>
-          Noter guarda todo lo que escribís y almacenás en tu propio dispositivo. No hay cuenta ni servidor de
-          Noter, y las apps de escritorio y Android no envían analíticas ni telemetría. No podemos ver, vender ni
-          perder tus datos, porque nunca los tenemos.
-        </p>
-
-        <h2>Qué guarda Noter y dónde</h2>
-        <ul>
-          <li>
-            Notas, carpetas, imágenes, temporizadores, medicación y ajustes se guardan localmente, en el
-            almacenamiento propio de la app en tu dispositivo (IndexedDB dentro de la app, o tu navegador en la
-            versión web).
-          </li>
-          <li>
-            Los elementos del Vault y las carpetas cifradas se cifran en tu dispositivo con AES-256-GCM, con una
-            clave derivada de una contraseña que solo vos conocés. La contraseña nunca se guarda ni se envía, y no
-            se puede recuperar.
-          </li>
-          <li>
-            Los nombres de medicamentos y los horarios de toma son información de salud. Nunca salen de tu
-            dispositivo, salvo que vos exportes una copia.
-          </li>
-        </ul>
-
-        <h2>Conexiones de red</h2>
-        <ul>
-          <li>
-            Cuando pegás o soltás la dirección de una imagen, Noter la descarga del sitio indicado. Ese sitio ve un
-            pedido común de la imagen.
-          </li>
-          <li>
-            Un link compartido lleva una copia de la nota en la parte de la dirección que va después de
-            <code>#</code>. Los navegadores nunca envían esa parte a ningún servidor; quien reciba el link puede
-            leer la nota.
-          </li>
-          <li>
-            La versión web (no las apps de escritorio ni Android) puede usar Cloudflare Web Analytics, que cuenta
-            visitas sin cookies y sin identificarte. No incluye nada de lo que escribís.
-          </li>
-          <li>
-            Microsoft Store y Google Play pueden recopilar datos según sus propias políticas cuando instalás la app.
-          </li>
-        </ul>
-
-        <h2>Notificaciones</h2>
-        <p>
-          Los recordatorios de temporizadores y medicación los programa y muestra tu propio dispositivo. Noter pide
-          permiso antes de mostrar alguno, y podés desactivarlos en la app o en los ajustes del sistema.
-        </p>
-
-        <h2>Copias y exportaciones</h2>
-        <p>
-          Las copias de seguridad y exportaciones son archivos que vos creás y guardás. Dónde terminan (una
-          carpeta, un pendrive, un servicio en la nube) lo elegís vos, y se rigen por la política de ese servicio.
-        </p>
-
-        <h2>Borrar tus datos</h2>
-        <p>
-          Borrá notas y elementos desde la app, o eliminá todo desinstalándola (o borrando los datos del sitio en
-          tu navegador, en la versión web).
-        </p>
-
-        <h2>Menores</h2>
-        <p>Noter no recopila datos personales de nadie, incluidos menores.</p>
-
-        <h2>Cambios y contacto</h2>
-        <p>
-          Si esta política cambia, la nueva versión se publicará en esta dirección con una fecha nueva. Consultas:
           <a href="https://github.com/lukadevv/noter/issues">github.com/lukadevv/noter/issues</a>.
         </p>
       </section>
