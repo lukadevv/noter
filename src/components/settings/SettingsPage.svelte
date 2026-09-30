@@ -5,7 +5,6 @@
   import { SETTINGS_SECTIONS } from './registry'
   import { ui } from '$lib/stores/ui.svelte'
   import { closeSettings, openSettings } from '$lib/nav'
-  import { rise } from '$lib/ui/motion.svelte'
   import { t } from '$lib/i18n/index.svelte'
 
   let query = $state('')
@@ -87,7 +86,7 @@
     {#if active}
       <main class="content">
         {#key active.id}
-          <div class="section" in:rise={{ y: 6, duration: 160 }}>
+          <div class="section enter">
             {#if !ui.narrow}<h2 class="title">{t(active.label)}</h2>{/if}
             <Lazy load={active.load}>
               {#snippet fallback()}<Skeleton rows={5} />{/snippet}

@@ -93,6 +93,35 @@ import UserIcon from '@lucide/svelte/icons/user'
 import Volume2Icon from '@lucide/svelte/icons/volume-2'
 import VolumeXIcon from '@lucide/svelte/icons/volume-x'
 import WifiIcon from '@lucide/svelte/icons/wifi'
+import AppleLc from '@lucide/svelte/icons/apple'
+import BedLc from '@lucide/svelte/icons/bed'
+import BikeLc from '@lucide/svelte/icons/bike'
+import BookOpenLc from '@lucide/svelte/icons/book-open'
+import BrainLc from '@lucide/svelte/icons/brain'
+import CoffeeLc from '@lucide/svelte/icons/coffee'
+import CompassLc from '@lucide/svelte/icons/compass'
+import DownloadLc from '@lucide/svelte/icons/download'
+import DropletLc from '@lucide/svelte/icons/droplet'
+import DumbbellLc from '@lucide/svelte/icons/dumbbell'
+import FlagLc from '@lucide/svelte/icons/flag'
+import FootprintsLc from '@lucide/svelte/icons/footprints'
+import HeartLc from '@lucide/svelte/icons/heart'
+import LeafLc from '@lucide/svelte/icons/leaf'
+import MoonLc from '@lucide/svelte/icons/moon'
+import PartyPopperLc from '@lucide/svelte/icons/party-popper'
+import RepeatLc from '@lucide/svelte/icons/repeat'
+import RotateCwLc from '@lucide/svelte/icons/rotate-cw'
+import SaladLc from '@lucide/svelte/icons/salad'
+import SkipForwardLc from '@lucide/svelte/icons/skip-forward'
+import SmileLc from '@lucide/svelte/icons/smile'
+import SquareLc from '@lucide/svelte/icons/square'
+import SunLc from '@lucide/svelte/icons/sun'
+import TargetLc from '@lucide/svelte/icons/target'
+import TrophyLc from '@lucide/svelte/icons/trophy'
+import ZapLc from '@lucide/svelte/icons/zap'
+import ArrowRightLc from '@lucide/svelte/icons/arrow-right'
+import ArrowLeftLc from '@lucide/svelte/icons/arrow-left'
+import CircleLc from '@lucide/svelte/icons/circle'
 
 export type IconComponent = Component<{ size?: number | string; strokeWidth?: number; class?: string }>
 
@@ -196,6 +225,35 @@ export const ICONS: Record<string, IconComponent> = {
   'volume-2': Volume2Icon,
   'volume-x': VolumeXIcon,
   wifi: WifiIcon,
+  apple: AppleLc,
+  bed: BedLc,
+  bike: BikeLc,
+  'book-open': BookOpenLc,
+  brain: BrainLc,
+  coffee: CoffeeLc,
+  compass: CompassLc,
+  download: DownloadLc,
+  droplet: DropletLc,
+  dumbbell: DumbbellLc,
+  flag: FlagLc,
+  footprints: FootprintsLc,
+  heart: HeartLc,
+  leaf: LeafLc,
+  moon: MoonLc,
+  'party-popper': PartyPopperLc,
+  repeat: RepeatLc,
+  'rotate-cw': RotateCwLc,
+  salad: SaladLc,
+  'skip-forward': SkipForwardLc,
+  smile: SmileLc,
+  square: SquareLc,
+  sun: SunLc,
+  target: TargetLc,
+  trophy: TrophyLc,
+  zap: ZapLc,
+  'arrow-right': ArrowRightLc,
+  'arrow-left': ArrowLeftLc,
+  circle: CircleLc,
 } as unknown as Record<string, IconComponent>
 
 /** Folder icon choices offered before the full picker exists. */

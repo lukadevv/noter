@@ -8,6 +8,7 @@
   import Lazy from '$components/Lazy.svelte'
   import ContextMenu from '$components/ContextMenu.svelte'
   import { dialogs } from '$lib/stores/dialogs.svelte'
+  import { confirm } from '$lib/stores/confirm.svelte'
   import { notes } from '$lib/stores/notes.svelte'
   import { theme } from '$lib/stores/theme.svelte'
   import { SECTIONS } from '$lib/sections'
@@ -21,7 +22,6 @@
     type Route,
   } from './routes/router'
   import { goTo, openNote, openSettings } from '$lib/nav'
-  import { fadeIn } from '$lib/ui/motion.svelte'
   import { snapshot } from '$lib/db/repo/versions'
   import { purgeExpiredTrash } from '$lib/db/repo/notes'
   import * as notesRepo from '$lib/db/repo/notes'
@@ -340,7 +340,7 @@
 
       {#key ui.section}
         {#if ui.section !== 'notes'}
-          <div class="section section--scroll" in:fadeIn={{ duration: 140 }}>
+          <div class="section section--scroll">
             {#if ui.section === 'home'}
               <Lazy
                 load={() => import('$components/sections/Home.svelte')}
@@ -408,6 +408,10 @@
 {#if remindersReady}
   <!-- Rings over any section; loaded once the reminder engine is up. -->
   <Lazy load={() => import('$components/timers/RingingDialog.svelte')} />
+{/if}
+
+{#if confirm.current}
+  <Lazy load={() => import('$components/ui/ConfirmDialog.svelte')} />
 {/if}
 
 <ContextMenu />

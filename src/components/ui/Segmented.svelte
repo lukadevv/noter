@@ -19,6 +19,24 @@
 
   let { options, value = $bindable(), label, iconsOnly = false, testid, onchange }: Props = $props()
 
+  let root = $state<HTMLElement>()
+  let pill = $state({ x: 0, y: 0, w: 0, h: 0, ready: false })
+
+  // The highlight slides between segments instead of jumping.
+  $effect(() => {
+    void value
+    void options.length
+    const el = root?.querySelector<HTMLElement>('[aria-checked="true"]')
+    if (!el) return
+    const measure = () => {
+      pill = { x: el.offsetLeft, y: el.offsetTop, w: el.offsetWidth, h: el.offsetHeight, ready: true }
+    }
+    measure()
+    const observer = new ResizeObserver(measure)
+    observer.observe(el)
+    return () => observer.disconnect()
+  })
+
   function choose(next: T) {
     value = next
     onchange?.(next)
@@ -45,8 +63,15 @@
   aria-label={label}
   data-testid={testid}
   tabindex="-1"
+  bind:this={root}
   onkeydown={onKeydown}
 >
+  <span
+    class="pill"
+    class:pill--ready={pill.ready}
+    style="transform: translate({pill.x}px, {pill.y}px); width: {pill.w}px; height: {pill.h}px"
+    aria-hidden="true"
+  ></span>
   {#each options as option (option.value)}
     <button
       type="button"
@@ -67,6 +92,7 @@
 
 <style>
   .segmented {
+    position: relative;
     display: inline-flex;
     flex-wrap: wrap;
     gap: 2px;
@@ -76,7 +102,29 @@
     border-radius: var(--radius);
   }
 
+  .pill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    border-radius: calc(var(--radius) - 2px);
+    background: var(--surface-3);
+    box-shadow: var(--shadow-1);
+    opacity: 0;
+  }
+
+  .pill--ready {
+    opacity: 1;
+    transition:
+      transform var(--dur-3) var(--ease-out),
+      width var(--dur-3) var(--ease-out);
+  }
+
+  .segment:active {
+    transform: scale(0.96);
+  }
+
   .segment {
+    position: relative;
     display: inline-flex;
     align-items: center;
     gap: var(--space-1);
@@ -88,8 +136,8 @@
     color: var(--text-dim);
     cursor: pointer;
     transition:
-      background var(--dur-2) var(--ease-out),
-      color var(--dur-2);
+      color var(--dur-2),
+      transform var(--dur-1);
   }
 
   .segment:hover {
@@ -97,8 +145,6 @@
   }
 
   .segment--active {
-    background: var(--surface-3);
     color: var(--text);
-    box-shadow: var(--shadow-1);
   }
 </style>

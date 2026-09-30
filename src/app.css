@@ -92,6 +92,7 @@
   --z-lightbox: 95;
 
   --shadow-3: 0 18px 48px rgba(0, 0, 0, 0.45), 0 4px 12px rgba(0, 0, 0, 0.3);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 /* Reset ------------------------------------------------------------------- */
@@ -208,7 +209,8 @@ a:hover {
   white-space: nowrap;
   transition:
     background var(--transition),
-    border-color var(--transition);
+    border-color var(--transition),
+    transform var(--dur-1) var(--ease-out);
 }
 
 .btn:hover {
@@ -216,8 +218,30 @@ a:hover {
   border-color: var(--border-strong);
 }
 
-.btn:active {
-  transform: translateY(0.5px);
+.btn:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.btn--primary {
+  box-shadow:
+    0 1px 0 color-mix(in oklab, white 18%, transparent) inset,
+    var(--shadow-1);
+}
+
+.btn--pill {
+  border-radius: var(--radius-full);
+  padding: 0 var(--space-4);
+}
+
+.btn--lg {
+  height: calc(40px * var(--density));
+  padding: 0 var(--space-4);
+  font-weight: 600;
 }
 
 .btn--primary {
@@ -304,6 +328,122 @@ a:hover {
   background: var(--border);
   border: 0;
   margin: var(--space-2) 0;
+}
+
+/* Surfaces ----------------------------------------------------------------
+ * The building block of every page: a raised panel. Soft elevation and a
+ * hairline instead of a heavy uniform border, so pages read as layers rather
+ * than a grid of identical boxes. */
+
+.surface {
+  position: relative;
+  border: 1px solid color-mix(in oklab, var(--border) 70%, transparent);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(
+    180deg,
+    color-mix(in oklab, var(--surface) 92%, var(--text) 3%),
+    var(--surface)
+  );
+  box-shadow:
+    0 1px 0 color-mix(in oklab, var(--text) 4%, transparent) inset,
+    var(--shadow-1);
+}
+
+.surface--interactive {
+  cursor: pointer;
+  transition:
+    transform var(--dur-2) var(--ease-out),
+    border-color var(--dur-2),
+    box-shadow var(--dur-2);
+}
+
+.surface--interactive:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-2);
+}
+
+.surface--interactive:active {
+  transform: translateY(0) scale(0.985);
+  transition-duration: var(--dur-1);
+}
+
+/* Section titles: sentence case and weight, not shouting capitals. */
+.title-sm {
+  font-size: var(--text-lg);
+  font-weight: 650;
+  letter-spacing: -0.005em;
+  color: var(--text);
+}
+
+.eyebrow {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--text-faint);
+}
+
+/* Entrance ----------------------------------------------------------------
+ * A CSS animation, not a Svelte transition: Svelte 5 transitions are local and
+ * only play when their own block is created, so anything nested in an each or
+ * an if never animated when the page mounted. Keyframes always run on insert.
+ * Stagger with style="--i: n". */
+
+@keyframes enter-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.99);
+  }
+}
+
+@keyframes enter-pop {
+  0% {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.12);
+    opacity: 1;
+  }
+}
+
+@keyframes pulse-ring {
+  from {
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--pulse, var(--accent)) 55%, transparent);
+  }
+  to {
+    box-shadow: 0 0 0 14px transparent;
+  }
+}
+
+.enter {
+  animation: enter-rise 420ms var(--ease-out) both;
+  animation-delay: calc(min(var(--i, 0), 10) * 45ms);
+}
+
+.pop-in {
+  animation: enter-pop 380ms var(--ease-out) both;
+}
+
+.pulse {
+  animation: pulse-ring 700ms var(--ease-out);
+}
+
+/* Press ripple, added by src/lib/ui/press.ts. */
+.press-ripple {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  background: currentColor;
+  opacity: 0.18;
+  transform: scale(0);
+  animation: ripple 520ms var(--ease-out) forwards;
+}
+
+@keyframes ripple {
+  to {
+    transform: scale(1);
+    opacity: 0;
+  }
 }
 
 /* Shared dialog shell -------------------------------------------------------

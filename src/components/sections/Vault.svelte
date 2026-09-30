@@ -13,7 +13,6 @@
   import { menu } from '$lib/stores/menu.svelte'
   import { ui } from '$lib/stores/ui.svelte'
   import { contextmenu } from '$lib/ui/contextmenu'
-  import { rise } from '$lib/ui/motion.svelte'
   import type { MenuItem } from '$lib/ui-types'
   import { t } from '$lib/i18n/index.svelte'
 
@@ -127,7 +126,7 @@
   {:else if !secrets.unlocked}
     <VaultGate />
   {:else}
-    <header class="top" in:rise>
+    <header class="top enter">
       <div>
         <h1>{t('nav.vault')}</h1>
         <p class="faint">{t('vault.count', { count: secrets.count })}</p>
@@ -207,7 +206,7 @@
         <div class="detail-pane">
           {#if selected}
             {#key selected.id}
-              <article class="detail" in:rise data-testid="secret-detail">
+              <article class="detail enter" data-testid="secret-detail">
                 <header class="detail-head">
                   {#if ui.narrow}
                     <button
