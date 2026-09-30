@@ -38,6 +38,11 @@ export default defineConfig({
     // Encryption and vault export both run PBKDF2 at 310,000 iterations, which
     // is deliberately slow; the default 5s action timeout is not enough.
     actionTimeout: 15_000,
+    // Lets a machine with a preinstalled Chromium of another revision run the
+    // suite without downloading browsers (PW_CHROMIUM_PATH=/path/to/chrome).
+    ...(process.env.PW_CHROMIUM_PATH
+      ? { launchOptions: { executablePath: process.env.PW_CHROMIUM_PATH } }
+      : {}),
   },
 
   projects: [

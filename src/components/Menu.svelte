@@ -57,7 +57,7 @@
     : 'hidden'}"
   onkeydown={onKeydown}
 >
-  {#each items as item (item.label)}
+  {#each items as item, i (i)}
     {#if item.separatorBefore}
       <hr class="separator" />
     {/if}

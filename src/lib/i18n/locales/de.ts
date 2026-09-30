@@ -486,6 +486,9 @@ const de: Messages = {
     invalidUrl: 'Keine gültige URL.',
     onlyHttp: 'Es können nur http(s)-URLs geladen werden.',
     downloadFailed: 'Das Bild konnte nicht geladen werden ({reason}); es wird stattdessen darauf verlinkt.',
+    folderLocked: 'Entsperre zuerst den Ordner.',
+    backupNeedsPassphrase:
+      'Die verschlüsselte Sicherung braucht ihre Passphrase – starte sie in den Einstellungen.',
   },
 
   update: { ready: 'Eine neue Version von Noter ist bereit. Jetzt neu laden?' },

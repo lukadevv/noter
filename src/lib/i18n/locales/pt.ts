@@ -483,6 +483,8 @@ const pt: Messages = {
     invalidUrl: 'Não é uma URL válida.',
     onlyHttp: 'Só é possível baixar URLs http(s).',
     downloadFailed: 'Não foi possível baixar a imagem ({reason}); criando um link para ela.',
+    folderLocked: 'Desbloqueie a pasta primeiro.',
+    backupNeedsPassphrase: 'O backup criptografado precisa da senha — faça-o nas Configurações.',
   },
 
   update: { ready: 'Uma nova versão do Noter está pronta. Recarregar agora?' },

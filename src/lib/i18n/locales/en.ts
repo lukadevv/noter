@@ -507,6 +507,8 @@ export const en = {
     invalidUrl: 'Not a valid URL.',
     onlyHttp: 'Only http(s) URLs can be fetched.',
     downloadFailed: 'Could not download the image ({reason}); linking to it instead.',
+    folderLocked: 'Unlock the folder first.',
+    backupNeedsPassphrase: 'The encrypted backup needs its passphrase — run it from Settings.',
   },
 
   update: {

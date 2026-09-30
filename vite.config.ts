@@ -228,7 +228,9 @@ export default defineConfig({
     target: 'es2022',
     // The budget check reads this to tell the initial payload from lazy chunks.
     manifest: true,
-    cssCodeSplit: false,
+    // Lazy components carry their own stylesheet, so a section nobody opened
+    // costs nothing up front.
+    cssCodeSplit: true,
     reportCompressedSize: true,
     rollupOptions: {
       output: {

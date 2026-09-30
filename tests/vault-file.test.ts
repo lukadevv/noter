@@ -1,27 +1,9 @@
+import { useFreshDb } from './helpers/fresh-db'
 import { beforeEach, describe, expect, it } from 'vitest'
-import { NoterDB, db } from '$lib/db/db'
+import { db } from '$lib/db/db'
 import { describeVault, exportVault, importVault, readHeader, VaultFileError } from '$lib/backup/vault-file'
 import * as notesRepo from '$lib/db/repo/notes'
 import * as foldersRepo from '$lib/db/repo/folders'
-
-let counter = 0
-
-/** Points the shared `db` instance at a fresh store for each test. */
-async function useFreshDb(): Promise<NoterDB> {
-  const fresh = new NoterDB(`noter-vault-${counter++}`)
-  await fresh.open()
-  Object.assign(db, {
-    notes: fresh.notes,
-    folders: fresh.folders,
-    assets: fresh.assets,
-    versions: fresh.versions,
-    smartFolders: fresh.smartFolders,
-    themes: fresh.themes,
-    settings: fresh.settings,
-    transaction: fresh.transaction.bind(fresh),
-  })
-  return fresh
-}
 
 function fakeAsset(id: string) {
   return {
@@ -54,14 +36,14 @@ async function seed() {
 
 describe('vault file', () => {
   beforeEach(async () => {
-    await useFreshDb()
+    await useFreshDb('noter-vault')
   })
 
   it('round-trips the whole workspace unencrypted', async () => {
     const { note, folder } = await seed()
     const file = await exportVault()
 
-    await useFreshDb()
+    await useFreshDb('noter-vault')
     expect(await notesRepo.listAll()).toHaveLength(0)
 
     const result = await importVault(file, 'replace')
@@ -78,7 +60,7 @@ describe('vault file', () => {
     await seed()
     const file = await exportVault()
 
-    await useFreshDb()
+    await useFreshDb('noter-vault')
     await importVault(file, 'replace')
 
     const asset = await db.assets.get(ASSET_ID)
@@ -91,7 +73,7 @@ describe('vault file', () => {
     const { note } = await seed()
     const file = await exportVault({ passphrase: 'a good passphrase' })
 
-    await useFreshDb()
+    await useFreshDb('noter-vault')
     await importVault(file, 'replace', 'a good passphrase')
     expect((await db.notes.get(note.id))?.title).toBe('Kept note')
   })
@@ -107,14 +89,14 @@ describe('vault file', () => {
   it('refuses the wrong passphrase', async () => {
     await seed()
     const file = await exportVault({ passphrase: 'right' })
-    await useFreshDb()
+    await useFreshDb('noter-vault')
     await expect(importVault(file, 'replace', 'wrong')).rejects.toThrow(VaultFileError)
   })
 
   it('refuses to open an encrypted backup with no passphrase', async () => {
     await seed()
     const file = await exportVault({ passphrase: 'secret' })
-    await useFreshDb()
+    await useFreshDb('noter-vault')
     await expect(importVault(file, 'replace')).rejects.toThrow(/passphrase is required/i)
   })
 
@@ -135,7 +117,7 @@ describe('vault file', () => {
     // AES-GCM authenticates, so flipping one byte must make the import fail.
     bytes[bytes.length - 1] = bytes[bytes.length - 1]! ^ 0xff
 
-    await useFreshDb()
+    await useFreshDb('noter-vault')
     await expect(importVault(new Blob([bytes]), 'replace', 'secret')).rejects.toThrow(VaultFileError)
   })
 
@@ -156,7 +138,7 @@ describe('vault file', () => {
     await notesRepo.updateNote(note.id, { title: 'Newer in backup' })
     const file = await exportVault()
 
-    await useFreshDb()
+    await useFreshDb('noter-vault')
     await notesRepo.createNote({ title: 'Older' })
     await db.notes.put({
       ...(await notesRepo.getNote((await notesRepo.listAll())[0]!.id))!,
@@ -172,7 +154,7 @@ describe('vault file', () => {
     await seed()
     const file = await exportVault()
 
-    await useFreshDb()
+    await useFreshDb('noter-vault')
     const stray = await notesRepo.createNote({ title: 'Should be gone' })
     await importVault(file, 'replace')
 

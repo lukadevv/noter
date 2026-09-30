@@ -518,6 +518,8 @@ const ar: Messages = {
     invalidUrl: 'رابط غير صالح.',
     onlyHttp: 'يمكن تنزيل روابط http(s) فقط.',
     downloadFailed: 'تعذّر تنزيل الصورة ({reason})؛ سيُوضع رابط إليها بدلاً من ذلك.',
+    folderLocked: 'افتح قفل المجلد أولًا.',
+    backupNeedsPassphrase: 'النسخة المشفّرة تحتاج إلى عبارة المرور — شغّلها من الإعدادات.',
   },
 
   update: { ready: 'توجد نسخة جديدة من Noter. أعيد التحميل الآن؟' },

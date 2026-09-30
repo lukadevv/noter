@@ -5,10 +5,15 @@
  * source of truth, and `Note.tags` is only a denormalised copy the store
  * refreshes on save so IndexedDB can index it.
  */
+import { maskCode } from './fences'
 
-/** Removes fenced blocks and inline code so their contents are never scanned. */
+/**
+ * Blanks out code so its contents are never scanned. Offsets are preserved, so
+ * a match found in the masked text points at the same place in the original —
+ * which is what keeps backlink excerpts aligned.
+ */
 function stripCode(body: string): string {
-  return body.replace(/```[\s\S]*?```/g, ' ').replace(/`[^`\n]*`/g, ' ')
+  return maskCode(body).replace(/`[^`\n]*`/g, (code) => ' '.repeat(code.length))
 }
 
 // A tag starts at a word boundary, never mid-word or inside a URL fragment.

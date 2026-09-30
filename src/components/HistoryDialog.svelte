@@ -6,6 +6,7 @@
   import { ui } from '$lib/stores/ui.svelte'
   import type { Version } from '$lib/db/schema'
   import { t } from '$lib/i18n/index.svelte'
+  import { revealInFolder } from '$lib/crypto/keyring.svelte'
 
   interface Props {
     noteId: string
@@ -22,9 +23,21 @@
   let loading = $state(true)
 
   $effect(() => {
-    void listVersions(noteId).then((list) => {
-      versions = list
-      selected = list[0] ?? null
+    void listVersions(noteId).then(async (list) => {
+      // Snapshots of an encrypted note are ciphertext. They are opened here so
+      // the diff compares text with text and a restore writes plaintext back
+      // through the normal sealed path, instead of encrypting ciphertext again.
+      const folderId = notes.activeNote?.folderId ?? ''
+      const opened: Version[] = []
+      for (const version of list) {
+        const [title, body] = await Promise.all([
+          revealInFolder(folderId, version.title),
+          revealInFolder(folderId, version.body),
+        ])
+        if (title !== null && body !== null) opened.push({ ...version, title, body })
+      }
+      versions = opened
+      selected = opened[0] ?? null
       loading = false
     })
   })

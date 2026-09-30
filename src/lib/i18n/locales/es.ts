@@ -496,6 +496,8 @@ const es: Messages = {
     invalidUrl: 'No es una URL válida.',
     onlyHttp: 'Solo se pueden descargar URLs http(s).',
     downloadFailed: 'No se pudo descargar la imagen ({reason}); se enlaza a ella en su lugar.',
+    folderLocked: 'Primero desbloqueá la carpeta.',
+    backupNeedsPassphrase: 'La copia cifrada necesita su contraseña: hacela desde Ajustes.',
   },
 
   update: {

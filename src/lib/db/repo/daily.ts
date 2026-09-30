@@ -1,6 +1,6 @@
 import { db } from '../db'
 import { ROOT, type Note } from '../schema'
-import { createNote, deleteNoteForever, updateNote } from './notes'
+import { createNote, deleteNoteForever, updateNote, type NewNoteInput } from './notes'
 import { dayKey } from '$lib/utils/dates'
 import type { DailyNoteSettings } from './settings'
 
@@ -35,6 +35,7 @@ export async function openDailyNote(
   key: string,
   settings: DailyNoteSettings,
   templateBody = '',
+  create: (input: NewNoteInput) => Promise<Note> = createNote,
 ): Promise<Note> {
   const existing = await findDailyNote(key)
   if (existing) {
@@ -42,7 +43,7 @@ export async function openDailyNote(
     return existing
   }
 
-  return createNote({
+  return create({
     title: formatDailyTitle(key, settings.titleFormat),
     body: templateBody,
     folderId: settings.folderId || ROOT,

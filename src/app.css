@@ -501,11 +501,11 @@ a:hover {
   transform: scaleX(-1);
 }
 
-[dir='rtl'] .twisty :global(svg) {
+[dir='rtl'] .twisty svg {
   transform: scaleX(-1);
 }
 
-[dir='rtl'] .twisty :global(.rotated) {
+[dir='rtl'] .twisty .rotated {
   transform: rotate(90deg);
 }
 

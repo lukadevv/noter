@@ -445,6 +445,8 @@ const ko: Messages = {
     invalidUrl: '올바른 주소가 아닙니다.',
     onlyHttp: 'http(s) 주소만 내려받을 수 있습니다.',
     downloadFailed: '이미지를 내려받지 못했습니다 ({reason}). 대신 링크합니다.',
+    folderLocked: '먼저 폴더 잠금을 해제하세요.',
+    backupNeedsPassphrase: '암호화된 백업에는 암호가 필요합니다. 설정에서 실행하세요.',
   },
 
   update: { ready: 'Noter 새 버전이 준비되었습니다. 지금 새로 고칠까요?' },

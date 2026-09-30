@@ -2,10 +2,8 @@
   import Sidebar from '$components/Sidebar.svelte'
   import NoteList from '$components/NoteList.svelte'
   import NoteView from '$components/NoteView.svelte'
-  import Settings from '$components/Settings.svelte'
   import Toasts from '$components/Toasts.svelte'
   import Lightbox from '$components/Lightbox.svelte'
-  import Palette from '$components/Palette.svelte'
   import Lazy from '$components/Lazy.svelte'
   import { notes } from '$lib/stores/notes.svelte'
   import { theme } from '$lib/stores/theme.svelte'
@@ -22,6 +20,7 @@
   import { applyTokens, clearTokens } from '$lib/theme/apply'
   import { deriveAccentTokens } from '$lib/theme/tokens'
   import { hexToOklch } from '$lib/theme/oklch'
+  import { FolderLockedError } from '$lib/crypto/keyring.svelte'
 
   let settingsOpen = $state(false)
   let paletteOpen = $state(false)
@@ -106,7 +105,8 @@
     if (!isDue(state)) return
     if (!(await ensurePermission())) return
     const result = await runBackup()
-    if (result.ok) ui.toast(t('toast.backupWritten'), 'ok')
+    if (result.vaultSkipped) ui.toast(t('toast.backupNeedsPassphrase'), 'warn')
+    else if (result.ok) ui.toast(t('toast.backupWritten'), 'ok')
   }
 
   async function openToday() {
@@ -268,6 +268,14 @@
   onvisibilitychange={() => {
     if (document.visibilityState === 'hidden') flushAll()
   }}
+  onunhandledrejection={(event) => {
+    // A locked folder refusing a new or moved note is an expected outcome of
+    // many different buttons; one handler turns it into a message for all.
+    if (event.reason instanceof FolderLockedError) {
+      event.preventDefault()
+      ui.toast(t('toast.folderLocked'), 'warn')
+    }
+  }}
 />
 
 {#if sharedPayload}
@@ -294,15 +302,21 @@
 {/if}
 
 {#if paletteOpen}
-  <Palette
-    onclose={() => (paletteOpen = false)}
-    onsettings={() => (settingsOpen = true)}
-    ondaily={() => void openToday()}
+  <Lazy
+    load={() => import('$components/Palette.svelte')}
+    props={{
+      onclose: () => (paletteOpen = false),
+      onsettings: () => (settingsOpen = true),
+      ondaily: () => void openToday(),
+    }}
   />
 {/if}
 
 {#if settingsOpen}
-  <Settings onclose={() => (settingsOpen = false)} />
+  <Lazy
+    load={() => import('$components/Settings.svelte')}
+    props={{ onclose: () => (settingsOpen = false) }}
+  />
 {/if}
 
 <Lightbox />

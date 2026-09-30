@@ -1,7 +1,7 @@
 import { zipSync, unzipSync, strToU8, strFromU8 } from 'fflate'
 import { db } from '$lib/db/db'
 import { ROOT, type Folder, type Note } from '$lib/db/schema'
-import { emptyNote } from '$lib/db/repo/notes'
+import { derivedTitle, emptyNote } from '$lib/db/repo/notes'
 import { extractTags } from '$lib/md/links'
 import { folderPath, noteToMarkdown, parseMarkdown, restoreImageRefs, safeFileName } from './markdown'
 import { uuid } from '$lib/utils/uuid'
@@ -40,7 +40,7 @@ export async function exportMarkdownArchive(options: ExportOptions = {}): Promis
 
   for (const note of notes) {
     const directory = note.deletedAt > 0 ? 'trash' : folderPath(note.folderId, folderMap)
-    const base = safeFileName(note.title || note.body.split('\n')[0] || 'untitled')
+    const base = safeFileName(derivedTitle(note))
 
     // Two notes can legitimately share a title; the id suffix keeps both.
     let path = `${directory ? `${directory}/` : ''}${base}.md`

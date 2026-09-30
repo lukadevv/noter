@@ -55,17 +55,35 @@ export function referencedAssetIds(body: string): string[] {
 }
 
 /**
- * Deletes assets no live note references any more.
+ * Deletes assets no note or snapshot references any more.
  *
  * Trashed notes still count as references: emptying the trash is what actually
  * frees their images, so a restore never comes back with broken pictures.
+ * Encrypted notes cannot be read here, so they contribute the `assetRefs` list
+ * written alongside their ciphertext. An encrypted note from before that list
+ * existed makes the whole sweep stand down: deleting an image it might use is
+ * data loss, keeping a stray one costs a few kilobytes.
  */
 export async function purgeOrphanAssets(): Promise<number> {
-  const [notes, assets] = await Promise.all([db.notes.toArray(), db.assets.toArray()])
+  const [notes, versions, assets] = await Promise.all([
+    db.notes.toArray(),
+    db.versions.toArray(),
+    db.assets.toArray(),
+  ])
 
   const referenced = new Set<string>()
   for (const note of notes) {
+    if (note.encrypted) {
+      if (!note.assetRefs) return 0
+      for (const id of note.assetRefs) referenced.add(id)
+      continue
+    }
     for (const id of referencedAssetIds(note.body)) referenced.add(id)
+  }
+  // Snapshots keep their images alive so restoring history never breaks them.
+  // Encrypted snapshots belong to an encrypted note whose refs are counted above.
+  for (const version of versions) {
+    for (const id of referencedAssetIds(version.body)) referenced.add(id)
   }
 
   const orphans = assets.filter((asset) => !referenced.has(asset.id))

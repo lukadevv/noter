@@ -76,6 +76,12 @@ export interface Note {
   /** Timestamp, or 0 when not trashed. Purged after TRASH_RETENTION_DAYS. */
   deletedAt: number
   encrypted: Flag
+  /**
+   * Image ids an encrypted note references. The body is ciphertext, so the
+   * orphan sweep cannot read them out of it; the images themselves are stored
+   * unencrypted anyway, so listing their ids here reveals nothing new.
+   */
+  assetRefs?: string[]
   /** 'YYYY-MM-DD' when this is a daily note; null otherwise (sparse index). */
   daily: string | null
   /** Singleton notes the app manages itself; null otherwise (sparse index). */

@@ -203,7 +203,14 @@
           : derivedTitle({ title: content?.title ?? '', body: text })}
         disabled={readOnly}
         onfocus={() => (titleBeforeEdit = derivedTitle(current))}
-        oninput={(e) => void notes.update(current.id, { title: e.currentTarget.value })}
+        oninput={(e) => {
+          // Titles go through the same debounced, sealed write as the body: a
+          // direct write per keystroke would store an encrypted note's title in
+          // plaintext until the next body save.
+          const title = e.currentTarget.value
+          if (content) content = { ...content, title }
+          notes.editBody(current.id, text, title)
+        }}
         onkeydown={(e) => {
           if (e.key === 'Enter') e.currentTarget.blur()
         }}

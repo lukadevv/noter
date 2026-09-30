@@ -6,7 +6,7 @@
   import { notes } from '$lib/stores/notes.svelte'
   import { ui } from '$lib/stores/ui.svelte'
   import { computeRange } from '$lib/utils/virtual'
-  import { emptyTrash, moveNote } from '$lib/db/repo/notes'
+  import { emptyTrash } from '$lib/db/repo/notes'
   import { ROOT } from '$lib/db/schema'
   import { t } from '$lib/i18n/index.svelte'
 
@@ -97,7 +97,7 @@
 
   async function bulkMove(folderId: string) {
     const count = await notes.applyToMarked(async (id) => {
-      await moveNote(id, folderId, null, null)
+      await notes.move(id, folderId)
     })
     ui.toast(t('toast.notesMoved', { count }), 'ok')
   }

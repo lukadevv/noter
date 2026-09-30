@@ -461,6 +461,8 @@ const ja: Messages = {
     invalidUrl: '正しいURLではありません。',
     onlyHttp: 'ダウンロードできるのは http(s) のURLだけです。',
     downloadFailed: '画像をダウンロードできませんでした（{reason}）。代わりにリンクします。',
+    folderLocked: '先にフォルダのロックを解除してください。',
+    backupNeedsPassphrase: '暗号化バックアップにはパスフレーズが必要です。設定から実行してください。',
   },
 
   update: { ready: 'Noter の新しいバージョンがあります。今すぐ再読み込みしますか？' },

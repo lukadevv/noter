@@ -9,7 +9,6 @@
   import { ui } from '$lib/stores/ui.svelte'
   import { ROOT } from '$lib/db/schema'
   import { moveFolder, neighboursFor, nudgeFolder } from '$lib/db/repo/folders'
-  import { moveNote } from '$lib/db/repo/notes'
   import { t } from '$lib/i18n/index.svelte'
 
   interface Props {
@@ -123,7 +122,7 @@
   }
 
   async function handleNoteDrop(noteId: string, folderId: string) {
-    await moveNote(noteId, folderId, null, null)
+    await notes.move(noteId, folderId)
     ui.toast(t('toast.noteMoved'), 'ok')
   }
 
@@ -138,7 +137,7 @@
     event.preventDefault()
     const noteId = event.dataTransfer?.getData('application/x-noter-note')
     const folderId = event.dataTransfer?.getData('application/x-noter-folder')
-    if (noteId) await moveNote(noteId, ROOT, null, null)
+    if (noteId) await notes.move(noteId, ROOT)
     else if (folderId) await moveFolder(folderId, ROOT, null, null)
   }
 </script>

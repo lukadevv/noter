@@ -487,6 +487,9 @@ const fr: Messages = {
     invalidUrl: 'URL invalide.',
     onlyHttp: 'Seules les URL http(s) peuvent être téléchargées.',
     downloadFailed: 'Impossible de télécharger l’image ({reason}) ; un lien est créé à la place.',
+    folderLocked: 'Déverrouillez d’abord le dossier.',
+    backupNeedsPassphrase:
+      'La sauvegarde chiffrée a besoin de sa phrase secrète — lancez-la depuis les Réglages.',
   },
 
   update: { ready: 'Une nouvelle version de Noter est prête. Recharger maintenant ?' },

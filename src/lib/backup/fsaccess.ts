@@ -99,6 +99,8 @@ export interface BackupRun {
   ok: boolean
   files: string[]
   error?: string
+  /** Encryption is on but no passphrase was given, so the vault file was not written. */
+  vaultSkipped?: boolean
 }
 
 /**
@@ -119,12 +121,18 @@ export async function runBackup(passphrase?: string): Promise<BackupRun> {
   try {
     const vaultName = vaultFileName()
     const archiveName = archiveFileName()
-    await writeFile(handle, vaultName, await exportVault(passphrase ? { passphrase } : {}))
+    const state = await loadBackupState()
+    // Passphrases are never stored, so an unattended run cannot encrypt. Writing
+    // the vault in plaintext would silently break the promise the setting makes;
+    // skipping it and saying so is the honest option.
+    const vaultSkipped = state.encrypt && !passphrase
+    if (!vaultSkipped) {
+      await writeFile(handle, vaultName, await exportVault(passphrase ? { passphrase } : {}))
+    }
     await writeFile(handle, archiveName, await exportMarkdownArchive())
 
-    const state = await loadBackupState()
     await saveBackupState({ ...state, lastRunAt: Date.now(), lastError: null })
-    return { ok: true, files: [vaultName, archiveName] }
+    return { ok: true, files: vaultSkipped ? [archiveName] : [vaultName, archiveName], vaultSkipped }
   } catch (cause) {
     const error = cause instanceof Error ? cause.message : 'The backup could not be written.'
     const state = await loadBackupState()

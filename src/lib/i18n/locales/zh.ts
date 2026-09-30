@@ -442,6 +442,8 @@ const zh: Messages = {
     invalidUrl: '不是有效的网址。',
     onlyHttp: '只能下载 http(s) 网址。',
     downloadFailed: '无法下载图片（{reason}），改为链接到它。',
+    folderLocked: '请先解锁文件夹。',
+    backupNeedsPassphrase: '加密备份需要密码——请在设置中运行。',
   },
 
   update: { ready: 'Noter 有新版本了。现在重新加载吗？' },
