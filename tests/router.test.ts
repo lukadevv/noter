@@ -1,10 +1,14 @@
 import { describe, expect, it } from 'vitest'
-import { formatRoute, HOME, parseHash, type Route } from '../src/routes/router'
+import { ALL_NOTES, formatRoute, HOME, parseHash, sectionOf, type Route } from '../src/routes/router'
 
 describe('hash routing', () => {
   const cases: [string, Route][] = [
     ['#/', HOME],
     ['', HOME],
+    ['#/notes', ALL_NOTES],
+    ['#/vault', { kind: 'vault' }],
+    ['#/meds', { kind: 'meds' }],
+    ['#/timers', { kind: 'timers' }],
     ['#/f/abc', { kind: 'notes', folderId: 'abc', noteId: null }],
     ['#/f/abc/n/xyz', { kind: 'notes', folderId: 'abc', noteId: 'xyz' }],
     ['#/n/xyz', { kind: 'notes', folderId: null, noteId: 'xyz' }],
@@ -29,6 +33,13 @@ describe('hash routing', () => {
     const route: Route = { kind: 'notes', folderId: 'a/b', noteId: null }
     expect(formatRoute(route)).toBe('#/f/a%2Fb')
     expect(parseHash(formatRoute(route))).toEqual(route)
+  })
+
+  it('maps routes to their navigation section', () => {
+    expect(sectionOf(HOME)).toBe('home')
+    expect(sectionOf({ kind: 'trash', noteId: null })).toBe('notes')
+    expect(sectionOf({ kind: 'vault' })).toBe('vault')
+    expect(sectionOf({ kind: 'settings', section: null })).toBeNull()
   })
 
   it('falls back home for unknown paths', () => {

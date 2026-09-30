@@ -1,93 +1,109 @@
 <script lang="ts">
   import { onDestroy, untrack } from 'svelte'
   import { t } from '$lib/i18n/index.svelte'
-  import type { EditorView } from '@codemirror/view'
+  import type { NoteEditor } from '$lib/editor/cm/setup'
 
   interface Props {
-    /** Changing this id swaps the document; body changes alone must not. */
+    /** The note on screen. Changing it swaps states inside the same editor. */
     noteId: string
     body: string
+    /** Locked for editing: readable and selectable, but typing is refused. */
+    locked?: boolean
     placeholder?: string
     lineNumbers?: boolean
     onchange: (body: string) => void
     onflush: () => void
+    /** The user tried to type into a locked note. */
+    onblocked?: () => void
+    onlink?: (target: string) => void
     /** Handles images pasted, dropped or linked into the editor. */
     onimages?: (files: File[]) => Promise<string[]>
     onurl?: (url: string) => Promise<string | null>
     /** Live sources for `[[link]]` and `#tag` completion. */
     titles?: () => string[]
     tags?: () => string[]
+    /** Picks images for image and gallery blocks; returns their references. */
+    onpickimages?: () => Promise<string[]>
   }
 
   let {
     noteId,
     body,
+    locked = false,
     placeholder = undefined,
     lineNumbers = false,
     onchange,
     onflush,
+    onblocked,
+    onlink,
     onimages,
     onurl,
     titles,
     tags,
+    onpickimages,
   }: Props = $props()
 
   let host = $state<HTMLElement | null>(null)
-  let view: EditorView | null = null
-  let ready = $state(false)
+  let editor = $state<NoteEditor | null>(null)
   /** Guards against a stale dynamic import resolving after the component is gone. */
   let disposed = false
 
   $effect(() => {
     const element = host
-    if (!element || view) return
+    if (!element || editor) return
 
     // CodeMirror is the heaviest dependency in the app, so it is fetched only
     // when an editor is actually opened, never as part of the initial bundle.
     void (async () => {
       const { createEditor } = await import('$lib/editor/cm/setup')
       if (disposed || !host) return
-      view = createEditor(element, {
+      editor = createEditor(element, {
+        noteId: untrack(() => noteId),
         doc: untrack(() => body),
+        locked: untrack(() => locked),
         placeholder: placeholder ?? t('note.placeholder'),
-        lineNumbers,
+        lineNumbers: untrack(() => lineNumbers),
         onChange: (doc) => onchange(doc),
         onFlush: () => onflush(),
+        onBlocked: () => onblocked?.(),
+        onLink: (target) => onlink?.(target),
         images:
           onimages && onurl
             ? { onImages: (files) => onimages(files), onUrl: (url) => onurl(url) }
             : undefined,
         completion: titles && tags ? { titles, tags } : undefined,
+        pickImages: onpickimages,
       })
-      ready = true
     })()
   })
 
-  // Swap the document when a different note is opened. Reading `body` untracked
-  // keeps our own keystrokes from re-entering and resetting the cursor.
+  // A different note swaps in its own state; the same note with different text
+  // (a restore, a renamed link) is applied as a minimal edit.
   $effect(() => {
-    void noteId
-    if (!view || !ready) return
-    void (async () => {
-      const { setDoc } = await import('$lib/editor/cm/setup')
-      if (view)
-        setDoc(
-          view,
-          untrack(() => body),
-        )
-    })()
+    if (!editor) return
+    const id = noteId
+    const text = body
+    untrack(() => editor?.open(id, text))
+  })
+
+  $effect(() => {
+    editor?.setLocked(locked)
+  })
+
+  $effect(() => {
+    editor?.setLineNumbers(lineNumbers)
   })
 
   onDestroy(() => {
     disposed = true
     onflush()
-    view?.destroy()
-    view = null
+    editor?.destroy()
+    editor = null
   })
 </script>
 
-<div class="editor" bind:this={host}></div>
-{#if !ready}
+<div class="editor" data-locked={locked || undefined} bind:this={host}></div>
+{#if !editor}
   <div class="loading faint">{t('note.loadingEditor')}</div>
 {/if}
 

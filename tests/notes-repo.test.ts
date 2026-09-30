@@ -1,31 +1,12 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import { NoterDB } from '$lib/db/db'
+import { useFreshDb } from './helpers/fresh-db'
 import { ROOT } from '$lib/db/schema'
 import * as notesRepo from '$lib/db/repo/notes'
 import * as foldersRepo from '$lib/db/repo/folders'
 
-// Each suite gets its own database name so fake-indexeddb state cannot leak.
-let counter = 0
-
-async function freshDb() {
-  const db = new NoterDB(`noter-test-${counter++}`)
-  await db.open()
-  return db
-}
-
 describe('note lifecycle', () => {
   beforeEach(async () => {
-    const db = await freshDb()
-    // Point the repos at this database by swapping the shared instance's tables.
-    const shared = (await import('$lib/db/db')).db
-    Object.assign(shared, {
-      notes: db.notes,
-      folders: db.folders,
-      versions: db.versions,
-      assets: db.assets,
-      settings: db.settings,
-      transaction: db.transaction.bind(db),
-    })
+    await useFreshDb('noter-notes')
   })
 
   it('creates notes at the end of their folder', async () => {

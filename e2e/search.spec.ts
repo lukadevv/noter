@@ -81,8 +81,8 @@ test.describe('search, tags and links', () => {
   test('follows a wiki link and creates the missing note', async ({ page }) => {
     await createNoteWith(page, 'Origin note\nSee [[Target note]] for details.')
 
-    await page.getByLabel('Reading view').click()
-    await page.locator('.prose a.wikilink').click()
+    // Ctrl-click follows a link; a plain click just places the cursor.
+    await page.locator('.cm-wikilink').click({ modifiers: ['ControlOrMeta'] })
 
     await expect(page.getByTestId('note-title')).toHaveValue('Target note')
     await expect(page.getByTestId('note-item')).toHaveCount(2)

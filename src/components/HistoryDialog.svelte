@@ -1,11 +1,12 @@
 <script lang="ts">
-  import Icon from './Icon.svelte'
+  import Dialog from './ui/Dialog.svelte'
   import { diffLines, diffSummary, listVersions } from '$lib/db/repo/versions'
   import { relativeTime } from '$lib/utils/dates'
   import { notes } from '$lib/stores/notes.svelte'
   import { ui } from '$lib/stores/ui.svelte'
   import type { Version } from '$lib/db/schema'
   import { t } from '$lib/i18n/index.svelte'
+  import { revealInFolder } from '$lib/crypto/keyring.svelte'
 
   interface Props {
     noteId: string
@@ -22,9 +23,21 @@
   let loading = $state(true)
 
   $effect(() => {
-    void listVersions(noteId).then((list) => {
-      versions = list
-      selected = list[0] ?? null
+    void listVersions(noteId).then(async (list) => {
+      // Snapshots of an encrypted note are ciphertext. They are opened here so
+      // the diff compares text with text and a restore writes plaintext back
+      // through the normal sealed path, instead of encrypting ciphertext again.
+      const folderId = notes.activeNote?.folderId ?? ''
+      const opened: Version[] = []
+      for (const version of list) {
+        const [title, body] = await Promise.all([
+          revealInFolder(folderId, version.title),
+          revealInFolder(folderId, version.body),
+        ])
+        if (title !== null && body !== null) opened.push({ ...version, title, body })
+      }
+      versions = opened
+      selected = opened[0] ?? null
       loading = false
     })
   })
@@ -40,23 +53,7 @@
   }
 </script>
 
-<div class="backdrop" role="presentation" onpointerdown={onclose}></div>
-
-<div
-  class="dialog"
-  data-testid="history-dialog"
-  role="dialog"
-  aria-modal="true"
-  aria-label={t('history.title')}
->
-  <header class="head">
-    <Icon name="restore" size={16} />
-    <span class="title">{t('history.title')}</span>
-    <button class="btn btn--ghost btn--icon" aria-label={t('common.close')} onclick={onclose}>
-      <Icon name="x" size={15} />
-    </button>
-  </header>
-
+<Dialog label={t('history.title')} {onclose} size="lg" flush icon="restore" testid="history-dialog">
   <div class="body">
     <aside class="list">
       {#if loading}
@@ -115,33 +112,9 @@
       {t('history.restoreVersion')}
     </button>
   </footer>
-</div>
+</Dialog>
 
 <style>
-  .backdrop {
-    position: fixed;
-    inset: 0;
-    z-index: 52;
-    background: var(--overlay);
-  }
-
-  .dialog {
-    position: fixed;
-    z-index: 53;
-    inset: 50% auto auto 50%;
-    transform: translate(-50%, -50%);
-    width: min(96vw, 52rem);
-    height: min(86vh, 40rem);
-    display: flex;
-    flex-direction: column;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    background: var(--surface);
-    box-shadow: var(--shadow-2);
-    overflow: hidden;
-  }
-
-  .head,
   .foot {
     display: flex;
     align-items: center;
@@ -149,19 +122,10 @@
     padding: var(--space-2) var(--space-3);
   }
 
-  .head {
-    border-bottom: 1px solid var(--border);
-  }
-
   .foot {
     border-top: 1px solid var(--border);
     font-size: 12px;
     flex-wrap: wrap;
-  }
-
-  .title {
-    flex: 1;
-    font-weight: 650;
   }
 
   .spacer {

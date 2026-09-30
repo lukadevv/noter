@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Dialog from './ui/Dialog.svelte'
   import Icon from './Icon.svelte'
   import { encodeNote, shareUrl, MAX_URL_LENGTH } from '$lib/share/encode'
   import { ui } from '$lib/stores/ui.svelte'
@@ -29,23 +30,7 @@
   }
 </script>
 
-<div class="backdrop" role="presentation" onpointerdown={onclose}></div>
-
-<div
-  class="dialog"
-  data-testid="share-dialog"
-  role="dialog"
-  aria-modal="true"
-  aria-label={t('share.title')}
->
-  <header class="head">
-    <Icon name="link" size={16} />
-    <span class="title">{t('share.title')}</span>
-    <button class="btn btn--ghost btn--icon" aria-label={t('common.close')} onclick={onclose}>
-      <Icon name="x" size={15} />
-    </button>
-  </header>
-
+<Dialog label={t('share.title')} {onclose} size="md" flush icon="link" testid="share-dialog">
   <div class="content">
     <!-- The note travels inside the URL fragment, which browsers never send to a
          server — so this genuinely involves no backend. -->
@@ -85,30 +70,9 @@
       {t('share.copyLink')}
     </button>
   </footer>
-</div>
+</Dialog>
 
 <style>
-  .backdrop {
-    position: fixed;
-    inset: 0;
-    z-index: 52;
-    background: var(--overlay);
-  }
-
-  .dialog {
-    position: fixed;
-    z-index: 53;
-    inset: 50% auto auto 50%;
-    transform: translate(-50%, -50%);
-    width: min(94vw, 30rem);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    background: var(--surface);
-    box-shadow: var(--shadow-2);
-    overflow: hidden;
-  }
-
-  .head,
   .foot {
     display: flex;
     align-items: center;
@@ -116,18 +80,9 @@
     padding: var(--space-2) var(--space-3);
   }
 
-  .head {
-    border-bottom: 1px solid var(--border);
-  }
-
   .foot {
     justify-content: flex-end;
     border-top: 1px solid var(--border);
-  }
-
-  .title {
-    flex: 1;
-    font-weight: 650;
   }
 
   .content {

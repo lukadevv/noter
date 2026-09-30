@@ -1,6 +1,6 @@
 <script lang="ts">
   import Icon from './Icon.svelte'
-  import Menu from './Menu.svelte'
+  import { menu } from '$lib/stores/menu.svelte'
   import type { MenuItem } from '$lib/ui-types'
   import {
     addCard,
@@ -16,16 +16,17 @@
   interface Props {
     body: string
     readOnly?: boolean
+    /** Drawn inside a note (a ```board block) rather than filling a pane. */
+    inline?: boolean
     onchange: (body: string) => void
   }
 
-  let { body, readOnly = false, onchange }: Props = $props()
+  let { body, readOnly = false, inline = false, onchange }: Props = $props()
 
   let columns = $derived(parseBoard(body))
   let drafts = $state<Record<number, string>>({})
   let dragging = $state<number | null>(null)
   let dropTarget = $state<{ column: number; index: number } | null>(null)
-  let menu = $state<{ x: number; y: number; items: MenuItem[] } | null>(null)
 
   /**
    * Cards can also be moved from a menu.
@@ -34,28 +35,24 @@
    * touch, so it cannot be the only way to move a card between columns.
    */
   function openCardMenu(event: MouseEvent, cardLine: number, fromColumn: number) {
-    const anchor = (event.currentTarget as HTMLElement).getBoundingClientRect()
-    menu = {
-      x: anchor.left,
-      y: anchor.bottom + 4,
-      items: [
-        ...columns
-          .map((column, index) => ({ column, index }))
-          .filter(({ index }) => index !== fromColumn)
-          .map(({ column, index }) => ({
-            label: t('board.moveTo', { column: column.title }),
-            icon: 'layout-grid',
-            run: () => onchange(moveCard(body, cardLine, index, column.cards.length)),
-          })),
-        {
-          label: t('board.deleteCard'),
-          icon: 'trash',
-          danger: true,
-          separatorBefore: true,
-          run: () => onchange(removeCard(body, cardLine)),
-        },
-      ],
-    }
+    const items: MenuItem[] = [
+      ...columns
+        .map((column, index) => ({ column, index }))
+        .filter(({ index }) => index !== fromColumn)
+        .map(({ column, index }) => ({
+          label: t('board.moveTo', { column: column.title }),
+          icon: 'layout-grid',
+          run: () => onchange(moveCard(body, cardLine, index, column.cards.length)),
+        })),
+      {
+        label: t('board.deleteCard'),
+        icon: 'trash',
+        danger: true,
+        separatorBefore: true,
+        run: () => onchange(removeCard(body, cardLine)),
+      },
+    ]
+    menu.open(items, event.currentTarget as HTMLElement, t('board.cardActions'))
   }
 
   function submitCard(columnIndex: number) {
@@ -74,7 +71,7 @@
   }
 </script>
 
-<div class="board">
+<div class="board" class:board--inline={inline}>
   {#each columns as column, columnIndex (column.line)}
     <!-- svelte-ignore a11y_no_static_element_interactions -->
     <section
@@ -113,7 +110,11 @@
             class:card--dragging={dragging === card.line}
             draggable={!readOnly}
             role="listitem"
-            ondragstart={() => (dragging = card.line)}
+            ondragstart={(e) => {
+              // Firefox starts no drag without data; the payload itself is unused.
+              e.dataTransfer?.setData('text/plain', card.text)
+              dragging = card.line
+            }}
             ondragend={() => {
               dragging = null
               dropTarget = null
@@ -192,10 +193,6 @@
   {/if}
 </div>
 
-{#if menu}
-  <Menu items={menu.items} x={menu.x} y={menu.y} onclose={() => (menu = null)} />
-{/if}
-
 <style>
   .board {
     display: flex;
@@ -204,6 +201,17 @@
     padding: 0 var(--space-4) var(--space-4);
     overflow-x: auto;
     overflow-y: hidden;
+  }
+
+  .board--inline {
+    height: auto;
+    max-height: 520px;
+    padding: 0 0 var(--space-2);
+    overflow-y: auto;
+  }
+
+  .board--inline .column {
+    max-height: 500px;
   }
 
   .column {

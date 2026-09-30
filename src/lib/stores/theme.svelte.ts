@@ -1,3 +1,4 @@
+import { motion } from '$lib/ui/motion.svelte'
 import { liveQuery, type Subscription } from 'dexie'
 import { applyChrome, applyTokens } from '$lib/theme/apply'
 import {
@@ -31,6 +32,10 @@ class ThemeStore {
   ])
 
   #themeSub: Subscription | null = null
+
+  #resolveReady: () => void = () => {}
+  /** Resolves once the stored settings have been read (not just the defaults). */
+  ready: Promise<void> = new Promise((resolve) => (this.#resolveReady = resolve))
 
   #persist = debounce(() => {
     void saveSettings($state.snapshot(this.settings))
@@ -67,6 +72,7 @@ class ThemeStore {
         this.applyThemeId(this.settings.themeId, false)
     })
     this.applyAll()
+    this.#resolveReady()
   }
 
   stop(): void {
@@ -120,7 +126,7 @@ class ThemeStore {
       editorFontSize: this.settings.editorFontSize,
       radiusScale: this.settings.radiusScale,
     })
-    document.documentElement.dataset.reduceMotion = String(this.settings.reduceMotion)
+    motion.apply(this.settings.motion)
     this.saveMirror()
   }
 
@@ -139,6 +145,21 @@ class ThemeStore {
     this.settings = { ...this.settings, ...patch }
     this.applyAll()
     this.#persist()
+  }
+
+  /**
+   * Applies a change on screen without persisting it: sliders call this on
+   * every `input` event and `update` once on `change`, so dragging does not
+   * rewrite the boot mirror and the settings row sixty times a second.
+   */
+  live(patch: Partial<AppSettings>): void {
+    this.settings = { ...this.settings, ...patch }
+    applyChrome({
+      density: this.settings.density,
+      font: this.settings.font,
+      editorFontSize: this.settings.editorFontSize,
+      radiusScale: this.settings.radiusScale,
+    })
   }
 
   flush(): void {

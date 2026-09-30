@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { createFolder, createNoteWith, openApp } from './helpers'
+import { createFolder, createNoteWith, insertBlock, openApp } from './helpers'
 
 /**
  * Every action has to be reachable with a mouse, a keyboard and a finger.
@@ -13,59 +13,44 @@ test.describe('input parity', () => {
     await openApp(page)
   })
 
-  test('adds a task with the button, not only with Enter', async ({ page }) => {
+  test('inserts a checklist from the / menu with the keyboard alone', async ({ page }) => {
     await createNoteWith(page, 'Sprint')
-    await page.getByTestId('view-tab-checklist').click()
+    await page.keyboard.press('Enter')
+    await insertBlock(page, 'checklist')
+    await page.keyboard.type('design the schema')
 
-    const field = page.getByPlaceholder('Add a task')
-    const add = page.getByRole('button', { name: 'Add', exact: true })
-
-    // Nothing to add yet, so the button says so rather than doing nothing.
-    await expect(add).toBeDisabled()
-
-    await field.fill('design the schema')
-    await expect(add).toBeEnabled()
-    await add.click()
-
-    await expect(page.locator('.task')).toHaveCount(1)
-    await expect(field).toHaveValue('')
+    await page.keyboard.press('Enter')
+    await page.keyboard.type('write the tests')
+    await page.getByTestId('note-title').click()
+    await expect(page.locator('.cm-task-checkbox')).toHaveCount(2)
   })
 
-  test('still adds a task with Enter', async ({ page }) => {
-    await createNoteWith(page, 'Sprint')
-    await page.getByTestId('view-tab-checklist').click()
-
-    await page.getByPlaceholder('Add a task').fill('write the tests')
-    await page.getByPlaceholder('Add a task').press('Enter')
-
-    await expect(page.locator('.task')).toHaveCount(1)
+  test('ticks a task with a click', async ({ page }) => {
+    await createNoteWith(page, 'Tasks\n- [ ] something')
+    await page.getByTestId('note-title').click()
+    await page.locator('.cm-task-checkbox').first().click()
+    await expect(page.locator('.cm-task-checkbox').first()).toBeChecked()
   })
 
   test('adds a board card with the button', async ({ page }) => {
-    await createNoteWith(page, '## To do')
-    await page.getByTestId('view-tab-board').click()
+    await createNoteWith(page, 'Planning')
+    await page.keyboard.press('Enter')
+    await insertBlock(page, 'board')
+    await expect(page.getByTestId('board-block')).toBeVisible()
+    await expect(page.getByTestId('board-column')).toHaveCount(3)
 
-    await page.getByPlaceholder('Add a card').fill('first card')
-    await page.getByLabel('Add', { exact: true }).click()
-
+    await page.getByTestId('board-column').first().getByPlaceholder('Add a card').fill('first card')
+    await page.getByTestId('board-column').first().getByLabel('Add', { exact: true }).click()
     await expect(page.getByTestId('board-card')).toHaveCount(1)
+    // The card is plain markdown inside the note, so it shows in the list preview.
+    await expect(page.getByTestId('note-item').first()).toContainText('first card')
   })
 
   test('moves a board card between columns from a menu', async ({ page }) => {
     await createNoteWith(page, 'Planning')
-    await page.getByTestId('view-tab-board').click()
-
-    // Built through the board's own controls rather than by typing markdown:
-    // the editor continues lists on Enter, which turns a typed heading into a
-    // card and quietly tests something else.
-    // A note with no headings starts with no columns at all, so both are added
-    // here rather than one.
-    await page.getByRole('button', { name: 'Add column' }).click()
-    await expect(page.getByTestId('board-column')).toHaveCount(1)
-    await page.getByRole('button', { name: 'Add column' }).click()
-    await expect(page.getByTestId('board-column')).toHaveCount(2)
-    await page.getByTestId('board-column').locator('.title').nth(1).fill('Doing')
-    await page.getByTestId('board-column').locator('.title').nth(1).blur()
+    await page.keyboard.press('Enter')
+    await insertBlock(page, 'board')
+    await expect(page.getByTestId('board-column')).toHaveCount(3)
 
     await page.getByTestId('board-column').nth(0).getByPlaceholder('Add a card').fill('a card')
     await page.getByTestId('board-column').nth(0).getByLabel('Add', { exact: true }).click()
@@ -78,6 +63,19 @@ test.describe('input parity', () => {
 
     await expect(page.getByTestId('board-column').nth(0).getByTestId('board-card')).toHaveCount(0)
     await expect(page.getByTestId('board-column').nth(1).getByTestId('board-card')).toHaveCount(1)
+  })
+
+  test('shows a board as markdown and back', async ({ page }) => {
+    await createNoteWith(page, 'Source view')
+    await page.keyboard.press('Enter')
+    await insertBlock(page, 'board')
+    await page.getByTestId('board-block').hover()
+    await page.getByRole('button', { name: 'Edit as markdown' }).click()
+    await expect(page.getByTestId('board-block')).toHaveCount(0)
+    await expect(page.locator('.cm-content')).toContainText('```board')
+
+    await page.keyboard.press('Escape')
+    await expect(page.getByTestId('board-block')).toBeVisible()
   })
 
   test('reorders folders from the menu as well as by dragging', async ({ page }) => {
@@ -146,10 +144,9 @@ test.describe('input parity on touch', () => {
     await expect(page.getByTestId('bulk-bar')).toBeVisible()
   })
 
-  test('shows the task delete button without hovering', async ({ page }) => {
-    await createNoteWith(page, 'Tasks\n- [ ] something')
-    await page.getByTestId('view-tab-checklist').click()
-
-    await expect(page.locator('.task').first().getByLabel('Delete task')).toBeVisible()
+  test('shows the block handle for the block with the cursor on touch', async ({ page }) => {
+    await createNoteWith(page, 'Touch blocks\nSecond block')
+    await page.locator('.cm-content').click()
+    await expect(page.locator('.cm-block-handle--visible')).toBeVisible()
   })
 })

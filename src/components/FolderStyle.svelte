@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Dialog from './ui/Dialog.svelte'
   import Icon from './Icon.svelte'
   import IconPicker from './IconPicker.svelte'
   import { updateFolder } from '$lib/db/repo/folders'
@@ -30,19 +31,7 @@
   }
 </script>
 
-<div class="backdrop" role="presentation" onpointerdown={onclose}></div>
-
-<div class="dialog" role="dialog" aria-modal="true" aria-label={t('folderStyle.title')}>
-  <header class="head">
-    <span class="preview" style={color ? `color: ${color}` : ''}>
-      <Icon name={icon} size={18} />
-    </span>
-    <span class="title truncate">{folder.name}</span>
-    <button class="btn btn--ghost btn--icon" aria-label={t('common.close')} onclick={onclose}>
-      <Icon name="x" size={15} />
-    </button>
-  </header>
-
+<Dialog label={folder.name} {onclose} size="sm" flush {icon}>
   <div class="content">
     <div class="field">
       <span class="label">{t('folderStyle.icon')}</span>
@@ -86,7 +75,7 @@
     <button class="btn" onclick={onclose}>{t('common.cancel')}</button>
     <button class="btn btn--primary" onclick={apply}>{t('common.apply')}</button>
   </footer>
-</div>
+</Dialog>
 
 {#if pickerOpen}
   <IconPicker
@@ -100,45 +89,6 @@
 {/if}
 
 <style>
-  .backdrop {
-    position: fixed;
-    inset: 0;
-    z-index: 52;
-    background: var(--overlay);
-  }
-
-  .dialog {
-    position: fixed;
-    z-index: 53;
-    inset: 50% auto auto 50%;
-    transform: translate(-50%, -50%);
-    width: min(94vw, 24rem);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    background: var(--surface);
-    box-shadow: var(--shadow-2);
-    overflow: hidden;
-  }
-
-  .head {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-    padding: var(--space-3);
-    border-bottom: 1px solid var(--border);
-  }
-
-  .preview {
-    display: flex;
-    flex: none;
-  }
-
-  .title {
-    flex: 1;
-    min-width: 0;
-    font-weight: 650;
-  }
-
   .content {
     padding: var(--space-4);
   }

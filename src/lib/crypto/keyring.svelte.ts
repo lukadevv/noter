@@ -14,6 +14,8 @@ import type { Note } from '$lib/db/schema'
 import { updateNote } from '$lib/db/repo/notes'
 import { updateFolder } from '$lib/db/repo/folders'
 import { extractTags } from '$lib/md/links'
+import { referencedAssetIds } from '$lib/db/repo/assets'
+import { migrateBodyForView, needsMigration } from '$lib/md/migrate'
 
 /** Locked folders re-lock after this long without activity. */
 const IDLE_TIMEOUT_MS = 15 * 60_000
@@ -99,8 +101,10 @@ export async function encryptFolder(folderId: string, passphrase: string): Promi
       title: packEnvelope(await encryptText(key, note.title)),
       body: packEnvelope(await encryptText(key, note.body)),
       tags: [],
+      assetRefs: referencedAssetIds(note.body),
       encrypted: 1,
     })
+    await sealVersions(key, note.id)
   }
 
   await updateFolder(folderId, { encrypted: 1, kdf, verifier })
@@ -118,8 +122,17 @@ export async function decryptFolder(folderId: string): Promise<number> {
   for (const note of notes) {
     if (!note.encrypted) continue
     const title = await revealText(key, note.title)
-    const body = await revealText(key, note.body)
-    await updateNote(note.id, { title, body, tags: extractTags(body), encrypted: 0 })
+    // A note encrypted before blocks existed is converted now that it can be read.
+    const body = migrateBodyForView(note.view, await revealText(key, note.body), note.lang)
+    await updateNote(note.id, {
+      title,
+      body,
+      tags: extractTags(body),
+      assetRefs: undefined,
+      encrypted: 0,
+      view: 'doc',
+    })
+    await openVersions(key, note.id)
   }
 
   await updateFolder(folderId, { encrypted: 0, kdf: null, verifier: null })
@@ -132,16 +145,106 @@ async function revealText(key: CryptoKey, value: string): Promise<string> {
   return envelope ? decryptText(key, envelope) : value
 }
 
-/** Decrypts a note for display, when its folder is unlocked. */
+/**
+ * Encrypts a note's history along with the note. Snapshots taken before the
+ * folder was locked are plaintext copies of the same text, so leaving them
+ * would defeat the encryption entirely.
+ */
+async function sealVersions(key: CryptoKey, noteId: string): Promise<void> {
+  const versions = await db.versions.where('noteId').equals(noteId).toArray()
+  for (const version of versions) {
+    if (isEncrypted(version.body)) continue
+    await db.versions.update(version.id, {
+      title: packEnvelope(await encryptText(key, version.title)),
+      body: packEnvelope(await encryptText(key, version.body)),
+    })
+  }
+}
+
+async function openVersions(key: CryptoKey, noteId: string): Promise<void> {
+  const versions = await db.versions.where('noteId').equals(noteId).toArray()
+  for (const version of versions) {
+    await db.versions.update(version.id, {
+      title: await revealText(key, version.title),
+      body: await revealText(key, version.body),
+    })
+  }
+}
+
+/**
+ * Decrypts any value that belongs to a folder — a snapshot, a template body.
+ * Plaintext passes through untouched; null means the folder is locked.
+ */
+export async function revealInFolder(folderId: string, value: string): Promise<string | null> {
+  if (!isEncrypted(value)) return value
+  const key = keyring.keyFor(folderId)
+  if (!key) return null
+  try {
+    return await revealText(key, value)
+  } catch {
+    return null
+  }
+}
+
+/** Why a note could not be moved: the folder whose key is missing. */
+export class FolderLockedError extends Error {
+  constructor(public folderId: string) {
+    super('Unlock the folder first')
+  }
+}
+
+/**
+ * Re-encrypts a note for a new folder, or returns null when nothing changes.
+ *
+ * Each encrypted folder has its own key, so a note moved between folders has
+ * to be decrypted with the old key and sealed with the new one — otherwise it
+ * becomes unreadable in its new home, or stays plaintext inside a locked one.
+ */
+export async function recryptForFolder(note: Note, targetFolderId: string): Promise<Partial<Note> | null> {
+  if (note.folderId === targetFolderId) return null
+  const target = targetFolderId ? await db.folders.get(targetFolderId) : undefined
+  const targetEncrypted = target?.encrypted === 1
+  if (!note.encrypted && !targetEncrypted) return null
+
+  let plain = { title: note.title, body: note.body }
+  if (note.encrypted) {
+    const key = keyring.keyFor(note.folderId)
+    if (!key) throw new FolderLockedError(note.folderId)
+    plain = { title: await revealText(key, note.title), body: await revealText(key, note.body) }
+  }
+
+  if (!targetEncrypted) {
+    return { ...plain, tags: extractTags(plain.body), assetRefs: undefined, encrypted: 0 }
+  }
+  const sealed = await sealNote(targetFolderId, plain.title, plain.body)
+  if (!sealed) throw new FolderLockedError(targetFolderId)
+  return { ...sealed, tags: [], encrypted: 1 }
+}
+
+/**
+ * Decrypts a note for display, when its folder is unlocked.
+ *
+ * An encrypted note written before blocks existed could not be converted by
+ * the database upgrade (it was ciphertext); it is converted here, the first
+ * time it is readable, and written back sealed.
+ */
 export async function revealNote(note: Note): Promise<{ title: string; body: string } | null> {
   if (!note.encrypted) return { title: note.title, body: note.body }
   const key = keyring.keyFor(note.folderId)
   if (!key) return null
+  let plain: { title: string; body: string }
   try {
-    return { title: await revealText(key, note.title), body: await revealText(key, note.body) }
+    plain = { title: await revealText(key, note.title), body: await revealText(key, note.body) }
   } catch {
     return null
   }
+  if (needsMigration(note)) {
+    plain = { ...plain, body: migrateBodyForView(note.view, plain.body, note.lang) }
+    const sealed = await sealNote(note.folderId, plain.title, plain.body)
+    // Not an edit by the user, so `updatedAt` stays as it was.
+    if (sealed) await db.notes.update(note.id, { ...sealed, view: 'doc' })
+  }
+  return plain
 }
 
 /** Re-encrypts an edited note before it is written back. */
@@ -149,12 +252,13 @@ export async function sealNote(
   folderId: string,
   title: string,
   body: string,
-): Promise<{ title: string; body: string } | null> {
+): Promise<{ title: string; body: string; assetRefs: string[] } | null> {
   const key = keyring.keyFor(folderId)
   if (!key) return null
   return {
     title: packEnvelope(await encryptText(key, title)),
     body: packEnvelope(await encryptText(key, body)),
+    assetRefs: referencedAssetIds(body),
   }
 }
 

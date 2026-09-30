@@ -1,13 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  One entry, because there is one page. Noter routes with the URL hash, which is
-  never sent to a server and cannot be crawled, so listing hash routes here would
-  claim addresses that do not exist.
+  The app is one page: Noter routes with the URL hash, which is never sent to a
+  server and cannot be crawled, so listing hash routes here would claim
+  addresses that do not exist. The privacy policy is a separate static page.
 -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>%SITE_URL%/</loc>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>%SITE_URL%/privacy.html</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
   </url>
 </urlset>

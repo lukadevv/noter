@@ -4,6 +4,9 @@
   import { derivedTitle, preview } from '$lib/db/repo/notes'
   import { relativeTime } from '$lib/utils/dates'
   import { t } from '$lib/i18n/index.svelte'
+  import { contextmenu } from '$lib/ui/contextmenu'
+  import { menu } from '$lib/stores/menu.svelte'
+  import { noteMenuItems } from '$lib/menus/note'
 
   interface Props {
     note: Note
@@ -14,10 +17,15 @@
     height: number
     onselect: (id: string, event: MouseEvent | KeyboardEvent) => void
     onmark: (id: string, event: MouseEvent) => void
-    onmenu: (id: string, x: number, y: number) => void
   }
 
-  let { note, active, marked, selecting, height, onselect, onmark, onmenu }: Props = $props()
+  let { note, active, marked, selecting, height, onselect, onmark }: Props = $props()
+
+  /**
+   * Dragging a row to a folder needs a mouse. On touch the same gesture is the
+   * long-press that opens the menu, and "Move to" in there does the job.
+   */
+  const finePointer = typeof matchMedia === 'function' && matchMedia('(pointer: fine)').matches
 
   // A locked note shows nothing but the fact that it is locked; its title is
   // ciphertext and rendering that would be noise.
@@ -35,7 +43,7 @@
   role="option"
   tabindex="-1"
   aria-selected={active}
-  draggable="true"
+  draggable={finePointer}
   ondragstart={(e) => {
     e.dataTransfer?.setData('application/x-noter-note', note.id)
     if (e.dataTransfer) e.dataTransfer.effectAllowed = 'move'
@@ -47,10 +55,7 @@
       onselect(note.id, e)
     }
   }}
-  oncontextmenu={(e) => {
-    e.preventDefault()
-    onmenu(note.id, e.clientX, e.clientY)
-  }}
+  use:contextmenu={() => noteMenuItems(note)}
 >
   <div class="line">
     <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
@@ -79,8 +84,7 @@
       aria-label={t('note.noteActions')}
       onclick={(e) => {
         e.stopPropagation()
-        const box = (e.currentTarget as HTMLElement).getBoundingClientRect()
-        onmenu(note.id, box.left, box.bottom + 4)
+        menu.open(noteMenuItems(note), e.currentTarget as HTMLElement, t('note.noteActions'))
       }}
     >
       <Icon name="more" size={14} />

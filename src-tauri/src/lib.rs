@@ -22,10 +22,17 @@ fn write_export(path: String, contents: String) -> Result<(), String> {
 /// One setting there is worth explaining, since JSON cannot: `dragDropEnabled`
 /// is false. Tauri otherwise intercepts dropped files itself and never lets the
 /// events reach the page, which is where this app expects images to land.
+///
+/// `additionalBrowserArgs` (Windows) turns off WebView2's background timer
+/// throttling, so a timer still rings on time while the window is minimised
+/// or covered. Setting it replaces Tauri's own defaults, which is why the
+/// first `--disable-features` flag repeats them.
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
+        // Timer and medication reminders are shown as system notifications.
+        .plugin(tauri_plugin_notification::init())
         .invoke_handler(tauri::generate_handler![write_export])
         .run(tauri::generate_context!())
         .expect("Noter failed to start");

@@ -2,11 +2,6 @@
   import Icon from './Icon.svelte'
   import Editor from './Editor.svelte'
   import ReadingView from './ReadingView.svelte'
-  import ChecklistView from './ChecklistView.svelte'
-  import GalleryView from './GalleryView.svelte'
-  import BoardView from './BoardView.svelte'
-  import CodeView from './CodeView.svelte'
-  import Menu from './Menu.svelte'
   import Backlinks from './Backlinks.svelte'
   import Lazy from './Lazy.svelte'
   import type { MenuItem } from '$lib/ui-types'
@@ -20,44 +15,46 @@
   import { addDays } from '$lib/utils/dates'
   import { keyring } from '$lib/crypto/keyring.svelte'
   import UnlockPrompt from './UnlockPrompt.svelte'
-  import type { ViewMode } from '$lib/db/schema'
   import { t } from '$lib/i18n/index.svelte'
+  import { menu } from '$lib/stores/menu.svelte'
+  import { dialogs } from '$lib/stores/dialogs.svelte'
+  import { noteMenuItems } from '$lib/menus/note'
+  import { contextmenu } from '$lib/ui/contextmenu'
+  import { formatShortcut } from '$lib/ui/keys'
+  import { pop } from '$lib/ui/motion.svelte'
 
   let note = $derived(notes.activeNote)
-  let mode = $state<'edit' | 'read'>('edit')
-  let menu = $state<{ x: number; y: number; items: MenuItem[] } | null>(null)
   let dropActive = $state(false)
-  let historyOpen = $state(false)
-  let shareOpen = $state(false)
   /** Title as it was when the field gained focus, so renames can repoint links. */
   let titleBeforeEdit = ''
 
   /**
-   * Plaintext of the open note. For an ordinary note this is just its body; for
-   * one in a locked folder it is the decrypted text, which only exists in memory
-   * while the folder is unlocked.
+   * Plaintext of the open note. For an ordinary note this is just its body,
+   * derived synchronously so it can never lag behind the note it belongs to —
+   * the editor must never see one note's id paired with another note's text.
+   * For a note in a locked folder it is the decrypted text, which only exists
+   * in memory while the folder is unlocked, tagged with the note it came from.
    */
-  let content = $state<{ title: string; body: string } | null>(null)
+  let revealed = $state<{ id: string; title: string; body: string } | null>(null)
 
   $effect(() => {
     const current = note
     const unlocked = keyring.unlocked
-    if (!current) {
-      content = null
-      return
-    }
-    if (current.encrypted !== 1) {
-      content = { title: current.title, body: current.body }
-      return
-    }
+    if (!current || current.encrypted !== 1) return
     void unlocked
     let cancelled = false
-    void notes.reveal(current).then((revealed) => {
-      if (!cancelled) content = revealed
+    void notes.reveal(current).then((plain) => {
+      if (!cancelled) revealed = plain ? { id: current.id, ...plain } : null
     })
     return () => {
       cancelled = true
     }
+  })
+
+  let content = $derived.by<{ title: string; body: string } | null>(() => {
+    if (!note) return null
+    if (note.encrypted !== 1) return { title: note.title, body: note.body }
+    return revealed?.id === note.id ? revealed : null
   })
 
   let locked = $derived(note?.encrypted === 1 && content === null)
@@ -65,16 +62,35 @@
   let readOnly = $derived(note !== null && (note.deletedAt > 0 || locked))
   let tasks = $derived(taskStats(text))
 
-  const VIEWS: { id: ViewMode; icon: string }[] = [
-    { id: 'doc', icon: 'file-text' },
-    { id: 'checklist', icon: 'check-square' },
-    { id: 'board', icon: 'layout-grid' },
-    { id: 'gallery', icon: 'image' },
-    { id: 'code', icon: 'code' },
-  ]
+  /** Locked for editing by the user (not to be confused with an encrypted folder's lock). */
+  let editLocked = $derived(note?.editLock === 1)
+  /** Bumped each time a locked note refuses input, to replay the lock's nudge. */
+  let nudge = $state(0)
+  let hint = $state(false)
+  let hintTimer: ReturnType<typeof setTimeout> | undefined
 
-  /** Only the document view has a separate reading mode; the rest render directly. */
-  let showsReadToggle = $derived(note?.view === 'doc')
+  function refused() {
+    nudge++
+    hint = true
+    clearTimeout(hintTimer)
+    hintTimer = setTimeout(() => (hint = false), 2400)
+  }
+
+  function toggleEditLock() {
+    if (!note || readOnly) return
+    const next = !editLocked
+    void notes.setEditLock(note.id, next)
+    hint = false
+    ui.toast(t(next ? 'note.lockedToast' : 'note.unlockedToast'), 'info')
+  }
+
+  function onKeydown(event: KeyboardEvent) {
+    if (!note || ui.section !== 'notes') return
+    if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toLowerCase() === 'l') {
+      event.preventDefault()
+      toggleEditLock()
+    }
+  }
 
   function write(id: string, body: string) {
     notes.editBody(id, body, content?.title ?? note?.title ?? '')
@@ -84,85 +100,43 @@
     if (snippets.length === 0 || !note) return
     const trimmed = text.replace(/\s+$/, '')
     write(id, `${trimmed}${trimmed ? '\n\n' : ''}${snippets.join('\n')}`)
+    // A discrete action, not typing: save it now rather than after the debounce.
+    void notes.flushPending()
   }
 
   async function onDrop(event: DragEvent) {
     dropActive = false
-    if (!note || readOnly) return
+    if (!note || readOnly || editLocked) return
     const files = [...(event.dataTransfer?.files ?? [])].filter((f) => f.type.startsWith('image/'))
     if (files.length === 0) return
     event.preventDefault()
     append(note.id, await insertImages(files, 'file'))
   }
 
-  function openMenu(event: MouseEvent) {
-    if (!note) return
+  /** The note menu, plus what only the open note can do (it holds the plaintext). */
+  function menuItems(): MenuItem[] {
+    if (!note) return []
     const current = note
-    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect()
+    if (current.deletedAt) return noteMenuItems(current)
+    return noteMenuItems(current, {
+      extra: [
+        {
+          id: 'images',
+          separatorBefore: true,
+          label: t('note.menu.addImages'),
+          icon: 'image',
+          run: async () => append(current.id, await pickImages()),
+        },
+      ],
+    }).map((item) =>
+      item.id === 'share' && locked
+        ? { ...item, run: () => ui.toast(t('toast.unlockToShare'), 'warn') }
+        : item,
+    )
+  }
 
-    const viewItems: MenuItem[] = VIEWS.map((view, index) => ({
-      label: `${t(`note.views.${view.id}`)}${current.view === view.id ? ' ✓' : ''}`,
-      icon: view.icon,
-      separatorBefore: index === 0,
-      run: () => void notes.update(current.id, { view: view.id }),
-    }))
-
-    menu = {
-      x: rect.right - 200,
-      y: rect.bottom + 4,
-      items: current.deletedAt
-        ? [
-            { label: t('common.restore'), icon: 'restore', run: () => void notes.restore(current.id) },
-            {
-              label: t('note.menu.deleteForever'),
-              icon: 'trash',
-              danger: true,
-              separatorBefore: true,
-              run: () => void notes.deleteForever(current.id),
-            },
-          ]
-        : [
-            {
-              label: t(current.pinned ? 'note.menu.unpin' : 'note.menu.pin'),
-              icon: 'pin',
-              run: () => void notes.togglePin(current.id),
-            },
-            {
-              label: t(current.archivedAt ? 'note.menu.unarchive' : 'note.menu.archive'),
-              icon: 'archive',
-              run: () => void notes.setArchived(current.id, current.archivedAt === 0),
-            },
-            ...viewItems,
-            {
-              label: t('note.menu.addImages'),
-              icon: 'image',
-              separatorBefore: true,
-              run: async () => append(current.id, await pickImages()),
-            },
-            { label: t('note.menu.history'), icon: 'restore', run: () => (historyOpen = true) },
-            {
-              label: t('note.menu.share'),
-              icon: 'link',
-              run: () => {
-                if (locked) ui.toast(t('toast.unlockToShare'), 'warn')
-                else shareOpen = true
-              },
-            },
-            {
-              label: t('note.menu.trash'),
-              icon: 'trash',
-              danger: true,
-              separatorBefore: true,
-              run: () => {
-                void notes.trash(current.id)
-                ui.toast(t('toast.movedToTrash'), 'info', {
-                  label: t('toast.undo'),
-                  run: () => void notes.restore(current.id),
-                })
-              },
-            },
-          ],
-    }
+  function openMenu(event: MouseEvent) {
+    menu.open(menuItems(), event.currentTarget as HTMLElement, t('note.noteActions'))
   }
 </script>
 
@@ -183,7 +157,7 @@
 >
   {#if note}
     {@const current = note}
-    <header class="head">
+    <header class="head" use:contextmenu={menuItems}>
       {#if ui.narrow}
         <button
           class="btn btn--ghost btn--icon"
@@ -202,8 +176,18 @@
           ? t('list.lockedNote')
           : derivedTitle({ title: content?.title ?? '', body: text })}
         disabled={readOnly}
+        readonly={editLocked}
         onfocus={() => (titleBeforeEdit = derivedTitle(current))}
-        oninput={(e) => void notes.update(current.id, { title: e.currentTarget.value })}
+        oninput={(e) => {
+          // Titles go through the same debounced, sealed write as the body: a
+          // direct write per keystroke would store an encrypted note's title in
+          // plaintext until the next body save.
+          const title = e.currentTarget.value
+          // An encrypted note's store copy lags until the sealed write lands;
+          // keep the revealed copy current so the next body save keeps this title.
+          if (revealed?.id === current.id) revealed = { ...revealed, title }
+          notes.editBody(current.id, text, title)
+        }}
         onkeydown={(e) => {
           if (e.key === 'Enter') e.currentTarget.blur()
         }}
@@ -229,15 +213,28 @@
         {/if}
         <span class="stamp faint">{relativeTime(current.updatedAt, Date.now(), t)}</span>
 
-        {#if showsReadToggle}
-          <button
-            class="btn btn--ghost btn--icon"
-            aria-label={t(mode === 'edit' ? 'note.readingView' : 'note.editingView')}
-            title={t(mode === 'edit' ? 'note.readingView' : 'note.editingView')}
-            onclick={() => (mode = mode === 'edit' ? 'read' : 'edit')}
-          >
-            <Icon name={mode === 'edit' ? 'file-text' : 'pencil'} size={16} />
-          </button>
+        {#if !readOnly}
+          <span class="lock-wrap">
+            {#if hint && editLocked}
+              <span class="lock-hint" role="status" transition:pop>{t('note.lockedHint')}</span>
+            {/if}
+            {#key nudge}
+              <button
+                class="btn btn--ghost btn--icon lock"
+                class:lock--on={editLocked}
+                class:lock--nudge={nudge > 0}
+                data-testid="edit-lock"
+                aria-pressed={editLocked}
+                aria-label={t(editLocked ? 'note.unlockEditing' : 'note.lockEditing')}
+                title="{t(editLocked ? 'note.unlockEditing' : 'note.lockEditing')} ({formatShortcut(
+                  'Mod+Shift+L',
+                )})"
+                onclick={toggleEditLock}
+              >
+                <Icon name={editLocked ? 'lock-keyhole' : 'lock-open'} size={16} />
+              </button>
+            {/key}
+          </span>
         {/if}
 
         <button
@@ -279,22 +276,6 @@
       </nav>
     {/if}
 
-    <nav class="views" aria-label={t('note.view')}>
-      {#each VIEWS as view (view.id)}
-        <button
-          class="view"
-          data-testid="view-tab-{view.id}"
-          class:view--active={current.view === view.id}
-          disabled={readOnly}
-          title={t(`note.views.${view.id}`)}
-          onclick={() => void notes.update(current.id, { view: view.id })}
-        >
-          <Icon name={view.icon} size={14} />
-          <span class="view-label">{t(`note.views.${view.id}`)}</span>
-        </button>
-      {/each}
-    </nav>
-
     {#if current.deletedAt > 0}
       <div class="banner">
         <Icon name="trash" size={14} />
@@ -308,21 +289,7 @@
     <div class="body">
       {#if locked}
         <UnlockPrompt folderId={current.folderId} />
-      {:else if current.view === 'checklist'}
-        <ChecklistView body={text} {readOnly} onchange={(b) => write(current.id, b)} />
-      {:else if current.view === 'board'}
-        <BoardView body={text} {readOnly} onchange={(b) => write(current.id, b)} />
-      {:else if current.view === 'gallery'}
-        <GalleryView body={text} {readOnly} onadd={async () => append(current.id, await pickImages())} />
-      {:else if current.view === 'code'}
-        <CodeView
-          body={text}
-          lang={current.lang}
-          {readOnly}
-          onchange={(b) => write(current.id, b)}
-          onlang={(lang) => void notes.update(current.id, { lang })}
-        />
-      {:else if mode === 'read' || readOnly}
+      {:else if readOnly}
         <ReadingView
           body={text}
           {readOnly}
@@ -330,19 +297,23 @@
           onlink={(target) => void notes.openLink(target)}
         />
       {:else}
-        {#key current.id}
-          <Editor
-            noteId={current.id}
-            body={text}
-            lineNumbers={theme.settings.showLineNumbers}
-            onchange={(body) => notes.editBody(current.id, body, content?.title ?? current.title)}
-            onflush={() => notes.flushPending()}
-            onimages={(files) => insertImages(files)}
-            onurl={(url) => insertUrl(url)}
-            titles={() => notes.notes.map((n) => derivedTitle(n))}
-            tags={() => [...notes.tagCounts.keys()]}
-          />
-        {/key}
+        <!-- One editor for every note: it swaps per-note states instead of
+             remounting, so cursor, scroll and undo survive switching notes. -->
+        <Editor
+          noteId={current.id}
+          body={text}
+          locked={editLocked}
+          lineNumbers={theme.settings.showLineNumbers}
+          onchange={(body) => notes.editBody(current.id, body, content?.title ?? current.title)}
+          onflush={() => notes.flushPending()}
+          onblocked={refused}
+          onlink={(target) => void notes.openLink(target)}
+          onimages={(files) => insertImages(files)}
+          onurl={(url) => insertUrl(url)}
+          titles={() => notes.notes.map((n) => derivedTitle(n))}
+          tags={() => [...notes.tagCounts.keys()]}
+          onpickimages={() => pickImages()}
+        />
       {/if}
     </div>
 
@@ -368,34 +339,75 @@
   {/if}
 </section>
 
-{#if menu}
-  <Menu items={menu.items} x={menu.x} y={menu.y} onclose={() => (menu = null)} />
-{/if}
-
-{#if historyOpen && note}
+{#if note && dialogs.is('history', note.id)}
   <Lazy
     load={() => import('./HistoryDialog.svelte')}
     props={{
       noteId: note.id,
       currentTitle: content?.title ?? note.title,
       currentBody: text,
-      onclose: () => (historyOpen = false),
+      onclose: () => dialogs.close(),
     }}
   />
 {/if}
 
-{#if shareOpen && note && !locked}
+{#if note && !locked && dialogs.is('share', note.id)}
   <Lazy
     load={() => import('./ShareDialog.svelte')}
     props={{
       note: { ...note, title: content?.title ?? note.title },
       body: text,
-      onclose: () => (shareOpen = false),
+      onclose: () => dialogs.close(),
     }}
   />
 {/if}
 
+<svelte:window onkeydown={onKeydown} />
+
 <style>
+  .lock-wrap {
+    position: relative;
+    display: inline-flex;
+  }
+
+  .lock--on {
+    color: var(--warn);
+  }
+
+  .lock--nudge {
+    animation: nudge 360ms var(--ease-out);
+  }
+
+  @keyframes nudge {
+    20% {
+      transform: translateX(-3px) rotate(-8deg);
+    }
+    40% {
+      transform: translateX(3px) rotate(6deg);
+    }
+    60% {
+      transform: translateX(-2px) rotate(-4deg);
+    }
+    80% {
+      transform: translateX(1px);
+    }
+  }
+
+  .lock-hint {
+    position: absolute;
+    top: calc(100% + 6px);
+    inset-inline-end: 0;
+    z-index: var(--z-sticky);
+    padding: var(--space-1) var(--space-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface-3);
+    box-shadow: var(--shadow-2);
+    color: var(--text);
+    font-size: var(--text-sm);
+    white-space: nowrap;
+  }
+
   .note {
     position: relative;
     display: flex;
@@ -458,59 +470,6 @@
   }
 
   /* View switcher: labels collapse away on narrow screens, icons remain. */
-  .views {
-    display: flex;
-    gap: 2px;
-    padding: 0 var(--space-3) var(--space-2);
-    border-bottom: 1px solid var(--border);
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
-
-  .views::-webkit-scrollbar {
-    display: none;
-  }
-
-  .view {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-    flex: none;
-    height: 26px;
-    padding: 0 var(--space-2);
-    border: none;
-    border-radius: var(--radius);
-    background: none;
-    color: var(--text-faint);
-    font-size: 12px;
-    cursor: pointer;
-  }
-
-  .view:hover:not(:disabled) {
-    background: var(--surface-2);
-    color: var(--text);
-  }
-
-  .view--active {
-    background: var(--accent-soft);
-    color: var(--text);
-  }
-
-  .view:disabled {
-    cursor: default;
-    opacity: 0.5;
-  }
-
-  @media (max-width: 640px) {
-    .view-label {
-      display: none;
-    }
-
-    .view {
-      padding: 0 var(--space-3);
-    }
-  }
-
   .daily {
     display: flex;
     align-items: center;

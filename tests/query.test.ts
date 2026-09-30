@@ -103,7 +103,12 @@ describe('query evaluation', () => {
     expect(run('tag:bug', note({ tags: ['bug'] }))).toBe(true)
     expect(run('tag:bug', note({ tags: ['chore'] }))).toBe(false)
     expect(run('folder:projects', note({ folderId: 'f1' }))).toBe(true)
-    expect(run('view:checklist', note({ view: 'checklist' }))).toBe(true)
+    // `view:` now means "has a block of that kind".
+    expect(run('view:checklist', note({ body: '- [ ] milk' }))).toBe(true)
+    expect(run('view:checklist', note({ body: 'no tasks' }))).toBe(false)
+    expect(run('view:board', note({ body: '```board\n## A\n```' }))).toBe(true)
+    expect(run('view:code', note({ body: '```rust\nfn main() {}\n```' }))).toBe(true)
+    expect(run('lang:rust', note({ body: '```rust\nfn main() {}\n```' }))).toBe(true)
   })
 
   it('filters by state', () => {

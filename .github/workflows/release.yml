@@ -156,6 +156,24 @@ jobs:
           releaseId: ${{ needs.prepare.outputs.release_id }}
           args: ${{ matrix.args }}
 
+      # The Microsoft Store package. Unsigned on purpose: the Store signs it.
+      # Skipped until the Partner Center identity is stored as repo variables.
+      - name: Pack MSIX for the Microsoft Store
+        if: matrix.os == 'windows-latest' && vars.MSIX_IDENTITY_NAME != ''
+        shell: pwsh
+        env:
+          MSIX_IDENTITY_NAME: ${{ vars.MSIX_IDENTITY_NAME }}
+          MSIX_PUBLISHER: ${{ vars.MSIX_PUBLISHER }}
+          MSIX_PUBLISHER_DISPLAY_NAME: ${{ vars.MSIX_PUBLISHER_DISPLAY_NAME }}
+        run: ./scripts/build-msix.ps1
+
+      - name: Upload MSIX to the release
+        if: matrix.os == 'windows-latest' && vars.MSIX_IDENTITY_NAME != ''
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload "${{ needs.prepare.outputs.tag }}" "$env:MSIX_PATH" --clobber
+
   android:
     name: Android
     needs: prepare

@@ -3,17 +3,31 @@
   import { ui } from '$lib/stores/ui.svelte'
   import { t } from '$lib/i18n/index.svelte'
 
+  import { flip } from 'svelte/animate'
+  import { flipDuration, rise } from '$lib/ui/motion.svelte'
+
   const ICON = {
-    info: 'file-text',
-    ok: 'check',
-    warn: 'archive',
-    danger: 'trash',
+    info: 'info',
+    ok: 'circle-check',
+    warn: 'triangle-alert',
+    danger: 'triangle-alert',
   } as const
 </script>
 
 <div class="stack" role="status" aria-live="polite">
   {#each ui.toasts as toast (toast.id)}
-    <div class="toast toast--{toast.tone}" data-testid="toast">
+    <div
+      class="toast toast--{toast.tone}"
+      data-testid="toast"
+      role="presentation"
+      in:rise={{ y: 12 }}
+      out:rise={{ y: 6, duration: 140 }}
+      animate:flip={{ duration: flipDuration() }}
+      onpointerenter={() => ui.holdToast(toast.id)}
+      onpointerleave={() => ui.releaseToast(toast.id)}
+      onfocusin={() => ui.holdToast(toast.id)}
+      onfocusout={() => ui.releaseToast(toast.id)}
+    >
       <Icon name={ICON[toast.tone]} size={14} />
       <span class="text">{toast.message}</span>
       {#if toast.action}
@@ -39,7 +53,7 @@
     position: fixed;
     left: 50%;
     bottom: var(--space-4);
-    z-index: 60;
+    z-index: var(--z-toast);
     display: flex;
     flex-direction: column;
     gap: var(--space-2);
@@ -58,7 +72,6 @@
     background: var(--surface-2);
     box-shadow: var(--shadow-2);
     pointer-events: auto;
-    animation: rise 140ms ease;
   }
 
   .toast--ok {
@@ -107,12 +120,5 @@
   .close:hover {
     background: var(--surface-3);
     color: var(--text);
-  }
-
-  @keyframes rise {
-    from {
-      opacity: 0;
-      transform: translateY(6px);
-    }
   }
 </style>

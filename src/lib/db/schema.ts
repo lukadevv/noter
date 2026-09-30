@@ -76,6 +76,18 @@ export interface Note {
   /** Timestamp, or 0 when not trashed. Purged after TRASH_RETENTION_DAYS. */
   deletedAt: number
   encrypted: Flag
+  /**
+   * Image ids an encrypted note references. The body is ciphertext, so the
+   * orphan sweep cannot read them out of it; the images themselves are stored
+   * unencrypted anyway, so listing their ids here reveals nothing new.
+   */
+  assetRefs?: string[]
+  /**
+   * Locked for editing: the note opens read-only until unlocked, which guards
+   * against accidental rewrites. Absent on notes older than the feature.
+   * (Not to be confused with an encrypted note being "locked" by its folder.)
+   */
+  editLock?: Flag
   /** 'YYYY-MM-DD' when this is a daily note; null otherwise (sparse index). */
   daily: string | null
   /** Singleton notes the app manages itself; null otherwise (sparse index). */
@@ -160,4 +172,145 @@ export function now(): number {
 
 export function flag(value: boolean): Flag {
   return value ? 1 : 0
+}
+
+// --- Timers ------------------------------------------------------------------
+
+/** A synthesised alarm sound: a short note pattern played on an oscillator. */
+export interface SoundRecipe {
+  wave: 'sine' | 'square' | 'triangle' | 'sawtooth'
+  /** Pitches in Hz, played in turn; 0 is a rest. */
+  notes: number[]
+  /** Length of each note, ms. */
+  noteMs: number
+  /** Silence after the whole pattern before it repeats, ms. */
+  gapMs: number
+  /** 0–1. Multiplied by the global alarm volume. */
+  volume: number
+  /** A soft attack and a longer release make a bell; short ones make a beep. */
+  attackMs: number
+  releaseMs: number
+}
+
+export interface Sound {
+  id: string
+  name: string
+  recipe: SoundRecipe
+  createdAt: number
+  updatedAt: number
+}
+
+/** A timer you start with one tap: "Oven, 10 min". */
+export interface TimerPreset {
+  id: string
+  label: string
+  seconds: number
+  /** A built-in sound id ('classic', 'bell'…) or a custom Sound id. */
+  soundId: string
+  color: string | null
+  /** Starts again by itself when it rings, e.g. "stand up every 45 minutes". */
+  repeat: Flag
+  order: number
+  createdAt: number
+  updatedAt: number
+}
+
+/** A timer that is counting down (or paused, or ringing). */
+export interface RunningTimer {
+  id: string
+  presetId: string | null
+  label: string
+  /** The full duration, for the progress ring. */
+  seconds: number
+  /** When it rings, as a timestamp; 0 while paused. */
+  endAt: number
+  /** Milliseconds left while paused; null while running. */
+  pausedRemaining: number | null
+  soundId: string
+  repeat: Flag
+  /** When it rang, 0 until then. Claimed in a transaction so only one tab rings. */
+  firedAt: number
+  createdAt: number
+}
+
+// --- Medication --------------------------------------------------------------
+
+export interface Med {
+  id: string
+  name: string
+  /** Free text: "500 mg", "2 drops", "1 tablet". */
+  dose: string
+  color: string | null
+  /** Hours between doses: 24 = daily, 12 = twice a day, 8 = three times. */
+  intervalHours: number
+  /** How long before a dose the "coming up" alert appears, in minutes. */
+  leadMinutes: number
+  notes: string
+  /** Pills or doses left, or null when not tracked. */
+  stock: number | null
+  /** How much one dose uses from the stock. */
+  perDose: number
+  /** Paused medications keep their history but stop reminding. */
+  active: Flag
+  /**
+   * The due time a reminder was last fired for. Claimed in a transaction so a
+   * dose reminds once, not once per open tab.
+   */
+  notifiedDue: number
+  order: number
+  createdAt: number
+  updatedAt: number
+}
+
+export interface Dose {
+  id: string
+  medId: string
+  /** When it was taken (or, for a skipped dose, when it was skipped). */
+  takenAt: number
+  status: 'taken' | 'skipped'
+  createdAt: number
+  updatedAt: number
+}
+
+// --- Vault (secrets) ---------------------------------------------------------
+
+/**
+ * How the vault's data key is protected. The data key is random and encrypts
+ * every item; it is stored here wrapped (encrypted) by a key derived from the
+ * master password. Changing the password only re-wraps this one key.
+ */
+export interface SecretsMeta {
+  id: 'main'
+  kdf: { salt: string; iterations: number }
+  /** The wrapped data key and the IV used to wrap it, base64. */
+  wrapped: string
+  iv: string
+  /** Random id of the data key, so a backup from another vault is recognised. */
+  keyId: string
+  createdAt: number
+  updatedAt: number
+}
+
+/** One vault entry. Everything about it, title included, is inside `envelope`. */
+export interface SecretItem {
+  id: string
+  envelope: string
+  order: number
+  createdAt: number
+  updatedAt: number
+}
+
+/**
+ * One day of writing activity, for the Home dashboard. Only numbers are kept:
+ * no titles or text, so it reveals nothing even for encrypted notes.
+ */
+export interface ActivityDay {
+  /** 'YYYY-MM-DD' in local time. */
+  day: string
+  /** Saved edit batches (a burst of typing is one). */
+  edits: number
+  created: number
+  /** Words added; deletions do not subtract. */
+  words: number
+  updatedAt: number
 }

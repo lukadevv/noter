@@ -4,7 +4,14 @@
  * hosts, with no server rewrite rules.
  */
 
+/** The top-level areas of the app, one per entry in the navigation rail. */
+export type Section = 'home' | 'notes' | 'vault' | 'meds' | 'timers'
+
 export type Route =
+  | { kind: 'home' }
+  | { kind: 'vault' }
+  | { kind: 'meds' }
+  | { kind: 'timers' }
   | { kind: 'notes'; folderId: string | null; noteId: string | null }
   | { kind: 'trash'; noteId: string | null }
   | { kind: 'archive'; noteId: string | null }
@@ -14,7 +21,26 @@ export type Route =
   | { kind: 'settings'; section: string | null }
   | { kind: 'share'; payload: string }
 
-export const HOME: Route = { kind: 'notes', folderId: null, noteId: null }
+export const HOME: Route = { kind: 'home' }
+
+/** "All notes", the landing page of the Notes section. */
+export const ALL_NOTES: Route = { kind: 'notes', folderId: null, noteId: null }
+
+/** Which navigation section a route belongs to; settings has none of its own. */
+export function sectionOf(route: Route): Section | null {
+  switch (route.kind) {
+    case 'home':
+    case 'vault':
+    case 'meds':
+    case 'timers':
+      return route.kind
+    case 'settings':
+    case 'share':
+      return null
+    default:
+      return 'notes'
+  }
+}
 
 /** Reads the note id out of a `/trash` or `/archive` tail, with or without `n/`. */
 function noteIdFrom(rest: string[]): string | null {
@@ -30,6 +56,14 @@ export function parseHash(hash: string): Route {
   const [head, ...rest] = segments
 
   switch (head) {
+    case 'home':
+      return HOME
+    case 'notes':
+      return ALL_NOTES
+    case 'vault':
+    case 'meds':
+    case 'timers':
+      return { kind: head }
     case 'f': {
       const folderId = rest[0] ?? null
       const noteId = rest[1] === 'n' ? (rest[2] ?? null) : null
@@ -59,11 +93,17 @@ export function parseHash(hash: string): Route {
 export function formatRoute(route: Route): string {
   const enc = encodeURIComponent
   switch (route.kind) {
+    case 'home':
+      return '#/'
+    case 'vault':
+    case 'meds':
+    case 'timers':
+      return `#/${route.kind}`
     case 'notes': {
       const parts: string[] = []
       if (route.folderId) parts.push('f', enc(route.folderId))
       if (route.noteId) parts.push('n', enc(route.noteId))
-      return parts.length ? `#/${parts.join('/')}` : '#/'
+      return parts.length ? `#/${parts.join('/')}` : '#/notes'
     }
     case 'trash':
       return route.noteId ? `#/trash/n/${enc(route.noteId)}` : '#/trash'

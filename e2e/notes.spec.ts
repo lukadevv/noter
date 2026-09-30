@@ -135,16 +135,52 @@ test.describe('notes and folders', () => {
     await expect(page.getByTestId('note-item')).toHaveCount(1)
   })
 
-  test('switches a note between views without losing text', async ({ page }) => {
+  test('turns a block into another kind from the block menu', async ({ page }) => {
     await createNoteWith(page, 'Shape shifter')
-    await typeMarkdown(page, '\n- [ ] a task')
-    await expect(page.getByTestId('note-item').first()).toContainText('a task')
+    await typeMarkdown(page, '\n\nbuy milk')
+    await page.getByTestId('note-title').click()
 
-    await page.getByTestId('view-tab-checklist').click()
-    await expect(page.locator('.task')).toHaveCount(1)
+    await page.locator('.cm-line', { hasText: 'buy milk' }).hover()
+    await page.locator('.cm-block-handle--visible').click()
+    await page.getByRole('menuitem', { name: 'Turn into' }).click()
+    await page.getByRole('menuitem', { name: 'Checklist' }).click()
 
-    await page.getByTestId('view-tab-doc').click()
+    await expect(page.locator('.cm-task-checkbox')).toHaveCount(1)
     await expect(page.locator('.cm-content')).toContainText('Shape shifter')
+  })
+
+  test('locks a note against edits and unlocks it again', async ({ page }) => {
+    await createNoteWith(page, 'Guarded note\nDo not touch.')
+    await page.getByTestId('edit-lock').click()
+    await expect(page.getByTestId('edit-lock')).toHaveAttribute('aria-pressed', 'true')
+
+    await page.locator('.cm-content').click()
+    await page.keyboard.type('XYZ')
+    await expect(page.locator('.cm-content')).not.toContainText('XYZ')
+    await expect(page.getByText('Locked — tap the padlock to edit')).toBeVisible()
+
+    // The lock is part of the note, so it survives a reload.
+    await page.reload()
+    await page.getByTestId('note-item').first().click()
+    await expect(page.getByTestId('edit-lock')).toHaveAttribute('aria-pressed', 'true')
+
+    await page.keyboard.press('ControlOrMeta+Shift+L')
+    await expect(page.getByTestId('edit-lock')).toHaveAttribute('aria-pressed', 'false')
+    await page.locator('.cm-content').click()
+    await page.keyboard.press('End')
+    await page.keyboard.type(' Edited')
+    await expect(page.locator('.cm-content')).toContainText('Edited')
+  })
+
+  test('keeps undo history per note when switching between notes', async ({ page }) => {
+    await createNoteWith(page, 'First note')
+    await createNoteWith(page, 'Second note')
+    await page.getByTestId('note-item').filter({ hasText: 'First note' }).click()
+    await expect(page.locator('.cm-content')).toContainText('First note')
+    // Undo right after switching must not bring back the other note's text.
+    await page.locator('.cm-content').click()
+    await page.keyboard.press('ControlOrMeta+z')
+    await expect(page.locator('.cm-content')).not.toContainText('Second note')
   })
 
   test('creates a note with Ctrl+N', async ({ page }) => {
@@ -192,6 +228,7 @@ test.describe('notes and folders', () => {
 
   test('applies a theme from settings', async ({ page }) => {
     await openSettings(page)
+    await page.getByTestId('settings-section-appearance').click()
     await page.selectOption('#theme-select', 'light')
 
     // The theme writes tokens onto the root element; that is the real assertion.

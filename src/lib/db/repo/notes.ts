@@ -2,6 +2,7 @@ import { db } from '../db'
 import { ROOT, TRASH_RETENTION_DAYS, now, type Flag, type Note, type ViewMode } from '../schema'
 import { uuid } from '$lib/utils/uuid'
 import { orderAfterLast, orderBetween } from '$lib/utils/order'
+import { isFenceLine, maskCode } from '$lib/md/fences'
 
 const DAY_MS = 86_400_000
 
@@ -14,6 +15,8 @@ export interface NewNoteInput {
   daily?: string | null
   system?: Note['system']
   template?: Flag
+  encrypted?: Flag
+  assetRefs?: string[]
 }
 
 export function emptyNote(input: NewNoteInput = {}): Note {
@@ -35,7 +38,8 @@ export function emptyNote(input: NewNoteInput = {}): Note {
     template: input.template ?? 0,
     archivedAt: 0,
     deletedAt: 0,
-    encrypted: 0,
+    encrypted: input.encrypted ?? 0,
+    ...(input.assetRefs ? { assetRefs: input.assetRefs } : {}),
     daily: input.daily ?? null,
     system: input.system ?? null,
     createdAt: ts,
@@ -57,6 +61,14 @@ export async function getNote(id: string): Promise<Note | undefined> {
 
 export async function updateNote(id: string, patch: Partial<Note>): Promise<void> {
   await db.notes.update(id, { ...patch, updatedAt: now() })
+}
+
+/**
+ * Changes how a note behaves without counting as an edit: locking a note is
+ * not writing in it, so it keeps its place in "recently modified".
+ */
+export async function setNoteFlags(id: string, patch: Pick<Partial<Note>, 'editLock'>): Promise<void> {
+  await db.notes.update(id, patch)
 }
 
 /**
@@ -134,12 +146,13 @@ export async function moveNote(
   folderId: string,
   before: string | null,
   after: string | null,
+  patch: Partial<Note> = {},
 ): Promise<void> {
   if (before === null && after === null) {
     const siblings = (await db.notes.where('folderId').equals(folderId).toArray()).filter(
       (n) => n.id !== id,
     )
-    await updateNote(id, { folderId, order: orderAfterLast(siblings) })
+    await updateNote(id, { ...patch, folderId, order: orderAfterLast(siblings) })
     return
   }
 
@@ -150,13 +163,16 @@ export async function moveNote(
     before ? (byId.get(before)?.order ?? null) : null,
     after ? (byId.get(after)?.order ?? null) : null,
   )
-  await updateNote(id, { folderId, order })
+  await updateNote(id, { ...patch, folderId, order })
 }
 
 /** First non-empty line of the body, used when a note has no explicit title. */
 export function derivedTitle(note: Pick<Note, 'title' | 'body'>): string {
   if (note.title.trim()) return note.title.trim()
   for (const line of note.body.split('\n')) {
+    // A fence line is markup, not a title: a note that starts with a board
+    // takes its title from the board's first column instead.
+    if (isFenceLine(line)) continue
     const text = line
       .replace(/^#{1,6}\s+/, '')
       .replace(/^[-*+]\s+(\[[ xX]\]\s+)?/, '')
@@ -168,12 +184,13 @@ export function derivedTitle(note: Pick<Note, 'title' | 'body'>): string {
 
 /** Plain-text preview for note lists, with markdown noise stripped out. */
 export function preview(body: string, max = 160): string {
-  const text = body
+  const text = maskCode(body)
     .replace(/!\[\[[^\]]+\]\]/g, ' ')
-    .replace(/```[\s\S]*?```/g, ' ')
     .replace(/^#{1,6}\s+/gm, '')
     .replace(/^[-*+]\s+(\[[ xX]\]\s+)?/gm, '')
     .replace(/\[\[([^\]|]+)(\|[^\]]+)?\]\]/g, '$1')
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+    .replace(/^>\s*\[![a-z]+\]\s*/gim, '')
     .replace(/[*_`>]/g, '')
     .replace(/\s+/g, ' ')
     .trim()

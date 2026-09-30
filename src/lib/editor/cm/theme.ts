@@ -16,7 +16,9 @@ export const editorTheme = EditorView.theme({
   '.cm-scroller': {
     fontFamily: 'var(--font-ui)',
     lineHeight: 'var(--line-height)',
-    padding: '0 0 40vh 0',
+    // Room at the start of each line for the block handle, and a long tail so
+    // the last line can be scrolled up to eye level.
+    padding: '0 12px 40vh 28px',
   },
   '.cm-content': {
     caretColor: 'var(--accent)',
@@ -64,7 +66,10 @@ export const editorTheme = EditorView.theme({
     border: '1px solid var(--border)',
     cursor: 'zoom-in',
   },
-  '.cm-wikilink': { color: 'var(--accent)' },
+  '.cm-wikilink': { color: 'var(--accent)', cursor: 'text' },
+  '.cm-wikilink:hover': { textDecoration: 'underline', textUnderlineOffset: '3px' },
+  // Locked notes follow links on a plain click, so they look clickable.
+  '.cm-content[aria-readonly="true"] .cm-wikilink': { cursor: 'pointer' },
   '.cm-tooltip-autocomplete': {
     border: '1px solid var(--border)',
     borderRadius: 'var(--radius)',
@@ -80,6 +85,98 @@ export const editorTheme = EditorView.theme({
   '.cm-tooltip-autocomplete ul li[aria-selected]': {
     background: 'var(--accent-soft)',
     color: 'var(--text)',
+  },
+  // Block handle and drop indicator ------------------------------------------
+  '.cm-block-handle': {
+    position: 'absolute',
+    zIndex: '5',
+    display: 'grid',
+    placeItems: 'center',
+    width: '20px',
+    height: '22px',
+    padding: '0',
+    border: 'none',
+    borderRadius: 'var(--radius-sm)',
+    background: 'transparent',
+    color: 'var(--text-faint)',
+    cursor: 'grab',
+    opacity: '0',
+    pointerEvents: 'none',
+    transition: 'opacity 120ms, background 120ms',
+    touchAction: 'none',
+  },
+  '.cm-block-handle--visible': { opacity: '1', pointerEvents: 'auto' },
+  '.cm-block-handle:hover': { background: 'var(--surface-3)', color: 'var(--text)' },
+  '.cm-block-handle--dragging': {
+    cursor: 'grabbing',
+    background: 'var(--accent-soft)',
+    color: 'var(--accent)',
+  },
+  '.cm-drop-indicator': {
+    position: 'absolute',
+    zIndex: '5',
+    height: '3px',
+    borderRadius: '2px',
+    background: 'var(--accent)',
+    opacity: '0',
+    pointerEvents: 'none',
+  },
+  '.cm-drop-indicator--visible': { opacity: '1' },
+  // `contain: inline-size` stops a wide board from stretching the text column;
+  // the board scrolls sideways inside its own box instead.
+  '.cm-content-block': { padding: '0 var(--space-2)', contain: 'inline-size' },
+
+  // Live preview -------------------------------------------------------------
+  '.cm-heading-1': { paddingTop: '0.6em' },
+  '.cm-heading-2': { paddingTop: '0.5em' },
+  '.cm-heading-3': { paddingTop: '0.35em' },
+  '.cm-bullet': { color: 'var(--accent)', fontWeight: '700', padding: '0 0.15em' },
+  '.cm-rule': {
+    display: 'inline-block',
+    width: '100%',
+    height: '1px',
+    verticalAlign: 'middle',
+    background: 'var(--border-strong)',
+  },
+  '.cm-md-link': { color: 'var(--accent)', textDecoration: 'underline', textUnderlineOffset: '3px' },
+  '.cm-quote': {
+    borderInlineStart: '3px solid var(--border-strong)',
+    paddingInlineStart: 'calc(var(--space-2) + 6px)',
+    color: 'var(--text-dim)',
+  },
+  '.cm-callout': {
+    background: 'var(--accent-soft)',
+    borderInlineStart: '3px solid var(--accent)',
+    paddingInlineStart: 'calc(var(--space-2) + 6px)',
+  },
+  '.cm-callout.cm-block--first': { borderStartStartRadius: 'var(--radius)', paddingTop: '4px' },
+  '.cm-callout.cm-block--last': { borderEndStartRadius: 'var(--radius)', paddingBottom: '4px' },
+  '.cm-callout--warning, .cm-callout--caution': {
+    background: 'var(--warn-soft)',
+    borderInlineStartColor: 'var(--warn)',
+  },
+  '.cm-callout--danger': { background: 'var(--danger-soft)', borderInlineStartColor: 'var(--danger)' },
+  '.cm-callout--tip, .cm-callout--success': {
+    background: 'var(--ok-soft)',
+    borderInlineStartColor: 'var(--ok)',
+  },
+  '.cm-callout, .cm-callout *': { fontStyle: 'normal' },
+  '.cm-callout-label': { fontWeight: '650', color: 'var(--text)', marginInlineEnd: '0.4em' },
+  '.cm-codeblock': {
+    background: 'var(--surface-2)',
+    fontFamily: 'var(--font-mono)',
+    fontSize: '0.92em',
+    paddingInline: 'calc(var(--space-2) + 6px)',
+  },
+  '.cm-codeblock--first': {
+    borderStartStartRadius: 'var(--radius)',
+    borderStartEndRadius: 'var(--radius)',
+    paddingTop: '4px',
+  },
+  '.cm-codeblock--last': {
+    borderEndStartRadius: 'var(--radius)',
+    borderEndEndRadius: 'var(--radius)',
+    paddingBottom: '4px',
   },
   '.cm-inline-image--missing::after': {
     content: '"missing image"',
@@ -108,5 +205,18 @@ export const markdownHighlight = syntaxHighlighting(
     { tag: t.list, color: 'var(--text-faint)' },
     // Markdown punctuation stays visible but recedes, so the source reads as prose.
     { tag: [t.processingInstruction, t.meta], color: 'var(--text-faint)' },
+  ]),
+)
+
+/** Syntax colours for code inside ``` blocks, from the same tokens. */
+export const codeHighlight = syntaxHighlighting(
+  HighlightStyle.define([
+    { tag: [t.keyword, t.controlKeyword, t.operatorKeyword, t.modifier], color: 'var(--accent)' },
+    { tag: [t.string, t.special(t.string), t.regexp], color: 'var(--ok)' },
+    { tag: [t.number, t.bool, t.null, t.atom], color: 'var(--warn)' },
+    { tag: [t.comment, t.lineComment, t.blockComment], color: 'var(--text-faint)', fontStyle: 'italic' },
+    { tag: [t.function(t.variableName), t.function(t.propertyName)], color: 'var(--accent-hover)' },
+    { tag: [t.typeName, t.className, t.tagName], color: 'var(--danger)' },
+    { tag: [t.attributeName, t.propertyName], color: 'var(--text-dim)' },
   ]),
 )

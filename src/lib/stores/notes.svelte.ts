@@ -13,11 +13,20 @@ import * as foldersRepo from '$lib/db/repo/folders'
 import { debounce } from '$lib/utils/debounce'
 import * as smartRepo from '$lib/db/repo/smartFolders'
 import * as dailyRepo from '$lib/db/repo/daily'
+import { bumpActivity, countWords } from '$lib/db/repo/activity'
 import { buildBacklinks, extractTags, linkKey, renameWikiLinks, type BacklinkEntry } from '$lib/md/links'
 import { searchIndex } from '$lib/search/index'
-import { keyring, revealNote, sealNote } from '$lib/crypto/keyring.svelte'
+import {
+  FolderLockedError,
+  keyring,
+  recryptForFolder,
+  revealInFolder,
+  revealNote,
+  sealNote,
+} from '$lib/crypto/keyring.svelte'
 import { buildContext, matches } from '$lib/search/evaluate'
 import { parseQuery, textTerms } from '$lib/search/query'
+import { ui } from '$lib/stores/ui.svelte'
 
 export type ListScope =
   | { kind: 'folder'; id: string | null }
@@ -35,6 +44,15 @@ export type ListScope =
  * indexing and backlinks synchronous. If a store ever outgrows this, only this
  * class and the repos change — components read through the derived getters.
  */
+/** Fills a template's `{{date}}`, `{{time}}` and `{{title}}` placeholders. */
+export function expandTemplate(body: string, title: string, at: Date): string {
+  return body
+    .replace(/\{\{date\}\}/g, at.toLocaleDateString())
+    .replace(/\{\{time\}\}/g, at.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))
+    .replace(/\{\{title\}\}/g, title)
+    .replace(/\{\{cursor\}\}/g, '')
+}
+
 class NotesStore {
   folders = $state<Folder[]>([])
   smartFolders = $state<SmartFolder[]>([])
@@ -183,11 +201,17 @@ class NotesStore {
     }
   }
 
+  /**
+   * Opening a note or a list always brings the notes section on screen, from
+   * whichever section the command came: the palette, Home, a shortcut.
+   */
   select(noteId: string | null): void {
     this.selectedNoteId = noteId
+    if (noteId !== null) ui.section = 'notes'
   }
 
   setScope(scope: ListScope): void {
+    ui.section = 'notes'
     this.scope = scope
     // A selection made in one folder means nothing in the next one.
     this.marked = []
@@ -246,11 +270,45 @@ class NotesStore {
     return ids.length
   }
 
+  /**
+   * Creates a note, sealing it first when its folder is encrypted.
+   *
+   * Every creation path goes through here: a note written in plaintext into a
+   * locked folder would sit next to ciphertext looking protected while it isn't.
+   * A locked folder refuses new notes with `FolderLockedError`.
+   */
+  async create(input: notesRepo.NewNoteInput = {}): Promise<Note> {
+    const folderId = input.folderId ?? ROOT
+    const folder = folderId ? this.folders.find((f) => f.id === folderId) : undefined
+    let note: Note
+    if (folder?.encrypted !== 1) {
+      note = await notesRepo.createNote(input)
+    } else {
+      const sealed = await sealNote(folderId, input.title ?? '', input.body ?? '')
+      if (!sealed) throw new FolderLockedError(folderId)
+      note = await notesRepo.createNote({ ...input, ...sealed, tags: [], encrypted: 1 })
+    }
+    if (!input.system) void bumpActivity({ created: 1 })
+    return note
+  }
+
   async newNote(): Promise<Note> {
     const folderId = this.scope.kind === 'folder' ? (this.scope.id ?? ROOT) : ROOT
-    const note = await notesRepo.createNote({ folderId })
-    this.selectedNoteId = note.id
+    const note = await this.create({ folderId })
+    this.select(note.id)
     return note
+  }
+
+  /**
+   * Moves a note to another folder, re-encrypting it for its destination.
+   * Throws `FolderLockedError` when either folder's key is needed but missing.
+   */
+  async move(id: string, folderId: string, before: string | null = null, after: string | null = null) {
+    await this.flushPending()
+    const note = await notesRepo.getNote(id)
+    if (!note) return
+    const patch = (await recryptForFolder(note, folderId)) ?? {}
+    await notesRepo.moveNote(id, folderId, before, after, patch)
   }
 
   /**
@@ -266,10 +324,26 @@ class NotesStore {
   /** Resolves when the most recently started write batch has committed. */
   #inFlight: Promise<void> = Promise.resolve()
 
+  /**
+   * Word count of each note as of its last save this session, to count the
+   * words each save adds. Seeded on the first edit from the text before it.
+   */
+  #wordsBefore = new Map<string, number>()
+
   #writeBodies = debounce(() => {
     const pending = [...this.#pendingBody.entries()]
     this.#pendingBody.clear()
     if (pending.length === 0) return
+
+    let added = 0
+    for (const [id, patch] of pending) {
+      const words = countWords(patch.body)
+      // An encrypted note's earlier text is not at hand, so its first save
+      // only sets the baseline.
+      added += Math.max(0, words - (this.#wordsBefore.get(id) ?? words))
+      this.#wordsBefore.set(id, words)
+    }
+    void bumpActivity({ edits: pending.length, words: added })
 
     this.#inFlight = (async () => {
       for (const [id, patch] of pending) {
@@ -277,7 +351,12 @@ class NotesStore {
           // Sealing happens at write time, not per keystroke: the folder key is
           // already derived, so this is a cheap AES pass on the final text.
           const sealed = await sealNote(patch.folderId, patch.title, patch.body)
-          if (!sealed) continue
+          if (!sealed) {
+            // The folder locked inside the debounce window. Keep the edit queued
+            // rather than dropping it; it is written once the folder is unlocked.
+            this.#pendingBody.set(id, patch)
+            continue
+          }
           await notesRepo.updateNote(id, { ...sealed, tags: [] })
         } else {
           await notesRepo.updateNote(id, {
@@ -297,6 +376,7 @@ class NotesStore {
     // IndexedDB can index them. The markdown stays the source of truth. A
     // locked note contributes no tags at all, so nothing leaks through them.
     const tags = encrypted ? [] : extractTags(body)
+    if (!encrypted && note && !this.#wordsBefore.has(id)) this.#wordsBefore.set(id, countWords(note.body))
 
     this.#pendingBody.set(id, {
       title,
@@ -358,6 +438,10 @@ class NotesStore {
     if (archived && this.selectedNoteId === id) this.selectedNoteId = null
   }
 
+  async setEditLock(id: string, locked: boolean): Promise<void> {
+    await notesRepo.setNoteFlags(id, { editLock: locked ? 1 : 0 })
+  }
+
   async togglePin(id: string): Promise<void> {
     const note = this.notes.find((n) => n.id === id)
     if (!note) return
@@ -383,7 +467,7 @@ class NotesStore {
       return existing
     }
     const folderId = this.scope.kind === 'folder' ? (this.scope.id ?? ROOT) : ROOT
-    const note = await notesRepo.createNote({ title, folderId })
+    const note = await this.create({ title, folderId })
     this.select(note.id)
     return note
   }
@@ -421,34 +505,52 @@ class NotesStore {
   async newFromTemplate(templateId: string): Promise<Note | null> {
     const template = this.notes.find((n) => n.id === templateId)
     if (!template) return null
+    const plain = await this.#templateText(template)
+    if (!plain) throw new FolderLockedError(template.folderId)
 
     const nowDate = new Date()
-    const body = template.body
-      .replace(/\{\{date\}\}/g, nowDate.toLocaleDateString())
-      .replace(/\{\{time\}\}/g, nowDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))
-      .replace(/\{\{title\}\}/g, template.title)
-      .replace(/\{\{cursor\}\}/g, '')
+    const body = expandTemplate(plain.body, plain.title, nowDate)
 
     const folderId = this.scope.kind === 'folder' ? (this.scope.id ?? template.folderId) : template.folderId
-    const note = await notesRepo.createNote({
-      title: template.title,
+    const note = await this.create({
+      title: plain.title,
       body,
       folderId,
-      view: template.view,
       tags: extractTags(body),
     })
     this.select(note.id)
     return note
   }
 
+  /** A template's plaintext; null when it lives in a locked folder. */
+  async #templateText(template: Note): Promise<{ title: string; body: string } | null> {
+    if (!template.encrypted) return { title: template.title, body: template.body }
+    const [title, body] = await Promise.all([
+      revealInFolder(template.folderId, template.title),
+      revealInFolder(template.folderId, template.body),
+    ])
+    return title === null || body === null ? null : { title, body }
+  }
+
   // --- Daily notes and scratchpad -----------------------------------------
+
+  /**
+   * The daily note opened most recently, so it can be discarded when the user
+   * leaves it empty — whether they go to another note or to the next day.
+   */
+  openedDaily: string | null = null
 
   /** Opens (creating if needed) the daily note for a day key. */
   async openDaily(key: string, settings: Parameters<typeof dailyRepo.openDailyNote>[1]): Promise<Note> {
-    const template = settings.templateId
-      ? (this.notes.find((n) => n.id === settings.templateId)?.body ?? '')
-      : ''
-    const note = await dailyRepo.openDailyNote(key, settings, template)
+    const source = settings.templateId ? this.notes.find((n) => n.id === settings.templateId) : undefined
+    const plain = source ? await this.#templateText(source) : null
+    const [year, month, day] = key.split('-').map(Number)
+    // Placeholders take the day the note is for, not the day it was opened.
+    const template = plain ? expandTemplate(plain.body, plain.title, new Date(year!, month! - 1, day)) : ''
+    const note = await dailyRepo.openDailyNote(key, settings, template, (input) => this.create(input))
+    const previous = this.openedDaily
+    this.openedDaily = note.id
+    if (previous && previous !== note.id) void this.discardEmptyDaily(previous)
     this.select(note.id)
     return note
   }

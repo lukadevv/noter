@@ -1,5 +1,13 @@
 import { expect, test, type Page } from '@playwright/test'
-import { createNote, createNoteWith, noteMenu, openApp, TINY_PNG, typeMarkdown } from './helpers'
+import {
+  TINY_PNG,
+  createNote,
+  createNoteWith,
+  insertBlock,
+  noteMenu,
+  openApp,
+  typeMarkdown,
+} from './helpers'
 
 /** Attaches an image through whichever file picker the app just opened. */
 async function attachImage(page: Page, open: () => Promise<void>) {
@@ -57,13 +65,11 @@ test.describe('images', () => {
     expect(assetCount).toBe(1)
   })
 
-  test('shows images in the gallery view and opens the lightbox', async ({ page }) => {
+  test('shows images in a gallery block and opens the lightbox', async ({ page }) => {
     await createNoteWith(page, 'Gallery note')
-    await page.getByTestId('view-tab-gallery').click()
-
-    await attachImage(page, async () => {
-      await page.getByRole('button', { name: 'Add images' }).first().click()
-    })
+    await page.keyboard.press('Enter')
+    // Choosing the gallery block opens the image picker straight away.
+    await attachImage(page, () => insertBlock(page, 'gallery'))
 
     await expect(page.getByTestId('gallery-tile')).toHaveCount(1)
     await page.getByTestId('gallery-tile').first().click()
@@ -78,7 +84,10 @@ test.describe('images', () => {
     await attachImage(page, () => noteMenu(page, 'Add images'))
     await expect(page.locator('.cm-inline-image img')).toHaveCount(1)
 
-    await page.getByLabel('Reading view').click()
+    // Notes in the trash are shown read-only, through the rendered view.
+    await noteMenu(page, 'Move to trash')
+    await page.getByTestId('view-trash').click()
+    await page.getByTestId('note-item').first().click()
     await expect(page.locator('.prose img.asset')).toHaveAttribute('src', /^blob:/)
   })
 
@@ -87,7 +96,9 @@ test.describe('images', () => {
     // Rendered from markdown rather than pasted, so the test does not depend on
     // the network; the point is that remote images are visibly marked.
     await typeMarkdown(page, 'Remote picture\n\n![](https://example.invalid/a.png)')
-    await page.getByLabel('Reading view').click()
+    await noteMenu(page, 'Move to trash')
+    await page.getByTestId('view-trash').click()
+    await page.getByTestId('note-item').first().click()
 
     const image = page.locator('.prose img[data-external]')
     await expect(image).toHaveCount(1)
@@ -104,6 +115,7 @@ test.describe('images', () => {
     await page.getByRole('button', { name: 'Empty trash' }).click()
 
     await page.getByTestId('open-settings').click()
+    await page.getByTestId('settings-section-storage').click()
     await page.getByRole('button', { name: 'Clean up unused images' }).click()
     // Several toasts can be stacked by this point, so match the one we mean.
     await expect(page.getByTestId('toast').filter({ hasText: 'unused image' })).toBeVisible()

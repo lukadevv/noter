@@ -4,7 +4,6 @@
   import { decodeNote, inlineSharedImages, type SharePayload } from '$lib/share/encode'
   import { createNote } from '$lib/db/repo/notes'
   import { extractTags } from '$lib/md/links'
-  import { notes } from '$lib/stores/notes.svelte'
   import { ui } from '$lib/stores/ui.svelte'
   import { navigate, HOME } from '../routes/router'
   import { t } from '$lib/i18n/index.svelte'
@@ -31,11 +30,10 @@
     const note = await createNote({
       title: shared.t,
       body: shared.b,
-      view: shared.m,
       tags: extractTags(shared.b),
     })
-    notes.select(note.id)
-    navigate(HOME)
+    // Straight to the saved copy, not to Home: that is what the user just made.
+    navigate({ kind: 'notes', folderId: null, noteId: note.id })
     ui.toast(t('toast.savedFromLink'), 'ok')
   }
 </script>

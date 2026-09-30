@@ -1,27 +1,9 @@
+import { useFreshDb } from './helpers/fresh-db'
 import { beforeEach, describe, expect, it } from 'vitest'
-import { NoterDB, db } from '$lib/db/db'
+import { db } from '$lib/db/db'
 import { describeVault, exportVault, importVault, readHeader, VaultFileError } from '$lib/backup/vault-file'
 import * as notesRepo from '$lib/db/repo/notes'
 import * as foldersRepo from '$lib/db/repo/folders'
-
-let counter = 0
-
-/** Points the shared `db` instance at a fresh store for each test. */
-async function useFreshDb(): Promise<NoterDB> {
-  const fresh = new NoterDB(`noter-vault-${counter++}`)
-  await fresh.open()
-  Object.assign(db, {
-    notes: fresh.notes,
-    folders: fresh.folders,
-    assets: fresh.assets,
-    versions: fresh.versions,
-    smartFolders: fresh.smartFolders,
-    themes: fresh.themes,
-    settings: fresh.settings,
-    transaction: fresh.transaction.bind(fresh),
-  })
-  return fresh
-}
 
 function fakeAsset(id: string) {
   return {
@@ -54,14 +36,14 @@ async function seed() {
 
 describe('vault file', () => {
   beforeEach(async () => {
-    await useFreshDb()
+    await useFreshDb('noter-vault')
   })
 
   it('round-trips the whole workspace unencrypted', async () => {
     const { note, folder } = await seed()
     const file = await exportVault()
 
-    await useFreshDb()
+    await useFreshDb('noter-vault')
     expect(await notesRepo.listAll()).toHaveLength(0)
 
     const result = await importVault(file, 'replace')
@@ -78,7 +60,7 @@ describe('vault file', () => {
     await seed()
     const file = await exportVault()
 
-    await useFreshDb()
+    await useFreshDb('noter-vault')
     await importVault(file, 'replace')
 
     const asset = await db.assets.get(ASSET_ID)
@@ -91,7 +73,7 @@ describe('vault file', () => {
     const { note } = await seed()
     const file = await exportVault({ passphrase: 'a good passphrase' })
 
-    await useFreshDb()
+    await useFreshDb('noter-vault')
     await importVault(file, 'replace', 'a good passphrase')
     expect((await db.notes.get(note.id))?.title).toBe('Kept note')
   })
@@ -107,14 +89,14 @@ describe('vault file', () => {
   it('refuses the wrong passphrase', async () => {
     await seed()
     const file = await exportVault({ passphrase: 'right' })
-    await useFreshDb()
+    await useFreshDb('noter-vault')
     await expect(importVault(file, 'replace', 'wrong')).rejects.toThrow(VaultFileError)
   })
 
   it('refuses to open an encrypted backup with no passphrase', async () => {
     await seed()
     const file = await exportVault({ passphrase: 'secret' })
-    await useFreshDb()
+    await useFreshDb('noter-vault')
     await expect(importVault(file, 'replace')).rejects.toThrow(/passphrase is required/i)
   })
 
@@ -135,7 +117,7 @@ describe('vault file', () => {
     // AES-GCM authenticates, so flipping one byte must make the import fail.
     bytes[bytes.length - 1] = bytes[bytes.length - 1]! ^ 0xff
 
-    await useFreshDb()
+    await useFreshDb('noter-vault')
     await expect(importVault(new Blob([bytes]), 'replace', 'secret')).rejects.toThrow(VaultFileError)
   })
 
@@ -156,7 +138,7 @@ describe('vault file', () => {
     await notesRepo.updateNote(note.id, { title: 'Newer in backup' })
     const file = await exportVault()
 
-    await useFreshDb()
+    await useFreshDb('noter-vault')
     await notesRepo.createNote({ title: 'Older' })
     await db.notes.put({
       ...(await notesRepo.getNote((await notesRepo.listAll())[0]!.id))!,
@@ -172,10 +154,107 @@ describe('vault file', () => {
     await seed()
     const file = await exportVault()
 
-    await useFreshDb()
+    await useFreshDb('noter-vault')
     const stray = await notesRepo.createNote({ title: 'Should be gone' })
     await importVault(file, 'replace')
 
     expect(await db.notes.get(stray.id)).toBeUndefined()
+  })
+})
+
+describe('vault file, format 2 tables', () => {
+  beforeEach(async () => {
+    await useFreshDb('noter-vault-extra')
+  })
+
+  it('carries timer presets and custom sounds through a round trip', async () => {
+    await db.timerPresets.add({
+      id: 'p1',
+      label: 'Oven',
+      seconds: 600,
+      soundId: 'bell',
+      color: null,
+      repeat: 0,
+      order: 1,
+      createdAt: 1,
+      updatedAt: 1,
+    })
+    const file = await exportVault()
+    await db.timerPresets.clear()
+
+    await importVault(file, 'merge')
+    expect(await db.timerPresets.get('p1')).toMatchObject({ label: 'Oven', seconds: 600 })
+  })
+
+  it('does not back up running timers', async () => {
+    await db.timers.add({
+      id: 't1',
+      presetId: null,
+      label: 'Eggs',
+      seconds: 300,
+      endAt: Date.now() + 1000,
+      pausedRemaining: null,
+      soundId: 'classic',
+      repeat: 0,
+      firedAt: 0,
+      createdAt: 1,
+    })
+    const file = await exportVault()
+    await db.timers.clear()
+    await importVault(file, 'replace')
+    expect(await db.timers.count()).toBe(0)
+  })
+})
+
+describe('vault file and the secrets vault', () => {
+  beforeEach(async () => {
+    await useFreshDb('noter-vault-secrets')
+  })
+
+  const meta = (keyId: string) => ({
+    id: 'main' as const,
+    kdf: { salt: 'c2FsdA==', iterations: 1000 },
+    wrapped: 'd3JhcA==',
+    iv: 'aXY=',
+    keyId,
+    createdAt: 1,
+    updatedAt: 1,
+  })
+
+  it('restores the vault into an empty workspace', async () => {
+    await db.secretsMeta.put(meta('k1'))
+    await db.secretItems.add({
+      id: 's1',
+      envelope: 'noter:sec:v1:a:b',
+      order: 1,
+      createdAt: 1,
+      updatedAt: 1,
+    })
+    const file = await exportVault()
+    await db.secretsMeta.clear()
+    await db.secretItems.clear()
+
+    const result = await importVault(file, 'merge')
+    expect(result.secretsSkipped).toBeFalsy()
+    expect(await db.secretItems.count()).toBe(1)
+  })
+
+  it('does not merge a different vault over this one', async () => {
+    await db.secretsMeta.put(meta('theirs'))
+    await db.secretItems.add({
+      id: 's1',
+      envelope: 'noter:sec:v1:a:b',
+      order: 1,
+      createdAt: 1,
+      updatedAt: 1,
+    })
+    const file = await exportVault()
+    await db.secretItems.clear()
+    await db.secretsMeta.put(meta('mine'))
+
+    const result = await importVault(file, 'merge')
+    expect(result.secretsSkipped).toBe(true)
+    expect((await db.secretsMeta.get('main'))!.keyId).toBe('mine')
+    expect(await db.secretItems.count()).toBe(0)
   })
 })

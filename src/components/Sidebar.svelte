@@ -1,91 +1,34 @@
 <script lang="ts">
   import Icon from './Icon.svelte'
+  import Logo from './Logo.svelte'
   import FolderRow from './FolderRow.svelte'
-  import Menu from './Menu.svelte'
-  import FolderStyle from './FolderStyle.svelte'
-  import FolderLock from './FolderLock.svelte'
-  import type { DropPosition, MenuItem } from '$lib/ui-types'
+  import type { DropPosition } from '$lib/ui-types'
   import { notes } from '$lib/stores/notes.svelte'
   import { ui } from '$lib/stores/ui.svelte'
   import { ROOT } from '$lib/db/schema'
-  import { moveFolder, neighboursFor, nudgeFolder } from '$lib/db/repo/folders'
-  import { moveNote } from '$lib/db/repo/notes'
+  import { moveFolder, neighboursFor } from '$lib/db/repo/folders'
+  import { nudge, smartFolderMenuItems, tagMenuItems } from '$lib/menus/folder'
+  import { contextmenu } from '$lib/ui/contextmenu'
   import { t } from '$lib/i18n/index.svelte'
+  import Kbd from './ui/Kbd.svelte'
+  import { theme } from '$lib/stores/theme.svelte'
+  import { openSettings } from '$lib/nav'
 
   interface Props {
-    onopensettings: () => void
     onopenpalette: () => void
   }
 
-  let { onopensettings, onopenpalette }: Props = $props()
+  let { onopenpalette }: Props = $props()
 
   let tagsOpen = $state(true)
-  let styling = $state<string | null>(null)
-  let locking = $state<string | null>(null)
 
   let hover = $state<{ id: string | null; position: DropPosition | null }>({ id: null, position: null })
-  let menu = $state<{ x: number; y: number; items: MenuItem[] } | null>(null)
 
   let scope = $derived(notes.scope)
 
   function selectFolder(id: string | null) {
     notes.setScope({ kind: 'folder', id })
     if (ui.narrow) ui.showPane('list')
-  }
-
-  function openFolderMenu(id: string, anchor: HTMLElement) {
-    const rect = anchor.getBoundingClientRect()
-    const folder = notes.folders.find((f) => f.id === id)
-    menu = {
-      x: rect.left,
-      y: rect.bottom + 4,
-      items: [
-        // Reordering by menu as well as by drag: dragging is unavailable on
-        // touch and awkward for anyone who finds fine pointer work hard.
-        { label: t('sidebar.moveUp'), icon: 'chevron-right', run: () => void nudge(id, -1) },
-        { label: t('sidebar.moveDown'), icon: 'chevron-right', run: () => void nudge(id, 1) },
-        { label: t('sidebar.appearance'), icon: 'image', separatorBefore: true, run: () => (styling = id) },
-        {
-          label: t(folder?.encrypted ? 'sidebar.encryption' : 'sidebar.encryptFolder'),
-          icon: 'lock',
-          run: () => (locking = id),
-        },
-        {
-          label: t('sidebar.newSubfolder'),
-          icon: 'folder-plus',
-          separatorBefore: true,
-          run: () => void notes.newFolder(id),
-        },
-        {
-          label: t('sidebar.newNoteHere'),
-          icon: 'plus',
-          run: () => {
-            notes.setScope({ kind: 'folder', id })
-            void notes.newNote()
-          },
-        },
-        {
-          label: t(folder?.collapsed ? 'sidebar.expand' : 'sidebar.collapse'),
-          icon: 'chevron-right',
-          separatorBefore: true,
-          run: () => void notes.toggleCollapsed(id),
-        },
-        {
-          label: t('sidebar.deleteFolder'),
-          icon: 'trash',
-          danger: true,
-          separatorBefore: true,
-          run: () => {
-            const count = notes.counts.get(id) ?? 0
-            void notes.deleteFolder(id)
-            ui.toast(
-              count > 0 ? t('toast.folderDeletedWithNotes', { count }) : t('toast.folderDeleted'),
-              'info',
-            )
-          },
-        },
-      ],
-    }
   }
 
   async function handleFolderDrop(draggedId: string, targetId: string, position: DropPosition) {
@@ -102,17 +45,6 @@
     if (!ok) ui.toast(t('toast.cannotNestInSelf'), 'warn')
   }
 
-  /** Keyboard reordering, one slot at a time. */
-  async function nudge(id: string, direction: -1 | 1) {
-    const moved = await nudgeFolder(id, direction)
-    if (!moved) return
-    // Keep focus on the row that just moved, so a run of nudges keeps working.
-    requestAnimationFrame(() => {
-      const row = document.querySelector<HTMLElement>(`[data-folder-id="${id}"] .label`)
-      row?.focus()
-    })
-  }
-
   async function saveCurrentSearch() {
     if (scope.kind !== 'search') return
     const name = prompt(t('sidebar.savedSearchName'), scope.query)
@@ -123,7 +55,7 @@
   }
 
   async function handleNoteDrop(noteId: string, folderId: string) {
-    await moveNote(noteId, folderId, null, null)
+    await notes.move(noteId, folderId)
     ui.toast(t('toast.noteMoved'), 'ok')
   }
 
@@ -138,19 +70,30 @@
     event.preventDefault()
     const noteId = event.dataTransfer?.getData('application/x-noter-note')
     const folderId = event.dataTransfer?.getData('application/x-noter-folder')
-    if (noteId) await moveNote(noteId, ROOT, null, null)
+    if (noteId) await notes.move(noteId, ROOT)
     else if (folderId) await moveFolder(folderId, ROOT, null, null)
   }
 </script>
 
 <aside class="sidebar" data-testid="sidebar">
   <header class="head">
-    <div class="brand">
-      <!-- The product mark, not a generic icon: this is the one place the app
-           names itself. Served from public/ so it is precached for offline. -->
-      <img class="mark" src="/icons/logo-64.png" alt="" width="18" height="18" />
-      <span>{t('app.name')}</span>
-    </div>
+    {#if ui.narrow}
+      <div class="brand">
+        <!-- On phones there is no navigation rail, so the sidebar names the app. -->
+        <Logo size={18} />
+        <span>{t('app.name')}</span>
+      </div>
+    {:else}
+      <button
+        class="btn btn--ghost btn--icon"
+        aria-label={t('nav.collapseSidebar')}
+        title={t('nav.collapseSidebar')}
+        onclick={() => theme.update({ sidebarCollapsed: true })}
+      >
+        <Icon name="panel-left" size={16} />
+      </button>
+      <h2 class="heading">{t('nav.notes')}</h2>
+    {/if}
     <button
       class="btn btn--ghost btn--icon"
       aria-label={t('sidebar.newFolder')}
@@ -164,7 +107,7 @@
   <button class="search" data-testid="open-search" onclick={onopenpalette}>
     <Icon name="search" size={15} />
     <span class="truncate">{t('sidebar.search')}</span>
-    <kbd>Ctrl K</kbd>
+    <Kbd keys="Mod+K" />
   </button>
 
   <nav class="views">
@@ -220,7 +163,6 @@
         onselect={selectFolder}
         ontoggle={(id) => void notes.toggleCollapsed(id)}
         onrename={(id, name) => void notes.renameFolder(id, name)}
-        onmenu={openFolderMenu}
         ondropfolder={(a, b, p) => void handleFolderDrop(a, b, p)}
         ondropnote={(n, f) => void handleNoteDrop(n, f)}
         ondraghover={(id, position) => (hover = { id, position })}
@@ -247,21 +189,7 @@
             notes.setScope({ kind: 'smart', id: smart.id })
             if (ui.narrow) ui.showPane('list')
           }}
-          oncontextmenu={(e) => {
-            e.preventDefault()
-            menu = {
-              x: e.clientX,
-              y: e.clientY,
-              items: [
-                {
-                  label: t('sidebar.deleteSavedSearch'),
-                  icon: 'trash',
-                  danger: true,
-                  run: () => void notes.deleteSmartFolder(smart.id),
-                },
-              ],
-            }
-          }}
+          use:contextmenu={() => smartFolderMenuItems(smart.id)}
         >
           <Icon name={smart.icon} size={15} />
           <span class="truncate">{smart.name}</span>
@@ -290,6 +218,7 @@
           <button
             class="tag"
             data-testid="tag-chip"
+            use:contextmenu={() => tagMenuItems(tag)}
             class:tag--active={scope.kind === 'tag' && scope.tag === tag}
             onclick={() => {
               notes.setScope({ kind: 'tag', tag })
@@ -304,31 +233,16 @@
     {/if}
   {/if}
 
-  <footer class="foot">
-    <button class="view" data-testid="open-settings" onclick={onopensettings}>
-      <Icon name="settings" size={15} />
-      <span class="truncate">{t('sidebar.settings')}</span>
-    </button>
-  </footer>
+  {#if ui.narrow}
+    <!-- Wide layouts reach settings from the navigation rail. -->
+    <footer class="foot">
+      <button class="view" data-testid="open-settings" onclick={() => openSettings()}>
+        <Icon name="settings" size={15} />
+        <span class="truncate">{t('sidebar.settings')}</span>
+      </button>
+    </footer>
+  {/if}
 </aside>
-
-{#if menu}
-  <Menu items={menu.items} x={menu.x} y={menu.y} onclose={() => (menu = null)} />
-{/if}
-
-{#if styling}
-  {@const folder = notes.folders.find((f) => f.id === styling)}
-  {#if folder}
-    <FolderStyle {folder} onclose={() => (styling = null)} />
-  {/if}
-{/if}
-
-{#if locking}
-  {@const folder = notes.folders.find((f) => f.id === locking)}
-  {#if folder}
-    <FolderLock {folder} onclose={() => (locking = null)} />
-  {/if}
-{/if}
 
 <style>
   .sidebar {
@@ -349,6 +263,13 @@
     padding: var(--space-1) var(--space-2) var(--space-2);
   }
 
+  .heading {
+    flex: 1;
+    min-width: 0;
+    font-size: var(--text-md);
+    font-weight: 650;
+  }
+
   .brand {
     display: flex;
     align-items: center;
@@ -356,13 +277,6 @@
     font-weight: 650;
     letter-spacing: 0.01em;
     color: var(--text);
-  }
-
-  .mark {
-    flex: none;
-    width: 18px;
-    height: 18px;
-    border-radius: 4px;
   }
 
   .search {
@@ -388,14 +302,6 @@
   .search span {
     flex: 1;
     min-width: 0;
-  }
-
-  kbd {
-    padding: 1px 5px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    font-family: var(--font-mono);
-    font-size: 10px;
   }
 
   .section {

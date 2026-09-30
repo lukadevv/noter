@@ -70,3 +70,17 @@ describe('markdown rendering', () => {
     expect(container.querySelectorAll('input.task-checkbox')).toHaveLength(0)
   })
 })
+
+describe('block rendering', () => {
+  it('renders boards, galleries and callouts', async () => {
+    const { renderMarkdown } = await import('$lib/md/parse')
+    const html = renderMarkdown(
+      '```board\n## To do\n- [x] milk\n```\n\n```gallery\n![[img:11111111-1111-4111-8111-111111111111]]\n```\n\n> [!tip] Hydrate',
+    )
+    expect(html).toContain('class="md-board"')
+    expect(html).toContain('md-board-card--done')
+    expect(html).toContain('data-asset="11111111-1111-4111-8111-111111111111"')
+    expect(html).toContain('callout--tip')
+    expect(html).not.toContain('[!tip]')
+  })
+})

@@ -1,4 +1,6 @@
+import { migrateBodyForView, needsMigration } from '$lib/md/migrate'
 import { deflateSync, inflateSync } from 'fflate'
+import type { Table } from 'dexie'
 import { db } from '$lib/db/db'
 import type { Asset, Folder, Note, SmartFolder, Theme, Version } from '$lib/db/schema'
 import { deriveKey, decryptBytes, encryptBytes, newKdfParams, type KdfParams } from '$lib/crypto/vault'
@@ -25,7 +27,11 @@ import { loadSettings, saveSettings, type AppSettings } from '$lib/db/repo/setti
  */
 
 const MAGIC = new Uint8Array([0x4e, 0x4f, 0x54, 0x45, 0x52]) // "NOTER"
-const FORMAT_VERSION = 1
+/**
+ * 2: adds `extra`, the tables registered in BACKUP_TABLES (timers, medication,
+ * the secrets vault, activity). Version 1 files still import.
+ */
+const FORMAT_VERSION = 2
 const FLAG_ENCRYPTED = 0x01
 
 export interface VaultHeader {
@@ -52,7 +58,35 @@ interface Manifest {
   versions: Version[]
   settings: AppSettings
   assets: AssetRecord[]
+  /** Tables added after format 1, by table name. Absent in version 1 files. */
+  extra?: Record<string, unknown[]>
 }
+
+/**
+ * Tables that travel in a backup beyond the original seven.
+ *
+ * Registering a table here is all a feature needs to do to be backed up and
+ * restored. `merge` decides what a merge import does when a record exists on
+ * both sides: keep the newer `updatedAt`, or let the backup win. Tables a file
+ * carries but this build does not know are ignored, so an older build can
+ * still read a newer backup's notes. Running timers are deliberately absent:
+ * a countdown restored on another machine hours later means nothing.
+ */
+/** A registered table by name. Read as a property (not `db.table()`) so tests can swap it. */
+function tableOf(name: string): Table<Record<string, unknown>, string> {
+  return (db as unknown as Record<string, Table<Record<string, unknown>, string>>)[name]!
+}
+
+export const BACKUP_TABLES: { name: string; merge: 'newer' | 'put' }[] = [
+  { name: 'timerPresets', merge: 'newer' },
+  { name: 'sounds', merge: 'newer' },
+  { name: 'meds', merge: 'newer' },
+  { name: 'doses', merge: 'newer' },
+  // The vault travels as ciphertext; it opens with the same master password.
+  { name: 'secretsMeta', merge: 'newer' },
+  { name: 'secretItems', merge: 'newer' },
+  { name: 'activity', merge: 'newer' },
+]
 
 function concat(parts: Uint8Array[]): Uint8Array<ArrayBuffer> {
   const total = parts.reduce((sum, part) => sum + part.length, 0)
@@ -98,6 +132,9 @@ async function buildBody(): Promise<{ body: Uint8Array; counts: VaultHeader['cou
     assetRecords.push({ ...rest, blobBytes: blob.length, thumbBytes: thumb.length })
   }
 
+  const extra: Record<string, unknown[]> = {}
+  for (const { name } of BACKUP_TABLES) extra[name] = await tableOf(name).toArray()
+
   const manifest: Manifest = {
     notes,
     folders,
@@ -106,6 +143,7 @@ async function buildBody(): Promise<{ body: Uint8Array; counts: VaultHeader['cou
     versions,
     settings,
     assets: assetRecords,
+    extra,
   }
 
   const json = new TextEncoder().encode(JSON.stringify(manifest))
@@ -197,6 +235,8 @@ export interface ImportResult {
   folders: number
   assets: number
   skipped: number
+  /** The backup holds a different vault, whose secrets were not merged in. */
+  secretsSkipped?: boolean
 }
 
 async function decodeBody(
@@ -255,9 +295,11 @@ export async function importVault(
 
   const result: ImportResult = { notes: 0, folders: 0, assets: 0, skipped: 0 }
 
+  const extraTables = BACKUP_TABLES.map(({ name }) => tableOf(name))
+
   await db.transaction(
     'rw',
-    [db.notes, db.folders, db.smartFolders, db.themes, db.versions, db.assets, db.settings],
+    [db.notes, db.folders, db.smartFolders, db.themes, db.versions, db.assets, db.settings, ...extraTables],
     async () => {
       if (mode === 'replace') {
         await Promise.all([
@@ -267,6 +309,7 @@ export async function importVault(
           db.themes.clear(),
           db.versions.clear(),
           db.assets.clear(),
+          ...extraTables.map((table) => table.clear()),
         ])
       }
 
@@ -280,12 +323,23 @@ export async function importVault(
         result.folders++
       }
 
-      for (const note of manifest.notes) {
-        const existing = mode === 'merge' ? await db.notes.get(note.id) : undefined
-        if (existing && existing.updatedAt >= note.updatedAt) {
+      // Backups from before blocks carry notes with a single view; bring them
+      // (and their history) up to date the way the database upgrade does.
+      const views = new Map(manifest.notes.map((n) => [n.id, n]))
+      for (const incoming of manifest.notes) {
+        const existing = mode === 'merge' ? await db.notes.get(incoming.id) : undefined
+        if (existing && existing.updatedAt >= incoming.updatedAt) {
           result.skipped++
           continue
         }
+        const note =
+          needsMigration(incoming) && !incoming.encrypted
+            ? {
+                ...incoming,
+                body: migrateBodyForView(incoming.view, incoming.body, incoming.lang),
+                view: 'doc' as const,
+              }
+            : incoming
         await db.notes.put(note)
         result.notes++
       }
@@ -309,7 +363,37 @@ export async function importVault(
 
       for (const smart of manifest.smartFolders) await db.smartFolders.put(smart)
       for (const theme of manifest.themes) await db.themes.put(theme)
-      for (const version of manifest.versions) await db.versions.put(version)
+      for (const version of manifest.versions) {
+        const owner = views.get(version.noteId)
+        const migrate = owner && needsMigration(owner) && !version.body.startsWith('noter:enc:')
+        await db.versions.put(
+          migrate
+            ? { ...version, body: migrateBodyForView(owner.view, version.body, owner.lang) }
+            : version,
+        )
+      }
+
+      // Vault items only open with the key they were sealed with. Merging a
+      // backup of a *different* vault would make one set unreadable, so its
+      // secrets are left out and the caller is told.
+      const incomingVault = manifest.extra?.secretsMeta?.[0] as { keyId?: string } | undefined
+      const localVault = mode === 'merge' ? await db.secretsMeta.get('main') : undefined
+      const foreignVault = !!incomingVault && !!localVault && incomingVault.keyId !== localVault.keyId
+      if (foreignVault) result.secretsSkipped = true
+
+      for (const { name, merge } of BACKUP_TABLES) {
+        if (foreignVault && (name === 'secretsMeta' || name === 'secretItems')) continue
+        const table = tableOf(name)
+        const primaryKey = table.schema.primKey.keyPath as string
+        for (const record of (manifest.extra?.[name] ?? []) as Record<string, unknown>[]) {
+          if (mode === 'merge' && merge === 'newer') {
+            const existing = (await table.get(record[primaryKey] as string)) as
+              { updatedAt?: number } | undefined
+            if (existing && (existing.updatedAt ?? 0) >= ((record.updatedAt as number) ?? 0)) continue
+          }
+          await table.put(record)
+        }
+      }
 
       if (mode === 'replace' && manifest.settings) await saveSettings(manifest.settings)
     },

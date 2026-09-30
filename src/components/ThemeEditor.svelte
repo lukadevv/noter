@@ -41,6 +41,15 @@
     theme.preview(seed)
   })
 
+  /** Set once the theme is saved, so closing afterwards keeps it applied. */
+  let saved = false
+
+  // However the editor goes away — Cancel, Escape on the parent dialog, a route
+  // change — an unsaved preview must not stay painted on the whole app.
+  $effect(() => () => {
+    if (!saved) theme.cancelPreview()
+  })
+
   let textContrast = $derived(contrastRatio(tokens.text!, tokens.bg!))
   let accentContrast = $derived(contrastRatio(tokens['accent-contrast']!, tokens.accent!))
 
@@ -55,6 +64,7 @@
 
   async function save() {
     await theme.saveCustom(name, $state.snapshot(seed), editingBuiltin ? undefined : startingId)
+    saved = true
     ui.toast(t('toast.themeSaved'), 'ok')
     onclose()
   }

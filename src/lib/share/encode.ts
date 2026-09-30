@@ -1,5 +1,6 @@
 import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from 'lz-string'
 import type { Note, ViewMode } from '$lib/db/schema'
+import { migrateBodyForView } from '$lib/md/migrate'
 import { derivedTitle } from '$lib/db/repo/notes'
 import { referencedAssetIds } from '$lib/db/repo/assets'
 
@@ -40,13 +41,14 @@ export interface EncodeResult {
   imagesOmitted: number
 }
 
-export function encodeNote(note: Pick<Note, 'title' | 'body' | 'view'>): EncodeResult {
+export function encodeNote(note: Pick<Note, 'title' | 'body'>): EncodeResult {
   const payload = compressToEncodedURIComponent(
     JSON.stringify({
       v: 1,
       t: derivedTitle(note),
       b: note.body,
-      m: note.view,
+      // Always 'doc' now that notes are made of blocks; kept for older readers.
+      m: 'doc',
     } satisfies SharePayload),
   )
 
@@ -65,11 +67,13 @@ export function decodeNote(payload: string): SharePayload | null {
     const parsed = JSON.parse(json) as Partial<SharePayload>
     // Shared payloads come from strangers: validate rather than trust.
     if (parsed.v !== 1 || typeof parsed.b !== 'string' || typeof parsed.t !== 'string') return null
+    // Links made before blocks may name a board, gallery or code view.
+    const view = (parsed.m as ViewMode) ?? 'doc'
     return {
       v: 1,
       t: parsed.t,
-      b: parsed.b,
-      m: (parsed.m as ViewMode) ?? 'doc',
+      b: migrateBodyForView(view, parsed.b),
+      m: 'doc',
       i: typeof parsed.i === 'object' && parsed.i !== null ? parsed.i : undefined,
     }
   } catch {

@@ -1,24 +1,7 @@
+import { useFreshDb } from './helpers/fresh-db'
 import { beforeEach, describe, expect, it } from 'vitest'
-import { NoterDB } from '$lib/db/db'
 import { purgeOrphanAssets, referencedAssetIds } from '$lib/db/repo/assets'
 import * as notesRepo from '$lib/db/repo/notes'
-
-let counter = 0
-
-async function useFreshDb() {
-  const fresh = new NoterDB(`noter-assets-${counter++}`)
-  await fresh.open()
-  const shared = (await import('$lib/db/db')).db
-  Object.assign(shared, {
-    notes: fresh.notes,
-    folders: fresh.folders,
-    assets: fresh.assets,
-    versions: fresh.versions,
-    settings: fresh.settings,
-    transaction: fresh.transaction.bind(fresh),
-  })
-  return shared
-}
 
 const ID_A = '11111111-1111-4111-8111-111111111111'
 const ID_B = '22222222-2222-4222-8222-222222222222'
@@ -51,7 +34,7 @@ describe('referencedAssetIds', () => {
 
 describe('purgeOrphanAssets', () => {
   beforeEach(async () => {
-    await useFreshDb()
+    await useFreshDb('noter-assets')
   })
 
   it('deletes assets no note references', async () => {
