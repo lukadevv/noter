@@ -205,3 +205,56 @@ describe('vault file, format 2 tables', () => {
     expect(await db.timers.count()).toBe(0)
   })
 })
+
+describe('vault file and the secrets vault', () => {
+  beforeEach(async () => {
+    await useFreshDb('noter-vault-secrets')
+  })
+
+  const meta = (keyId: string) => ({
+    id: 'main' as const,
+    kdf: { salt: 'c2FsdA==', iterations: 1000 },
+    wrapped: 'd3JhcA==',
+    iv: 'aXY=',
+    keyId,
+    createdAt: 1,
+    updatedAt: 1,
+  })
+
+  it('restores the vault into an empty workspace', async () => {
+    await db.secretsMeta.put(meta('k1'))
+    await db.secretItems.add({
+      id: 's1',
+      envelope: 'noter:sec:v1:a:b',
+      order: 1,
+      createdAt: 1,
+      updatedAt: 1,
+    })
+    const file = await exportVault()
+    await db.secretsMeta.clear()
+    await db.secretItems.clear()
+
+    const result = await importVault(file, 'merge')
+    expect(result.secretsSkipped).toBeFalsy()
+    expect(await db.secretItems.count()).toBe(1)
+  })
+
+  it('does not merge a different vault over this one', async () => {
+    await db.secretsMeta.put(meta('theirs'))
+    await db.secretItems.add({
+      id: 's1',
+      envelope: 'noter:sec:v1:a:b',
+      order: 1,
+      createdAt: 1,
+      updatedAt: 1,
+    })
+    const file = await exportVault()
+    await db.secretItems.clear()
+    await db.secretsMeta.put(meta('mine'))
+
+    const result = await importVault(file, 'merge')
+    expect(result.secretsSkipped).toBe(true)
+    expect((await db.secretsMeta.get('main'))!.keyId).toBe('mine')
+    expect(await db.secretItems.count()).toBe(0)
+  })
+})

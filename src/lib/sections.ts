@@ -18,4 +18,5 @@ export const SECTIONS: SectionEntry[] = [
   { id: 'notes', icon: 'notebook', label: 'nav.notes', shortcut: 'Mod+2' },
   { id: 'timers', icon: 'timer', label: 'nav.timers', shortcut: 'Mod+3' },
   { id: 'meds', icon: 'pill', label: 'nav.meds', shortcut: 'Mod+4' },
+  { id: 'vault', icon: 'shield', label: 'nav.vault', shortcut: 'Mod+5' },
 ]

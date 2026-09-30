@@ -127,6 +127,7 @@
         }),
         'ok',
       )
+      if (result.secretsSkipped) ui.toast(t('toast.secretsSkipped'), 'warn')
       pending = null
       importPassphrase = ''
     } catch (cause) {

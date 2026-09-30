@@ -7,6 +7,8 @@ import type {
   Med,
   Note,
   RunningTimer,
+  SecretItem,
+  SecretsMeta,
   Setting,
   SmartFolder,
   Sound,
@@ -32,6 +34,8 @@ export class NoterDB extends Dexie {
   sounds!: Table<Sound, string>
   meds!: Table<Med, string>
   doses!: Table<Dose, string>
+  secretItems!: Table<SecretItem, string>
+  secretsMeta!: Table<SecretsMeta, string>
 
   constructor(name = 'noter') {
     super(name)
@@ -90,6 +94,12 @@ export class NoterDB extends Dexie {
     this.version(4).stores({
       meds: 'id, order',
       doses: 'id, medId, takenAt, [medId+takenAt]',
+    })
+
+    // v5: the vault — encrypted secrets and the wrapped key that opens them.
+    this.version(5).stores({
+      secretItems: 'id, order',
+      secretsMeta: 'id',
     })
   }
 }

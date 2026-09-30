@@ -82,6 +82,9 @@ export const BACKUP_TABLES: { name: string; merge: 'newer' | 'put' }[] = [
   { name: 'sounds', merge: 'newer' },
   { name: 'meds', merge: 'newer' },
   { name: 'doses', merge: 'newer' },
+  // The vault travels as ciphertext; it opens with the same master password.
+  { name: 'secretsMeta', merge: 'newer' },
+  { name: 'secretItems', merge: 'newer' },
 ]
 
 function concat(parts: Uint8Array[]): Uint8Array<ArrayBuffer> {
@@ -231,6 +234,8 @@ export interface ImportResult {
   folders: number
   assets: number
   skipped: number
+  /** The backup holds a different vault, whose secrets were not merged in. */
+  secretsSkipped?: boolean
 }
 
 async function decodeBody(
@@ -367,7 +372,16 @@ export async function importVault(
         )
       }
 
+      // Vault items only open with the key they were sealed with. Merging a
+      // backup of a *different* vault would make one set unreadable, so its
+      // secrets are left out and the caller is told.
+      const incomingVault = manifest.extra?.secretsMeta?.[0] as { keyId?: string } | undefined
+      const localVault = mode === 'merge' ? await db.secretsMeta.get('main') : undefined
+      const foreignVault = !!incomingVault && !!localVault && incomingVault.keyId !== localVault.keyId
+      if (foreignVault) result.secretsSkipped = true
+
       for (const { name, merge } of BACKUP_TABLES) {
+        if (foreignVault && (name === 'secretsMeta' || name === 'secretItems')) continue
         const table = tableOf(name)
         const primaryKey = table.schema.primKey.keyPath as string
         for (const record of (manifest.extra?.[name] ?? []) as Record<string, unknown>[]) {

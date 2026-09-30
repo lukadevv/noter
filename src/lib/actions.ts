@@ -7,6 +7,7 @@ import { pickImages } from '$lib/images/insert'
 import { todayKey } from '$lib/db/repo/daily'
 import { addDays } from '$lib/utils/dates'
 import { goTo } from '$lib/nav'
+import { vaultStatus } from '$lib/secrets/status.svelte'
 import { t } from '$lib/i18n/index.svelte'
 
 export interface Action {
@@ -206,6 +207,22 @@ export function buildActions(open: { settings: () => void; daily: () => void }):
       hint: 'Mod+4',
       group: 'Go',
       run: () => goTo('meds'),
+    },
+    {
+      id: 'go.vault',
+      label: t('actions.goVault'),
+      icon: 'shield',
+      hint: 'Mod+5',
+      group: 'Go',
+      run: () => goTo('vault'),
+    },
+    {
+      id: 'vault.lock',
+      label: t('actions.lockVault'),
+      icon: 'lock-keyhole',
+      group: 'App',
+      available: () => vaultStatus.unlocked,
+      run: () => void import('$lib/secrets/store.svelte').then(({ secrets }) => secrets.lock()),
     },
     {
       id: 'note.lock',

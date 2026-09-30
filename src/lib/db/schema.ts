@@ -271,3 +271,31 @@ export interface Dose {
   createdAt: number
   updatedAt: number
 }
+
+// --- Vault (secrets) ---------------------------------------------------------
+
+/**
+ * How the vault's data key is protected. The data key is random and encrypts
+ * every item; it is stored here wrapped (encrypted) by a key derived from the
+ * master password. Changing the password only re-wraps this one key.
+ */
+export interface SecretsMeta {
+  id: 'main'
+  kdf: { salt: string; iterations: number }
+  /** The wrapped data key and the IV used to wrap it, base64. */
+  wrapped: string
+  iv: string
+  /** Random id of the data key, so a backup from another vault is recognised. */
+  keyId: string
+  createdAt: number
+  updatedAt: number
+}
+
+/** One vault entry. Everything about it, title included, is inside `envelope`. */
+export interface SecretItem {
+  id: string
+  envelope: string
+  order: number
+  createdAt: number
+  updatedAt: number
+}

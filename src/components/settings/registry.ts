@@ -59,6 +59,13 @@ export const SETTINGS_SECTIONS: SettingsSectionEntry[] = [
     load: () => import('./TimerSettings.svelte'),
   },
   {
+    id: 'vault',
+    icon: 'shield',
+    label: 'settings.sections.vault',
+    keywords: ['settings.vault.autoLock', 'settings.vault.clipboard', 'settings.vault.change'],
+    load: () => import('./VaultSettings.svelte'),
+  },
+  {
     id: 'notifications',
     icon: 'bell',
     label: 'settings.sections.notifications',

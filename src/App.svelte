@@ -369,6 +369,10 @@
               <Lazy load={() => import('$components/sections/Meds.svelte')}>
                 {#snippet fallback()}<Skeleton rows={6} />{/snippet}
               </Lazy>
+            {:else if ui.section === 'vault'}
+              <Lazy load={() => import('$components/sections/Vault.svelte')}>
+                {#snippet fallback()}<Skeleton rows={6} />{/snippet}
+              </Lazy>
             {:else if ui.section === 'settings'}
               <Lazy load={() => import('$components/settings/SettingsPage.svelte')}>
                 {#snippet fallback()}<Skeleton rows={6} />{/snippet}

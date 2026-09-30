@@ -24,6 +24,15 @@ export interface TimerSettings {
   seeded: boolean
 }
 
+export interface VaultSettings {
+  /** Minutes without activity before the vault locks itself. */
+  autoLockMinutes: number
+  /** Lock as soon as the app is hidden (another tab, minimised, phone locked). */
+  lockOnHide: boolean
+  /** Seconds before a copied secret is wiped from the clipboard; 0 = never. */
+  clipboardSeconds: number
+}
+
 export interface AppSettings {
   themeId: string
   density: Density
@@ -45,6 +54,7 @@ export interface AppSettings {
   timers: TimerSettings
   /** Show a system notification when a timer or a dose is due. */
   notifications: boolean
+  vault: VaultSettings
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
@@ -69,6 +79,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   startSection: 'home',
   timers: { volume: 0.8, ringSeconds: 60, defaultSoundId: 'classic', seeded: false },
   notifications: true,
+  vault: { autoLockMinutes: 5, lockOnHide: true, clipboardSeconds: 30 },
 }
 
 const KEY = 'app'
