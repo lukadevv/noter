@@ -5,7 +5,10 @@ import type { Messages } from '../index.svelte'
  * Chinese, so every counted message needs only that form.
  */
 const zh: Messages = {
-  app: { name: 'Noter', tagline: '离线可用的本地笔记' },
+  app: {
+    name: 'Noter',
+    tagline: '离线可用的本地笔记',
+  },
 
   common: {
     dismiss: '忽略',
@@ -162,7 +165,9 @@ const zh: Messages = {
     tagsHint: '标签',
   },
 
-  backlinks: { other: '有 {count} 条笔记链接到这里' },
+  backlinks: {
+    other: '有 {count} 条笔记链接到这里',
+  },
 
   actions: {
     newNote: '新建笔记',
@@ -184,13 +189,24 @@ const zh: Messages = {
     toggleTheme: '切换浅色和深色',
     themeNamed: '主题：{name}',
     fromTemplate: '从「{title}」新建笔记',
-    groups: { Create: '创建', Note: '笔记', Go: '前往', View: '视图', Appearance: '外观', App: '应用' },
+    groups: {
+      Create: '创建',
+      Note: '笔记',
+      Go: '前往',
+      View: '视图',
+      Appearance: '外观',
+      App: '应用',
+    },
     goHome: '前往首页',
     toggleLock: '锁定或解锁编辑',
     goTimers: '前往计时器',
     goMeds: '前往用药',
     goVault: '前往保险库',
     lockVault: '锁定保险库',
+    goHabits: '前往习惯',
+    startFocus: '开始专注',
+    openStopwatch: '打开秒表',
+    tour: '开始导览',
   },
 
   settings: {
@@ -204,14 +220,22 @@ const zh: Messages = {
     customThemeHint: '自定义内置主题会保存一份副本，原主题依然可用。',
     custom: '（自定义）',
     density: '密度',
-    densities: { compact: '紧凑', cozy: '标准', comfortable: '宽松' },
+    densities: {
+      compact: '紧凑',
+      cozy: '标准',
+      comfortable: '宽松',
+    },
     font: '界面字体',
-    fonts: { system: '系统', sans: '无衬线', serif: '衬线', mono: '等宽' },
+    fonts: {
+      system: '系统',
+      sans: '无衬线',
+      serif: '衬线',
+      mono: '等宽',
+    },
     editorTextSize: '编辑器字号 · {size}px',
     cornerRoundness: '圆角程度',
     reduceMotion: '减少动效',
     lineNumbers: '在编辑器中显示行号',
-
     daily: {
       title: '每日笔记',
       about: '每天一条笔记，只有在你打开时才会创建。如果今天的笔记留空，它会被再次删除——不写就不会堆积。',
@@ -225,12 +249,13 @@ const zh: Messages = {
       homeAlert: '在首页提醒我写今天的笔记',
       homeAlertHint: '在你写入内容或今天忽略之前一直显示。',
     },
-
     storage: {
       title: '存储',
       used: '已用 {used}',
       available: '· 可用 {total}',
-      images: { other: '{count} 张图片 · {size}' },
+      images: {
+        other: '{count} 张图片 · {size}',
+      },
       persistent: '存储是持久的：浏览器不会为了腾出空间而清除你的笔记。',
       notPersistent:
         '存储不是持久的。磁盘空间不足时浏览器可能清除它，Safari 更会在七天无访问后清除。请定期导出备份。',
@@ -238,7 +263,6 @@ const zh: Messages = {
       cleanUp: '清理未使用的图片',
       unsupported: '此浏览器不报告存储用量。',
     },
-
     backup: {
       title: '备份与迁移',
       about:
@@ -264,7 +288,6 @@ const zh: Messages = {
       restore: '恢复',
       restoring: '恢复中…',
     },
-
     auto: {
       title: '自动备份',
       about:
@@ -275,7 +298,12 @@ const zh: Messages = {
       writing: '写入中…',
       forget: '忘记',
       frequency: '频率',
-      frequencies: { off: '关闭', manual: '手动', daily: '每天', weekly: '每周' },
+      frequencies: {
+        off: '关闭',
+        manual: '手动',
+        daily: '每天',
+        weekly: '每周',
+      },
       lastBackup: '上次备份：{date}。',
       never: '还没有写入过备份。',
       unsupported:
@@ -335,6 +363,11 @@ const zh: Messages = {
       ringFor: '持续响铃',
       customSounds: '你的声音',
       customSoundsHint: '设计你自己的提示音：选择音符、音色和节奏。',
+      pomodoroHint: '每个阶段的时长，以及阶段结束时的行为。',
+      longEvery: '长休息间隔',
+      autoStart: '自动开始下一阶段',
+      autoStartHint: '用短促的提示音代替闹铃来标记切换。',
+      pomodoroSound: '番茄钟声音',
     },
     notifications: {
       enable: '显示通知',
@@ -356,12 +389,16 @@ const zh: Messages = {
       about: '保险库会自动关闭，避免无人看管的设备一直开着。',
       autoLock: '闲置后锁定',
       autoLockHint: '从你在保险库中的最后一次操作开始计算。',
-      minutes: { other: '{count} 分钟' },
+      minutes: {
+        other: '{count} 分钟',
+      },
       lockOnHide: '应用隐藏时锁定',
       lockOnHideHint: '切换标签页、最小化或关闭屏幕时。',
       clipboard: '多久后清除复制的机密',
       clipboardHint: '密码和卡号会从剪贴板中清除。',
-      seconds: { other: '{count} 秒' },
+      seconds: {
+        other: '{count} 秒',
+      },
       never: '从不',
       masterPassword: '主密码',
       change: '更改主密码',
@@ -370,7 +407,9 @@ const zh: Messages = {
       new: '新密码',
       delete: '删除保险库',
       deleteHint: '清除所有条目和主密码，无法撤销。',
-      deleteConfirm: { other: '这将永久删除 {count} 个条目。' },
+      deleteConfirm: {
+        other: '这将永久删除 {count} 个条目。',
+      },
       typeDelete: '输入“{word}”以确认',
       deleteWord: '删除',
     },
@@ -385,12 +424,13 @@ const zh: Messages = {
         stats: '数据概览',
         activity: '写作活动',
         calendar: '每日笔记日历',
-        meds: '用药',
-        timers: '计时器',
         recent: '最近的笔记',
         pinned: '置顶笔记',
         topics: '标签和文件夹',
         vault: '保险库',
+        today: '今天',
+        focus: '快速开始与专注',
+        habits: '习惯',
       },
     },
   },
@@ -401,7 +441,10 @@ const zh: Messages = {
     copySuffix: '{name} 副本',
     customTheme: '自定义主题',
     base: '基础',
-    modes: { light: '浅色', dark: '深色' },
+    modes: {
+      light: '浅色',
+      dark: '深色',
+    },
     accent: '强调色',
     accentHint: '先选颜色，再调亮度和饱和度。',
     accentLightness: '强调色亮度',
@@ -488,7 +531,9 @@ const zh: Messages = {
     about: '整条笔记被打包进链接本身。没有任何内容被上传：打开链接的人在自己的浏览器里解码。',
     noImages: '图片不会被分享。',
     noImagesBody: '链接只携带笔记的文字。',
-    imageCount: { other: '这条笔记有 {count} 张图片，接收方看不到。' },
+    imageCount: {
+      other: '这条笔记有 {count} 张图片，接收方看不到。',
+    },
     characters: '{count} 个字符',
     tooLong: '超过 {max}——部分应用会把它截断。',
     warning: '拿到链接的人都能读到这条笔记。请把它当作笔记本身来对待。',
@@ -519,19 +564,31 @@ const zh: Messages = {
     notesDeleted: '已永久删除 {count} 条笔记。',
     notesDeletedForGood: '已彻底删除 {count} 条笔记。',
     folderDeleted: '文件夹已删除。',
-    folderDeletedWithNotes: { other: '文件夹已删除，其中 {count} 条笔记已移到回收站。' },
+    folderDeletedWithNotes: {
+      other: '文件夹已删除，其中 {count} 条笔记已移到回收站。',
+    },
     cannotNestInSelf: '文件夹不能移动到它自己里面。',
     searchSaved: '搜索已保存。',
-    linksUpdated: { other: '已更新 {count} 条笔记中的链接。' },
+    linksUpdated: {
+      other: '已更新 {count} 条笔记中的链接。',
+    },
     templateSaved: '已保存为模板。',
     templateRemoved: '已不再是模板。',
-    trashPurged: { other: '已清除 {count} 条超过 30 天保留期的笔记。' },
+    trashPurged: {
+      other: '已清除 {count} 条超过 30 天保留期的笔记。',
+    },
     persistGranted: '存储已标记为持久。',
     persistDenied: '浏览器拒绝了。为保险起见，请继续导出备份。',
     noOrphanImages: '没有需要清理的未使用图片。',
-    orphanImagesRemoved: { other: '已移除 {count} 张未使用的图片。' },
-    notesEncrypted: { other: '已加密 {count} 条笔记。' },
-    notesDecrypted: { other: '已解密 {count} 条笔记。' },
+    orphanImagesRemoved: {
+      other: '已移除 {count} 张未使用的图片。',
+    },
+    notesEncrypted: {
+      other: '已加密 {count} 条笔记。',
+    },
+    notesDecrypted: {
+      other: '已解密 {count} 条笔记。',
+    },
     themeSaved: '主题已保存。',
     themeLoaded: '主题已载入。保存后才会保留。',
     themeInvalid: '该文件不是 Noter 主题。',
@@ -561,7 +618,6 @@ const zh: Messages = {
     secretsSkipped: '此备份中的保险库条目属于另一个保险库，未导入。',
   },
 
-  update: { ready: 'Noter 有新版本了。现在重新加载吗？' },
   menu: {
     moveTo: '移动到',
     markTemplate: '用作模板',
@@ -569,12 +625,15 @@ const zh: Messages = {
     showNotesTagged: '显示带有 #{tag} 的笔记',
     searchTag: '用此标签搜索',
   },
+
   nav: {
     main: '主导航',
     home: '首页',
     notes: '笔记',
     search: '搜索',
-    alerts: { other: '{count} 条提醒' },
+    alerts: {
+      other: '{count} 条提醒',
+    },
     resizeSidebar: '调整文件夹侧栏宽度',
     resizeList: '调整笔记列表宽度',
     collapseSidebar: '隐藏文件夹',
@@ -582,7 +641,9 @@ const zh: Messages = {
     timers: '计时器',
     meds: '用药',
     vault: '保险库',
+    habits: '习惯',
   },
+
   home: {
     greeting: {
       night: '还没睡？',
@@ -595,7 +656,6 @@ const zh: Messages = {
     noNotes: '还没有内容。先写一篇新笔记吧。',
     customize: '自定义',
     pinned: '置顶',
-    medsEmpty: '尚未添加药物。',
     weekOf: '{date} 当周',
     daily: {
       title: '今天的笔记还是空白',
@@ -609,20 +669,36 @@ const zh: Messages = {
       thisWeek: '开始写作就会增长',
       streak: '连续写作',
       tasks: '待办任务',
-      createdThisWeek: { other: '本周新增 {count} 篇' },
-      vsLastWeek: { other: '比上周 {count} 字' },
-      days: { other: '天连续' },
-      tasksDone: { other: '已完成 {count} 项' },
+      createdThisWeek: {
+        other: '本周新增 {count} 篇',
+      },
+      vsLastWeek: {
+        other: '比上周 {count} 字',
+      },
+      days: {
+        other: '天连续',
+      },
+      tasksDone: {
+        other: '已完成 {count} 项',
+      },
     },
     activity: {
       title: '写作活动',
       weekly: '每周字数',
       less: '少',
       more: '多',
-      edits: { other: '{count} 次编辑' },
-      words: { other: '{count} 字' },
-      cell: { other: '{date}：{count} 次编辑' },
-      summary: { other: '过去 {weeks} 周中有 {count} 天在写作' },
+      edits: {
+        other: '{count} 次编辑',
+      },
+      words: {
+        other: '{count} 字',
+      },
+      cell: {
+        other: '{date}：{count} 次编辑',
+      },
+      summary: {
+        other: '过去 {weeks} 周中有 {count} 天在写作',
+      },
     },
     calendar: {
       title: '每日笔记',
@@ -635,16 +711,53 @@ const zh: Messages = {
       folders: '最大的文件夹',
       noTags: '在笔记中添加 #标签 即可在此看到。',
       noFolders: '文件夹中的笔记会显示在这里。',
-      notes: { other: '{count} 篇笔记' },
+      notes: {
+        other: '{count} 篇笔记',
+      },
+      title: '标签和文件夹',
     },
     vault: {
       notSet: '未设置',
       open: '已打开',
       locked: '已锁定',
       setUp: '设置',
-      entries: { other: '{count} 个条目' },
+      entries: {
+        other: '{count} 个条目',
+      },
+    },
+    seeAll: '查看全部',
+    summary: {
+      doses: {
+        other: '{count} 次服药待完成',
+      },
+      habits: {
+        other: '还剩 {count} 个习惯',
+      },
+      timers: {
+        other: '{count} 个计时器运行中',
+      },
+      clear: '没有待办。正是记点东西的好时候。',
+    },
+    today: {
+      title: '今天',
+      pending: {
+        other: '{count} 件待办',
+      },
+      clear: '今天都完成了',
+      clearHint: '服药、习惯和运行中的计时器会显示在这里。',
+      medAt: '{time} · {span}后',
+      habit: '完成后点一下圆圈',
+    },
+    focus: {
+      title: '快速开始',
+      start: '开始专注',
+      running: '番茄钟进行中',
+      minutes: {
+        other: '今天专注 {count} 分钟',
+      },
     },
   },
+
   blocks: {
     text: '文本',
     h1: '一级标题',
@@ -671,6 +784,7 @@ const zh: Messages = {
     editSource: '以 Markdown 编辑',
     hint: '输入 / 插入块',
   },
+
   timers: {
     defaults: {
       quick: '快速',
@@ -706,7 +820,7 @@ const zh: Messages = {
     addMinute: '加一分钟',
     restart: '重新开始',
     cancel: '取消计时器',
-    about: '点按计时器即可开始。可以添加自己的计时器并拖动排序。',
+    about: '一点即开始的倒计时。添加你自己的计时器，拖动排成你喜欢的顺序。',
     quickPlaceholder: '10、1h30、5:00…',
     quickLabel: '开始计时……（分钟，或如 1h30、90s、5:00）',
     start: '开始',
@@ -718,8 +832,21 @@ const zh: Messages = {
     dragToReorder: '拖动以排序',
     presetActions: '计时器操作',
     presetDeleted: '计时器已删除。',
-    moreRinging: { other: '……还有 {count} 个' },
+    moreRinging: {
+      other: '……还有 {count} 个',
+    },
+    tabs: {
+      alarms: '闹钟',
+      pomodoro: '番茄钟',
+      stopwatch: '秒表',
+    },
+    previewNamed: '播放 {name}',
+    hours: '小时',
+    minutes: '分钟',
+    seconds: '秒',
+    deletePresetTitle: '删除“{label}”？',
   },
+
   sounds: {
     classic: '经典哔声',
     bell: '铃声',
@@ -749,7 +876,10 @@ const zh: Messages = {
     speed: '每个音符时长 · {ms} ms',
     pause: '重复间隔 · {ms} ms',
     volume: '音量',
+    deleteTitle: '删除“{name}”？',
+    deleteBody: '使用它的计时器将改为播放默认声音。',
   },
+
   meds: {
     about: '一点即可记录每次服药；下一次从上次服药时间开始计算。',
     add: '添加药物',
@@ -785,7 +915,9 @@ const zh: Messages = {
     today: '今天',
     lastWeek: '最近七天',
     everyN: '每 {hours} 小时',
-    left: { other: '剩 {count} 次' },
+    left: {
+      other: '剩 {count} 次',
+    },
     state: {
       first: '服用第一次时点“已服用”',
       paused: '提醒已暂停',
@@ -797,11 +929,33 @@ const zh: Messages = {
       soon: '{name}：{span} 后该服用',
       due: '该服用 {name} 了',
       overdue: '{name} 已逾期 {span}',
-      lowStock: { other: '{name} 快用完了：剩 {count} 次' },
+      lowStock: {
+        other: '{name} 快用完了：剩 {count} 次',
+      },
     },
     notifyBody: '剂量：{dose}。打开 Noter 并点“已服用”。',
     notifyBodyPlain: '打开 Noter 并点“已服用”。',
+    logged: '{name}：已记录服药',
+    deleteTitle: '删除“{name}”？',
+    deleteBody: '服药记录也会一并删除。若想保留，请暂停提醒。',
+    confirm: {
+      title: '又要服用 {name} 了吗？',
+      body: '这比计划的时间早。记录前请先确认。',
+      schedule: {
+        other: '计划：每 {hours} 小时（每天 {count} 次）',
+      },
+      recent: {
+        other: '已服用：最近 {hours} 小时内 {count} 次',
+      },
+      next: '下一次在 {time}，还有 {span}',
+      today: {
+        other: '今天：{max} 次中已服用 {count} 次',
+      },
+      anyway: '仍然记录',
+      cancel: '不记录',
+    },
   },
+
   vault: {
     setupTitle: '设置保险库',
     setupBody: '密码、银行卡和私密笔记，用只有你知道的主密码在本设备上加密。',
@@ -866,7 +1020,9 @@ const zh: Messages = {
     generate: '生成密码',
     regenerate: '换一个',
     length: '长度 {length}',
-    count: { other: '{count} 个条目，已在本设备上加密' },
+    count: {
+      other: '{count} 个条目，已在本设备上加密',
+    },
     empty: '保险库是空的',
     emptyBody: '添加登录信息、银行卡或任何你想用密码保护的内容。',
     search: '搜索保险库',
@@ -887,6 +1043,193 @@ const zh: Messages = {
     deleted: '条目已删除。',
     passwordChanged: '主密码已更改。',
     destroyed: '保险库已删除。',
+  },
+
+  pomodoro: {
+    title: '番茄钟',
+    about: '分块专注，中间短暂休息，每隔几轮来一次长休息。',
+    next: '下一步',
+    phase: {
+      focus: '专注',
+      short: '短休息',
+      long: '长休息',
+    },
+    start: {
+      focus: '开始专注',
+      short: '短暂休息',
+      long: '长时间休息',
+    },
+    session: '第 {n} 轮，共 {total} 轮',
+    reset: '重置',
+    skip: '跳到下一阶段',
+    lengths: '{focus} · {short} · {long} 分钟',
+    today: '今日专注',
+    week: '最近 7 天',
+    sessions: {
+      other: '已完成 {count} 轮',
+    },
+  },
+
+  stopwatch: {
+    about: '空格键开始/停止，L 记录一圈。关闭应用后仍会继续计时。',
+    hint: '点击开始，或按空格键',
+    lap: '第 {n} 圈',
+    lapAction: '计圈',
+    reset: '重置',
+    laps: '计圈',
+    split: '单圈时间',
+    total: '总计',
+    best: '最快',
+    worst: '最慢',
+  },
+
+  habits: {
+    about: '想坚持的小事。点一下打勾，看着连续记录不断增长。',
+    new: '新建习惯',
+    edit: '编辑习惯',
+    empty: '还没有习惯',
+    emptyBody: '喝水、散步、读十页书：添加想坚持的事，每天打勾。',
+    name: '名称',
+    namePlaceholder: '例如：喝水、阅读、拉伸',
+    icon: '图标和颜色',
+    when: '时间',
+    schedule: {
+      daily: '每天',
+      weekdays: '指定日期',
+      perWeek: '每周次数',
+    },
+    perWeekShort: {
+      other: '每周 {count} 次',
+    },
+    timesPerWeek: '次 / 周，任意日期',
+    target: '每天次数',
+    targetHint: '需要计数的事（如喝几杯水）可以大于 1。',
+    remind: '如果到此时间还没完成就提醒我',
+    done: '完成',
+    notDone: '未完成',
+    doneNamed: '{name}：已完成 — 点一下撤销',
+    checkNamed: '将 {name} 标记为完成',
+    undoOne: '减一次',
+    archive: '归档',
+    unarchive: '恢复',
+    archived: {
+      other: '{count} 个已归档习惯',
+    },
+    actions: '习惯操作',
+    thisWeek: '本周',
+    today: '今天',
+    todayHint: '今天的习惯',
+    allDone: '今天全部完成',
+    left: {
+      other: '还剩 {count} 个',
+    },
+    history: '最近 17 周',
+    current: '当前连续',
+    best: '最长连续',
+    last30: '最近 30 天',
+    bestStreak: {
+      other: '最长：{count}',
+    },
+    streakDays: {
+      other: '{count} 天',
+    },
+    streakWeeks: {
+      other: '{count} 周',
+    },
+    alert: '该{name}了',
+    notifyBody: '打开 Noter 打个勾吧。',
+    deleteTitle: '删除“{name}”？',
+    deleteBody: '全部记录都会一起删除。若想保留记录，请改为归档。',
+    deleted: '习惯已删除。',
+  },
+
+  updates: {
+    title: '更新',
+    check: '检查更新',
+    checking: '正在检查…',
+    current: '已是最新版本。',
+    available: 'Noter {version} 可用',
+    availableWeb: 'Noter 新版本已就绪',
+    ready: '更新已安装',
+    failed: '无法检查更新，请稍后再试。',
+    store: '此副本由 Microsoft Store 保持更新。',
+    auto: 'Noter 启动时自动检查',
+    installHint: '在后台下载，笔记保持不变。',
+    downloadHint: '从发布页面下载，并覆盖安装当前版本。',
+    install: '立即更新',
+    download: '下载',
+    reload: '重新加载',
+    restart: '立即重启',
+    later: '稍后',
+    skip: '跳过此版本',
+    how: {
+      web: '网页版会自动更新，重新加载前会先询问你。',
+      store: '从 Microsoft Store 安装，由 Store 为你安装更新。',
+      installer: 'Noter 会自行下载并安装新版本。',
+      appimage: 'Noter 会自行下载并安装新版本。',
+      'system-package': '以系统软件包安装。有新版本时 Noter 会通知你。',
+      android: '有新版本时 Noter 会通知你并提供下载链接。',
+    },
+  },
+
+  tour: {
+    invite: {
+      title: '第一次使用？花两分钟看看导览',
+      body: '快速了解笔记、计时器、习惯、用药和保险库。',
+      start: '带我看看',
+    },
+    settingsTitle: '欢迎导览',
+    settingsHint: '再次了解 Noter 各部分的功能。',
+    progress: '第 {n} 步，共 {total} 步',
+    skip: '跳过',
+    back: '上一步',
+    next: '下一步',
+    start: '开始吧',
+    finish: '开始使用 Noter',
+    welcome: {
+      title: '欢迎使用 Noter',
+      body: '你的笔记、计时器、习惯、用药和密码，都保存在这台设备上。除非你导出，否则不会离开这里。',
+    },
+    nav: {
+      title: '一切触手可及',
+      body: '每个区域都在这里。Ctrl/⌘ + 1…6 可直接跳转。',
+    },
+    home: {
+      title: '首页一览你的一天',
+      body: '在这里新建笔记、打开今日笔记或开始专注。“今天”列出需要立即处理的服药、习惯和计时器。',
+    },
+    customize: {
+      title: '定制你的首页',
+      body: '选择显示哪些模块以及顺序。布局会自动排列，不留空隙。',
+    },
+    notes: {
+      title: '由块组成的笔记',
+      body: '在笔记中输入 / 插入清单、看板、图库和代码。用 [[双括号]] 链接笔记，用 #标签 分类。',
+    },
+    timers: {
+      title: '闹钟、番茄钟和秒表',
+      body: '一点即开始、声音可试听的倒计时，带休息的专注时段，以及可计圈的秒表。',
+    },
+    habits: {
+      title: '养成习惯，保持连续',
+      body: '每天、指定日期或每周几次。打勾后看着连续记录和历史不断增长。',
+    },
+    meds: {
+      title: '不再漏记任何一次服药',
+      body: '一点即可记录服药。Noter 会提醒下一次时间，并在过早记录前先确认。',
+    },
+    vault: {
+      title: '存放秘密的保险库',
+      body: '密码、卡片和私人笔记，用只有你知道的主密码加密。',
+    },
+    search: {
+      title: '找到任何东西',
+      body: 'Ctrl/⌘ + K 搜索所有笔记并运行任何命令，包括这个导览。',
+    },
+    done: {
+      title: '一切就绪',
+      body: '从一条笔记、一个习惯或一个计时器开始。随时可以在设置中重新查看导览。',
+    },
   },
 }
 

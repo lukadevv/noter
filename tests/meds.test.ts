@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { Dose, Med } from '$lib/db/schema'
 import {
   adherence,
+  doseCheck,
   dosesLeft,
   formatSpan,
   history,
@@ -112,5 +113,30 @@ describe('formatSpan', () => {
     expect(formatSpan(-30 * 60_000)).toBe('30 min')
     expect(formatSpan(51 * HOUR)).toBe('2 d 3 h')
     expect(formatSpan(24 * HOUR)).toBe('24 h')
+  })
+})
+
+describe('dose check', () => {
+  it('lets the first dose and an on-time dose through', () => {
+    expect(doseCheck(med(), [], NOW)).toBeNull()
+    expect(doseCheck(med(), [dose(12)], NOW)).toBeNull()
+    // Inside the "coming up" hour before it is due is fine too.
+    expect(doseCheck(med(), [dose(11.5)], NOW)).toBeNull()
+  })
+
+  it('flags a dose taken well before the next one is due', () => {
+    const warning = doseCheck(med(), [dose(2)], NOW)
+    expect(warning).toMatchObject({ nextDue: NOW + 10 * HOUR, early: 10 * HOUR, recent: 1, perDay: 2 })
+  })
+
+  it('counts every dose already taken in the interval', () => {
+    const warning = doseCheck(med(), [dose(3), dose(1)], NOW)
+    expect(warning?.recent).toBe(2)
+    expect(warning?.today).toBe(2)
+  })
+
+  it('ignores skipped doses and other medication', () => {
+    const other = { ...dose(1), medId: 'other' }
+    expect(doseCheck(med(), [dose(2, 'skipped'), other], NOW)).toBeNull()
   })
 })

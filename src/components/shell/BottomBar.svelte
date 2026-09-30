@@ -7,7 +7,7 @@
   import { t } from '$lib/i18n/index.svelte'
 </script>
 
-<nav class="bar" aria-label={t('nav.main')}>
+<nav class="bar" aria-label={t('nav.main')} data-tour="nav">
   {#each SECTIONS as entry (entry.id)}
     {@const count = alerts.countFor(entry.id)}
     <button
@@ -15,6 +15,7 @@
       class:item--active={ui.section === entry.id}
       data-testid="nav-{entry.id}"
       aria-current={ui.section === entry.id ? 'page' : undefined}
+      data-tour="nav-{entry.id}"
       onclick={() => goTo(entry.id)}
     >
       <span class="pill"><Icon name={entry.icon} size={20} /></span>
@@ -38,6 +39,7 @@
   .item {
     position: relative;
     flex: 1;
+    min-width: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -54,7 +56,7 @@
   .pill {
     display: grid;
     place-items: center;
-    width: 52px;
+    width: min(52px, 100%);
     height: 28px;
     border-radius: var(--radius-full);
     transition:
@@ -76,6 +78,10 @@
   }
 
   .label {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     font-size: 11px;
     font-weight: 500;
   }

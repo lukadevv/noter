@@ -7,6 +7,7 @@ import { pickImages } from '$lib/images/insert'
 import { todayKey } from '$lib/db/repo/daily'
 import { addDays } from '$lib/utils/dates'
 import { goTo } from '$lib/nav'
+import { navigate } from '../routes/router'
 import { vaultStatus } from '$lib/secrets/status.svelte'
 import { t } from '$lib/i18n/index.svelte'
 
@@ -200,10 +201,46 @@ export function buildActions(open: { settings: () => void; daily: () => void }):
       run: () => goTo('timers'),
     },
     {
+      id: 'go.habits',
+      label: t('actions.goHabits'),
+      icon: 'target',
+      hint: 'Mod+4',
+      group: 'Go',
+      run: () => goTo('habits'),
+    },
+    {
+      id: 'timers.focus',
+      label: t('actions.startFocus'),
+      icon: 'target',
+      group: 'Create',
+      run: async () => {
+        const { timers } = await import('$lib/timers/store.svelte')
+        timers.start()
+        if (!timers.pomodoro) await timers.startPomodoro()
+        navigate({ kind: 'timers', tab: 'pomodoro' })
+      },
+    },
+    {
+      id: 'timers.stopwatch',
+      label: t('actions.openStopwatch'),
+      icon: 'timer',
+      group: 'Go',
+      run: () => navigate({ kind: 'timers', tab: 'stopwatch' }),
+    },
+    {
+      id: 'app.tour',
+      label: t('actions.tour'),
+      icon: 'compass',
+      group: 'App',
+      run: () => {
+        ui.tourOpen = true
+      },
+    },
+    {
       id: 'go.meds',
       label: t('actions.goMeds'),
       icon: 'pill',
-      hint: 'Mod+4',
+      hint: 'Mod+5',
       group: 'Go',
       run: () => goTo('meds'),
     },
@@ -211,7 +248,7 @@ export function buildActions(open: { settings: () => void; daily: () => void }):
       id: 'go.vault',
       label: t('actions.goVault'),
       icon: 'shield',
-      hint: 'Mod+5',
+      hint: 'Mod+6',
       group: 'Go',
       run: () => goTo('vault'),
     },

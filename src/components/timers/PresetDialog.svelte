@@ -2,9 +2,10 @@
   import { untrack } from 'svelte'
   import Dialog from '../ui/Dialog.svelte'
   import Switch from '../ui/Switch.svelte'
-  import Icon from '../Icon.svelte'
+  import Stepper from '../ui/Stepper.svelte'
+  import SoundPicker from './SoundPicker.svelte'
   import { timers } from '$lib/timers/store.svelte'
-  import { alarm, BUILTIN_SOUNDS } from '$lib/audio/beeps'
+  import { formatLength } from '$lib/timers/duration'
   import { theme } from '$lib/stores/theme.svelte'
   import type { TimerPreset } from '$lib/db/schema'
   import { t } from '$lib/i18n/index.svelte'
@@ -26,6 +27,14 @@
   let soundId = $state(initial?.soundId ?? theme.settings.timers.defaultSoundId)
   let color = $state<string | null>(initial?.color ?? null)
   let repeat = $state(initial?.repeat === 1)
+
+  const QUICK = [60, 300, 600, 900, 1500, 1800, 3600]
+
+  function setTotal(value: number) {
+    hours = Math.floor(value / 3600)
+    minutes = Math.floor((value % 3600) / 60)
+    seconds = value % 60
+  }
 
   let total = $derived(Math.max(0, hours * 3600 + minutes * 60 + seconds))
 
@@ -69,42 +78,28 @@
 
     <fieldset class="field">
       <legend>{t('timers.duration')}</legend>
+      <div class="total" aria-live="polite">{total > 0 ? formatLength(total) : '—'}</div>
       <div class="hms">
-        <label
-          ><input class="input" type="number" min="0" max="23" bind:value={hours} /><span>h</span></label
-        >
-        <label
-          ><input class="input" type="number" min="0" max="59" bind:value={minutes} /><span>min</span
-          ></label
-        >
-        <label
-          ><input class="input" type="number" min="0" max="59" bind:value={seconds} /><span>s</span></label
-        >
+        <Stepper label={t('timers.hours')} unit="h" max={23} bind:value={hours} />
+        <Stepper label={t('timers.minutes')} unit="min" max={59} bind:value={minutes} />
+        <Stepper label={t('timers.seconds')} unit="s" max={59} step={5} bind:value={seconds} />
+      </div>
+      <div class="chips">
+        {#each QUICK as value (value)}
+          <button
+            type="button"
+            class="chip"
+            class:chip--active={total === value}
+            onclick={() => setTotal(value)}>{formatLength(value)}</button
+          >
+        {/each}
       </div>
     </fieldset>
 
-    <label class="field">
-      <span>{t('timers.sound')}</span>
-      <div class="row">
-        <select class="input" bind:value={soundId}>
-          {#each BUILTIN_SOUNDS as sound (sound.id)}
-            <option value={sound.id}>{t(sound.label)}</option>
-          {/each}
-          {#each timers.sounds as sound (sound.id)}
-            <option value={sound.id}>{sound.name}</option>
-          {/each}
-        </select>
-        <button
-          type="button"
-          class="btn btn--icon"
-          aria-label={t('timers.preview')}
-          title={t('timers.preview')}
-          onclick={() => alarm.preview(timers.recipe(soundId), theme.settings.timers.volume)}
-        >
-          <Icon name="volume-2" size={15} />
-        </button>
-      </div>
-    </label>
+    <fieldset class="field">
+      <legend>{t('timers.sound')}</legend>
+      <SoundPicker label={t('timers.sound')} bind:value={soundId} />
+    </fieldset>
 
     <fieldset class="field">
       <legend>{t('timers.color')}</legend>
@@ -157,22 +152,53 @@
     margin-bottom: var(--space-2);
   }
 
+  .total {
+    font-size: var(--text-2xl);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+
   .hms {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    display: flex;
     gap: var(--space-2);
+    flex-wrap: wrap;
   }
 
-  .hms label {
+  .chips {
     display: flex;
-    align-items: center;
+    flex-wrap: wrap;
     gap: var(--space-1);
-    color: var(--text-faint);
   }
 
-  .row {
-    display: flex;
-    gap: var(--space-2);
+  .chip {
+    height: 28px;
+    padding: 0 var(--space-3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-full);
+    background: none;
+    color: var(--text-dim);
+    font-size: var(--text-sm);
+    font-variant-numeric: tabular-nums;
+    cursor: pointer;
+    transition:
+      background var(--dur-1),
+      transform var(--dur-1);
+  }
+
+  .chip:hover {
+    color: var(--text);
+    border-color: var(--border-strong);
+  }
+
+  .chip:active {
+    transform: scale(0.94);
+  }
+
+  .chip--active {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+    color: var(--text);
   }
 
   .swatches {
@@ -195,8 +221,17 @@
     background: repeating-linear-gradient(45deg, var(--surface-3) 0 4px, var(--surface-2) 4px 8px);
   }
 
+  .swatch {
+    transition: transform var(--dur-2) var(--ease-spring);
+  }
+
+  .swatch:hover {
+    transform: scale(1.1);
+  }
+
   .swatch--active {
     border-color: var(--text);
+    transform: scale(1.15);
   }
 
   .actions {

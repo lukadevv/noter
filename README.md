@@ -1,91 +1,131 @@
+<div align="center">
+
+<img src="assets/logo.svg" width="96" height="96" alt="Noter logo" />
+
 # Noter
 
-A local-first personal workspace: notes, a password vault, medication
-reminders and timers. Everything runs on your device: data lives in IndexedDB,
-the build is a folder of static files, and there is no server to talk to.
-Install it, go offline, keep writing.
+**Your notes, timers, habits, medication and passwords — in one app that never leaves your device.**
 
-## Features
+[![Release](https://img.shields.io/github/v/release/lukadevv/noter?style=flat-square&color=8b8ce8)](https://github.com/lukadevv/noter/releases/latest)
+[![CI](https://img.shields.io/github/actions/workflow/status/lukadevv/noter/ci.yml?branch=main&style=flat-square&label=CI)](https://github.com/lukadevv/noter/actions/workflows/ci.yml)
+[![License: AGPL v3](https://img.shields.io/badge/license-AGPL--3.0-5cbf92?style=flat-square)](LICENSE)
+![Platforms](https://img.shields.io/badge/web%20·%20windows%20·%20macos%20·%20linux%20·%20android-d9a441?style=flat-square)
+![Languages](https://img.shields.io/badge/languages-10-4fb3d9?style=flat-square)
 
-**Home**
+[**Open the web app**](https://noter.lukadevv.com) ·
+[**Download**](https://github.com/lukadevv/noter/releases/latest) ·
+[Privacy](https://noter.lukadevv.com/privacy.html) ·
+[Report a bug](https://github.com/lukadevv/noter/issues)
 
-- A dashboard that opens first: alerts (a dose due, a timer ringing, today's
-  note not written yet), numbers at a glance (notes, words this week, writing
-  streak, open tasks), a writing-activity heatmap, words per week, top tags and
-  folders, a daily-notes calendar, and quick views of medication, timers and
-  the vault
-- Every block can be hidden or reordered in Settings → Home
+<img src="docs/screenshots/home.png" alt="Noter's Home: today's doses and habits, a calendar and writing statistics" width="900" />
 
-**Writing**
+</div>
 
-- Markdown notes in a CodeMirror 6 editor that is always editable; a padlock
-  (`Ctrl+Shift+L`) protects a note from accidental edits
-- Blocks inline: type `/` for headings, lists, checklists, callouts, tables,
-  code, a kanban **board** or an image **gallery**. Each block has a handle to
-  drag it, duplicate it or turn it into another kind
-- Live preview hides markdown punctuation away from the cursor
-- Interactive checkboxes in both the editor and the reading view
-- Boards built from `##` headings and list items, with drag-and-drop
-- Images from a paste, a drop, a file picker, or a pasted URL; every image is
-  re-encoded to WebP, thumbnailed and deduplicated by hash
-- Full-screen image viewer with zoom, pan and copy
+## Why Noter
 
-**Organising**
+- **Local-first.** Everything lives in IndexedDB on your device. No account, no
+  server, no tracking. It works offline, and a backup is one file you own.
+- **One place for the day.** Home gathers what matters today — doses due,
+  habits to tick, timers running, notes you were writing — and lets you act on
+  them right there.
+- **Everywhere, one codebase.** The website _is_ the app; the Windows, macOS,
+  Linux and Android builds wrap that same code, so they never drift apart.
 
-- Nested folders with drag-and-drop reordering and inline rename
-- `#tags` read straight out of the text, with autocompletion
-- `[[Wiki links]]` with autocompletion, note creation on click, and backlinks
-- Pin, archive, and a trash with a 30-day retention window
-- Multi-select with bulk move, pin, archive and delete
-- Saved searches (`tag:bug AND is:todo AND modified:<7d`) that live in the sidebar
-  as smart folders
-- Templates (`{{date}}`, `{{time}}`, `{{title}}`), and daily notes created only
-  when opened — an untouched one is removed again when you leave it
+## What's inside
 
-**Finding**
+<table>
+<tr>
+<td width="50%" valign="top">
 
-- `Ctrl+K` command palette: notes, commands, tags and structured queries in one place
-- Right-click (or long-press) anything for its menu: folders, notes, blocks,
-  timers, medication, vault entries
-- Full-text search (MiniSearch) indexed incrementally in idle time
-- A small query language: `tag:`, `folder:`, `view:`, `is:`, `has:`, `modified:`,
-  with `AND` / `OR` / `NOT` and parentheses
+### 🏠 Home
 
-**Making it yours**
+A dashboard that arranges itself without gaps: a **Today** list you can act on
+(log a dose, tick a habit), a daily-notes calendar, writing statistics with
+sparklines, recent and pinned notes, quick-start timers and focus minutes.
+Every block can be hidden or reordered.
 
-- Eight built-in themes plus a theme editor that derives ~30 tokens from four
-  colours in OKLCH, with live WCAG contrast checks
-- Custom themes are saved, exported and imported as JSON
-- Icon picker over the full Lucide catalogue (~2000 icons) plus emoji
-- Per-folder accent colours that tint the interface while you are inside a folder
-- Density, font family, editor text size, corner radius, and animations
-  (follow the system, full, reduced or off)
+### 📝 Notes
 
-**Beyond notes**
+Markdown built from blocks: type `/` for checklists, callouts, tables, code, a
+kanban **board** or an image **gallery**. `[[Wiki links]]` with backlinks,
+`#tags`, smart folders from queries like `tag:bug AND is:todo`, version history,
+per-folder encryption and share-as-a-link without a server.
 
-- **Vault**: logins, cards, secure notes, documents and Wi-Fi passwords behind
-  a master password. Entries (titles included) are sealed with AES-GCM under a
-  random key wrapped by PBKDF2; the vault locks after idle minutes and when the
-  app is hidden, and copied secrets are wiped from the clipboard. Nothing in it
-  reaches search, the palette or statistics
-- **Medication**: "every X hours" reminders timed from the last dose you took,
-  a one-tap _Taken_ button, "next dose in 5 h" heads-up, adherence and stock
-- **Timers**: one-tap presets you can create, colour and reorder by dragging,
-  typed durations (`1h 20m`), and alarm sounds synthesised in the browser —
-  including your own
-- Local notifications on the web, Windows (Tauri) and Android (Capacitor)
+### ⏱️ Timers
 
-**Keeping your data**
+Three tools in one place:
 
-- Portable `.noter` vault: the whole workspace in one binary file, optionally
-  encrypted with AES-GCM, for moving between computers
-- Markdown archive: a zip of readable `.md` files with front matter, plus the images
-- Automatic backups to a real folder on disk (Chrome and Edge)
-- Per-note version history with a line diff and restore
-- Per-folder encryption; keys live in memory only and expire after 15 idle minutes
-- Share a note as a link with no server: the text is compressed into the URL
-  fragment. Images are never included — even as thumbnails they would push the
-  link past the length chat apps and browsers truncate at
+- **Alarms** — one-tap countdowns you colour and reorder, with synthesised sounds
+  you can **preview before choosing** (or design yourself)
+- **Pomodoro** — focus and breaks with a long break every few rounds, optional
+  auto-start, and your focus minutes charted
+- **Stopwatch** — hundredths, laps with the fastest and slowest marked, and it
+  keeps running if you close the app
+
+</td>
+<td width="50%" valign="top">
+
+### 🎯 Habits
+
+Every day, on some weekdays, or _n_ times a week — with counted targets for
+things like glasses of water. Tap to tick, watch the streak, open the 17-week
+history, and get a reminder at the time you pick if it is not done yet.
+
+### 💊 Medication
+
+"Every 12 hours" timed from the dose you actually took, a heads-up before the
+next one, adherence and stock. Logging a dose **earlier than scheduled asks
+first** and shows what was already taken — so a double tap is not a double dose.
+
+### 🔐 Vault
+
+Logins, cards, secure notes and Wi-Fi passwords behind a master password
+(AES-GCM, PBKDF2). It locks itself when idle or hidden, and copied secrets are
+wiped from the clipboard.
+
+### 🎨 Yours
+
+Eight themes plus a theme editor, per-folder accent colours, density, fonts,
+animations (system, full, reduced or off), ten languages including right-to-left
+Arabic, and a welcome tour you can replay any time.
+
+</td>
+</tr>
+</table>
+
+<p align="center">
+  <img src="docs/screenshots/pomodoro.png" alt="The Pomodoro timer" width="49%" />
+  <img src="docs/screenshots/habits.png" alt="Habits with streaks and a weekly view" width="49%" />
+</p>
+
+## Download
+
+| Platform    | Get it                                                                                                 | Updates                                    |
+| ----------- | ------------------------------------------------------------------------------------------------------ | ------------------------------------------ |
+| **Web**     | [noter.lukadevv.com](https://noter.lukadevv.com) — install it from the browser as an app               | Automatic, with a prompt before reloading  |
+| **Windows** | Microsoft Store, or `.exe` / `.msi` from [Releases](https://github.com/lukadevv/noter/releases/latest) | Store: by the Store · installer: in-app    |
+| **macOS**   | `.dmg` (Apple silicon and Intel)                                                                       | In-app                                     |
+| **Linux**   | `.AppImage`, `.deb` or `.rpm`                                                                          | AppImage: in-app · `.deb`/`.rpm`: notified |
+| **Android** | `.apk` from [Releases](https://github.com/lukadevv/noter/releases/latest)                              | Notified, with a link to the new `.apk`    |
+
+How each build finds out about new versions is described in
+[docs/updates.md](docs/updates.md).
+
+## Keeping your data
+
+- **Portable `.noter` file** — the whole workspace in one file, optionally
+  encrypted, to move between devices
+- **Markdown archive** — a zip of readable `.md` files plus images
+- **Automatic backups** to a folder on disk (Chrome and Edge)
+- **Per-note history** with a line diff and restore
+
+Browsers can evict site data (Safari after seven days without a visit), so set
+up a backup. Encryption passphrases are never stored: forget one and those notes
+cannot be recovered.
+
+---
+
+# For developers
 
 ## Getting started
 
@@ -128,16 +168,16 @@ browser: `pnpm exec playwright install chromium`.
 
 ## Keyboard
 
-| Shortcut            | Action                                 |
-| ------------------- | -------------------------------------- |
-| `Ctrl+K`            | Command palette                        |
-| `Ctrl+N`            | New note                               |
-| `Ctrl+,`            | Settings                               |
-| `Ctrl+Shift+D`      | Today's daily note                     |
-| `Ctrl+Shift+Space`  | Scratchpad                             |
-| `Ctrl+Shift+L`      | Lock or unlock editing                 |
-| `Ctrl+1` … `Ctrl+5` | Home, Notes, Timers, Medication, Vault |
-| `Ctrl+\`            | Hide or show the folders               |
+| Shortcut            | Action                                         |
+| ------------------- | ---------------------------------------------- |
+| `Ctrl+K`            | Command palette                                |
+| `Ctrl+N`            | New note                                       |
+| `Ctrl+,`            | Settings                                       |
+| `Ctrl+Shift+D`      | Today's daily note                             |
+| `Ctrl+Shift+Space`  | Scratchpad                                     |
+| `Ctrl+Shift+L`      | Lock or unlock editing                         |
+| `Ctrl+1` … `Ctrl+6` | Home, Notes, Timers, Habits, Medication, Vault |
+| `Ctrl+\`            | Hide or show the folders                       |
 
 ## Architecture
 
@@ -153,7 +193,12 @@ src/
     crypto/   PBKDF2 + AES-GCM, and the in-memory keyring
     backup/   Markdown archive, portable vault, File System Access
     share/    URL-fragment encoding
-    stores/   Svelte 5 rune stores: notes, theme, UI, lightbox
+    timers/   Alarms, the pomodoro cycle and the stopwatch
+    habits/   Habit schedules, streaks and their store
+    meds/     Dose schedule, adherence and the "too early?" check
+    home/     The hole-free dashboard layout
+    platform/ Native shells: files, notifications, updates
+    stores/   Svelte 5 rune stores: notes, theme, UI, confirm, lightbox
   components/ UI
   routes/     Hash router
 ```
@@ -191,6 +236,12 @@ chunks are all exercised as they ship:
 | `crypto.spec.ts`     | Folder encryption, unlock, wrong passphrase, and that no plaintext leaks into IndexedDB        |
 | `backup.spec.ts`     | Vault round-trip into a clean browser, merge semantics, Markdown archive, history, share links |
 | `offline.spec.ts`    | Offline reload, cached manifest, CSP, and that heavy chunks stay lazy                          |
+| `home.spec.ts`       | The dashboard, its widgets and the daily-note reminder                                         |
+| `timers.spec.ts`     | Alarms ringing anywhere, presets, sound previews, a full pomodoro round, stopwatch laps        |
+| `habits.spec.ts`     | Creating habits, counted targets, ticking them off from Home, confirmation before deleting     |
+| `meds.spec.ts`       | Logging doses, undo, the confirmation for a dose that comes too early, stock                   |
+| `tour.spec.ts`       | The welcome tour: offered once, navigates each area, skippable and replayable                  |
+| `vault.spec.ts`      | Master password, entries, auto-lock and that nothing is stored in the clear                    |
 | `responsive.spec.ts` | Single-pane stack on a phone viewport (runs under the `mobile` project)                        |
 
 Two conventions keep the suite honest:
@@ -289,18 +340,6 @@ traffic.
 `scripts/check-budget.mjs` reads `dist/index.html` to tell the initial payload from
 lazily loaded chunks and prints both.
 
-## Your data
-
-Notes are stored in IndexedDB under this site's origin. The app requests persistent
-storage on startup, but browsers can still evict it — Safari clears it after seven
-days without a visit. **Set up a backup**: either point Noter at a folder on disk
-(Settings ▸ Automatic backups, Chrome and Edge only) or export a vault file
-regularly. A reminder appears once the last backup is more than two weeks old.
-
-Folder encryption uses PBKDF2-SHA256 (310,000 iterations) and AES-GCM. The
-passphrase is never stored anywhere, which means there is no recovery path: forget
-it and those notes are gone.
-
 ## Deploying
 
 `pnpm build` produces `dist/`, which is plain static files — any static host will
@@ -398,16 +437,52 @@ Android requires.
 Bump `version` in `package.json`, commit, and push a matching tag:
 
 ```bash
-git tag v0.2.0 && git push origin v0.2.0
+git tag v1.1.0 && git push origin v1.1.0
 ```
 
 `.github/workflows/release.yml` takes it from there. It refuses tags that
 disagree with `package.json`, creates one draft release, builds Linux, Windows
-and a universal macOS binary in parallel, adds the Android artefacts, and only
-then publishes the release. Nothing appears half-finished on the releases page,
-because the draft is what everything uploads into.
+(plus the Store `.msix`) and a universal macOS binary in parallel, adds the
+Android artefacts, and only then publishes the release. Nothing appears
+half-finished on the releases page, because the draft is what everything
+uploads into.
 
-**Android needs a signing key**, and the same one every time: Android will only
+Everything below is optional: each step that needs a key or an account checks
+for it and skips itself, with a notice in the log, when it is not configured.
+
+| To get…                             | Configure                                                             | Guide                                                                                       |
+| ----------------------------------- | --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| Android `.apk` / `.aab`             | `ANDROID_KEYSTORE_*` secrets                                          | [below](#android-signing)                                                                   |
+| In-app updates on the desktop       | `TAURI_SIGNING_PRIVATE_KEY*` secrets, `TAURI_UPDATER_PUBKEY` variable | [docs/updates.md](docs/updates.md)                                                          |
+| The `.msix` for the Microsoft Store | `MSIX_*` variables (from Partner Center)                              | [docs/microsoft-store.md](docs/microsoft-store.md)                                          |
+| Automatic Store submissions         | `MS_STORE_*` secrets + `MS_STORE_PRODUCT_ID`                          | [docs/microsoft-store.md](docs/microsoft-store.md#5-automatic-submissions-on-every-release) |
+
+### Publishing to the Microsoft Store by hand
+
+Automatic submissions need a Microsoft Entra ID (Azure AD) app linked to Partner
+Center. Without one, the Store update is a manual upload — and it still takes a
+single workflow run:
+
+1. **Bump and tag** as above. Only the **Release** workflow is needed: with the
+   `MSIX_*` variables set it builds the `.msix` and attaches it to the GitHub
+   release. (The separate **MSIX** workflow is only for building the package
+   _without_ a release, e.g. for the very first submission.)
+2. When the release is published, **download** `Noter_X.Y.Z.0_x64.msix` from its
+   assets.
+3. In **Partner Center → Apps and games → Noter**, click **Start update** (or
+   _Update_ on the existing submission), open **Packages**, remove the old
+   package, drag in the new `.msix` and **Save**.
+4. Update the release notes under **Store listings** if you like, then **Submit
+   for certification**. Certification usually takes a few hours to three days;
+   installed copies update themselves once it passes.
+
+Every `.msix` needs a higher version than the last one the Store accepted, which
+bumping `package.json` already takes care of. The Store copy never tries to
+update itself: the app detects the MSIX install and leaves updates to the Store.
+
+### Android signing
+
+Android needs a signing key, and the same one every time: Android will only
 install an update over a package signed with the key the previous one used, so a
 key generated per build would strand everyone who installed the last release.
 Create one once, keep it somewhere safe, and never commit it:
@@ -428,8 +503,12 @@ base64 -w0 noter.keystore    # the value for the secret below
 Without them the Android job logs a warning and stops, and the release still
 ships its desktop builds.
 
-**The desktop builds are not code-signed.** Windows shows a SmartScreen warning
+### Code signing
+
+The desktop builds are not code-signed. Windows shows a SmartScreen warning
 until the download builds reputation, and macOS asks for the app to be opened
 from its right-click menu the first time. Signing them means an Apple Developer
 membership and a Windows certificate — a running yearly cost, not a code change,
-and the release notes say plainly what to expect until then.
+and the release notes say plainly what to expect until then. (The update key in
+[docs/updates.md](docs/updates.md) is a different, free thing: it only proves an
+update came from this project.)

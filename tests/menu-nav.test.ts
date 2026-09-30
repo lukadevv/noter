@@ -72,10 +72,26 @@ describe('migrateSettings', () => {
           { id: 'gone' as never, visible: true },
         ],
         dailyDismissed: '',
+        layoutVersion: 2,
       },
     })
     expect(migrated.home.widgets[0]).toEqual({ id: 'recent', visible: false })
     expect(migrated.home.widgets.map((w) => w.id)).not.toContain('gone')
     expect(migrated.home.widgets).toHaveLength(DEFAULT_SETTINGS.home.widgets.length)
+  })
+
+  it('applies a new default layout once, keeping hidden widgets hidden', () => {
+    const migrated = migrateSettings({
+      home: {
+        widgets: [
+          { id: 'vault', visible: true },
+          { id: 'recent', visible: false },
+        ],
+        dailyDismissed: '',
+      } as never,
+    })
+    expect(migrated.home.widgets.map((w) => w.id)).toEqual(DEFAULT_SETTINGS.home.widgets.map((w) => w.id))
+    expect(migrated.home.widgets.find((w) => w.id === 'recent')?.visible).toBe(false)
+    expect(migrated.home.layoutVersion).toBe(DEFAULT_SETTINGS.home.layoutVersion)
   })
 })

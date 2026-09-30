@@ -30,7 +30,13 @@
         </ul>
       {/if}
       <div class="actions">
-        <button class="btn btn--lg" data-testid="confirm-cancel" onclick={() => confirm.answer(false)}>
+        <!-- A warning starts on the safe answer: Enter should not log a double dose. -->
+        <button
+          class="btn btn--lg"
+          data-testid="confirm-cancel"
+          data-autofocus={tone !== 'default' ? true : undefined}
+          onclick={() => confirm.answer(false)}
+        >
           {request.cancelLabel ?? t('common.cancel')}
         </button>
         <button
@@ -38,7 +44,7 @@
           class:btn--danger-solid={tone === 'danger'}
           class:btn--warn-solid={tone === 'warn'}
           data-testid="confirm-ok"
-          data-autofocus
+          data-autofocus={tone === 'default' ? true : undefined}
           onclick={() => confirm.answer(true)}
         >
           {request.confirmLabel}

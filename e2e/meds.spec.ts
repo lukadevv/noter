@@ -28,9 +28,30 @@ test.describe('medication', () => {
     await expect(page.getByTestId('med-status')).toContainText('Next in 12 h')
     await expect(page.getByText('Today', { exact: true })).toBeVisible()
 
-    // A mis-tap can be undone.
-    await page.getByRole('button', { name: 'Undo' }).click()
+    // A mis-tap can be undone, straight from the toast.
+    await page.getByTestId('toast').getByRole('button', { name: 'Undo' }).click()
     await expect(page.getByTestId('med-status')).toContainText('first dose')
+  })
+
+  test('asks before logging a dose that comes too early', async ({ page }) => {
+    await addMed(page, 'Ibuprofen')
+    await page.getByTestId('take-dose').click()
+    await expect(page.getByTestId('med-status')).toContainText('Next in 12 h')
+
+    // A second tap an hour later is probably a double dose.
+    await page.clock.fastForward('01:00:00')
+    await page.getByTestId('take-dose').click()
+    const dialog = page.getByTestId('confirm-dialog')
+    await expect(dialog).toContainText('Another dose of Ibuprofen already?')
+    await expect(dialog).toContainText('Already taken: 1 dose in the last 12 h')
+    await page.getByTestId('confirm-cancel').click()
+    await expect(dialog).toBeHidden()
+    await expect(page.locator('.entry')).toHaveCount(1)
+
+    // Confirming logs it anyway.
+    await page.getByTestId('take-dose').click()
+    await page.getByTestId('confirm-ok').click()
+    await expect(page.locator('.entry')).toHaveCount(2)
   })
 
   test('shows the next dose coming up and then due on Home', async ({ page }) => {
@@ -40,13 +61,15 @@ test.describe('medication', () => {
     // Eleven and a half hours later: inside the one-hour heads-up.
     await page.clock.fastForward('11:30:00')
     await page.getByTestId('nav-home').click()
-    await expect(page.getByTestId('home')).toContainText('Antibiotic · 1 tablet: next dose in 30 min')
+    const today = page.getByTestId('home-today')
+    await expect(today).toContainText('Antibiotic · 1 tablet')
+    await expect(today).toContainText('in 30 min')
 
     await page.clock.fastForward('00:31:00')
-    await expect(page.getByTestId('home')).toContainText('Time for Antibiotic')
-    // Taken straight from the alert.
-    await page.getByTestId('home').getByRole('button', { name: 'Taken' }).click()
-    await expect(page.getByTestId('home')).not.toContainText('Time for Antibiotic')
+    await expect(today).toContainText('Due now')
+    // Taken straight from Home's "Today".
+    await today.getByRole('button', { name: 'Taken' }).click()
+    await expect(today).not.toContainText('Due now')
   })
 
   test('counts down the stock and warns when it runs low', async ({ page }) => {

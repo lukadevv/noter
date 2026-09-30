@@ -5,6 +5,8 @@
   import { portal } from '$lib/ui/portal'
   import { fadeIn, pop } from '$lib/ui/motion.svelte'
   import { t } from '$lib/i18n/index.svelte'
+  import { theme } from '$lib/stores/theme.svelte'
+  import { nextStep } from '$lib/timers/pomodoro'
 
   /**
    * The "time's up" card, on top of whatever section is open. A ringing timer
@@ -12,6 +14,13 @@
    * even after the sound has stopped on its own.
    */
   let first = $derived(timers.ringing[0] ?? null)
+
+  /** For a pomodoro, what the main button starts next. */
+  let next = $derived(
+    first?.kind === 'pomodoro'
+      ? nextStep({ phase: first.phase ?? 'focus', cycle: first.cycle ?? 0 }, theme.settings.pomodoro).phase
+      : null,
+  )
 </script>
 
 {#if first}
@@ -25,7 +34,7 @@
       transition:pop
       data-testid="ringing"
     >
-      <div class="icon"><Icon name="alarm-clock" size={34} /></div>
+      <div class="icon"><Icon name={next ? 'coffee' : 'alarm-clock'} size={34} /></div>
       <h2>{t('timers.timesUp')}</h2>
       <p class="label">{first.label || t('timers.timer')}</p>
       {#if timers.ringing.length > 1}
@@ -33,7 +42,9 @@
       {/if}
       <div class="actions">
         <button class="btn btn--primary big" data-autofocus onclick={() => void timers.dismiss(first.id)}>
-          {first.repeat ? t('timers.stopAndRepeat') : t('timers.stop')}
+          {#if next}{t(`pomodoro.start.${next}`)}{:else}{first.repeat
+              ? t('timers.stopAndRepeat')
+              : t('timers.stop')}{/if}
         </button>
         <div class="snooze">
           <button class="btn" onclick={() => void timers.snooze(first.id, 1)}>+1 min</button>

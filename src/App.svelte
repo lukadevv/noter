@@ -9,6 +9,7 @@
   import ContextMenu from '$components/ContextMenu.svelte'
   import { dialogs } from '$lib/stores/dialogs.svelte'
   import { confirm } from '$lib/stores/confirm.svelte'
+  import { alerts } from '$lib/stores/alerts.svelte'
   import { notes } from '$lib/stores/notes.svelte'
   import { theme } from '$lib/stores/theme.svelte'
   import { SECTIONS } from '$lib/sections'
@@ -73,6 +74,9 @@
         notes.setScope({ kind: 'search', query: route.query })
         notes.select(route.noteId)
         break
+      case 'timers':
+        if (route.tab) ui.timersTab = route.tab
+        break
       case 'settings':
         ui.section = 'settings'
         ui.settingsSection = route.section
@@ -83,6 +87,24 @@
     }
     applyingRoute = false
   }
+
+  // First run: Home offers the tour rather than forcing it on anyone.
+  alerts.register('tour', () =>
+    theme.loaded && !theme.settings.tourDone && !ui.tourOpen
+      ? [
+          {
+            id: 'tour',
+            section: 'home',
+            tone: 'info',
+            icon: 'compass',
+            title: t('tour.invite.title'),
+            body: t('tour.invite.body'),
+            action: { label: t('tour.invite.start'), run: () => (ui.tourOpen = true) },
+            dismiss: () => theme.update({ tourDone: true }),
+          },
+        ]
+      : [],
+  )
 
   $effect(() => {
     const stopLive = notes.start()
@@ -105,10 +127,14 @@
         timers.start()
         remindersReady = true
       })
-      // Medication reminders and alerts run from any section too.
+      // Medication and habit reminders and alerts run from any section too.
       void import('$lib/meds/store.svelte').then(({ meds }) => meds.start())
+      void import('$lib/habits/store.svelte').then(({ habits }) => habits.start())
     })
     void maybeRunScheduledBackup()
+    // Native builds look for a newer release once a day (web builds are kept
+    // current by the service worker). The module is tiny until it finds one.
+    idle(() => void import('$lib/platform/updates.svelte').then(({ updates }) => updates.autoCheck()))
     void purgeExpiredTrash().then(async (count) => {
       if (count > 0) ui.toast(t('toast.trashPurged', { count }), 'info')
       // Images belonging to purged notes are only unreferenced once those notes
@@ -356,6 +382,10 @@
               <Lazy load={() => import('$components/sections/Timers.svelte')}>
                 {#snippet fallback()}<Skeleton rows={6} />{/snippet}
               </Lazy>
+            {:else if ui.section === 'habits'}
+              <Lazy load={() => import('$components/sections/Habits.svelte')}>
+                {#snippet fallback()}<Skeleton rows={6} />{/snippet}
+              </Lazy>
             {:else if ui.section === 'meds'}
               <Lazy load={() => import('$components/sections/Meds.svelte')}>
                 {#snippet fallback()}<Skeleton rows={6} />{/snippet}
@@ -408,6 +438,12 @@
 {#if remindersReady}
   <!-- Rings over any section; loaded once the reminder engine is up. -->
   <Lazy load={() => import('$components/timers/RingingDialog.svelte')} />
+{/if}
+
+<Lazy load={() => import('$components/UpdateBanner.svelte')} />
+
+{#if ui.tourOpen}
+  <Lazy load={() => import('$components/Tour.svelte')} />
 {/if}
 
 {#if confirm.current}

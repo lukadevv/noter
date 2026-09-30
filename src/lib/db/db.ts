@@ -2,6 +2,10 @@ import Dexie, { type Table } from 'dexie'
 import { migrateBodyForView, needsMigration } from '$lib/md/migrate'
 import { dayKey } from '$lib/utils/dates'
 import type {
+  FocusSession,
+  Habit,
+  HabitCheck,
+  Stopwatch,
   ActivityDay,
   Asset,
   Dose,
@@ -39,6 +43,10 @@ export class NoterDB extends Dexie {
   secretItems!: Table<SecretItem, string>
   secretsMeta!: Table<SecretsMeta, string>
   activity!: Table<ActivityDay, string>
+  focusSessions!: Table<FocusSession, string>
+  stopwatch!: Table<Stopwatch, string>
+  habits!: Table<Habit, string>
+  habitChecks!: Table<HabitCheck, string>
 
   constructor(name = 'noter') {
     super(name)
@@ -127,6 +135,14 @@ export class NoterDB extends Dexie {
         })
         await tx.table<ActivityDay, string>('activity').bulkPut([...days.values()])
       })
+
+    // v7: pomodoro focus log, the stopwatch, and habits with their daily checks.
+    this.version(7).stores({
+      focusSessions: 'id, day',
+      stopwatch: 'id',
+      habits: 'id, order',
+      habitChecks: 'id, habitId, day, [habitId+day]',
+    })
   }
 }
 

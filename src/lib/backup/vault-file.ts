@@ -86,6 +86,9 @@ export const BACKUP_TABLES: { name: string; merge: 'newer' | 'put' }[] = [
   { name: 'secretsMeta', merge: 'newer' },
   { name: 'secretItems', merge: 'newer' },
   { name: 'activity', merge: 'newer' },
+  { name: 'focusSessions', merge: 'newer' },
+  { name: 'habits', merge: 'newer' },
+  { name: 'habitChecks', merge: 'newer' },
 ]
 
 function concat(parts: Uint8Array[]): Uint8Array<ArrayBuffer> {

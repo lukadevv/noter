@@ -1,7 +1,10 @@
 import type { Messages } from '../index.svelte'
 
 const it: Messages = {
-  app: { name: 'Noter', tagline: 'Note locali che funzionano offline' },
+  app: {
+    name: 'Noter',
+    tagline: 'Note locali che funzionano offline',
+  },
 
   common: {
     dismiss: 'Ignora',
@@ -198,6 +201,10 @@ const it: Messages = {
     goMeds: 'Vai ai Farmaci',
     goVault: 'Vai alla Cassaforte',
     lockVault: 'Blocca la cassaforte',
+    goHabits: 'Vai alle abitudini',
+    startFocus: 'Avvia una sessione di concentrazione',
+    openStopwatch: 'Apri il cronometro',
+    tour: 'Fai il tour',
   },
 
   settings: {
@@ -212,14 +219,22 @@ const it: Messages = {
       'Personalizzare un tema incluso ne salva una copia, così l’originale resta disponibile.',
     custom: '(personalizzato)',
     density: 'Densità',
-    densities: { compact: 'Compatta', cozy: 'Normale', comfortable: 'Ampia' },
+    densities: {
+      compact: 'Compatta',
+      cozy: 'Normale',
+      comfortable: 'Ampia',
+    },
     font: 'Carattere dell’interfaccia',
-    fonts: { system: 'Sistema', sans: 'Sans', serif: 'Serif', mono: 'Mono' },
+    fonts: {
+      system: 'Sistema',
+      sans: 'Sans',
+      serif: 'Serif',
+      mono: 'Mono',
+    },
     editorTextSize: 'Dimensione del testo nell’editor · {size}px',
     cornerRoundness: 'Arrotondamento degli angoli',
     reduceMotion: 'Riduci il movimento',
     lineNumbers: 'Mostra i numeri di riga nell’editor',
-
     daily: {
       title: 'Note giornaliere',
       about:
@@ -234,12 +249,14 @@ const it: Messages = {
       homeAlert: 'Ricordami nella Home di scrivere la nota di oggi',
       homeAlertHint: 'Resta visibile finché non ci scrivi o la ignori per oggi.',
     },
-
     storage: {
       title: 'Archiviazione',
       used: '{used} in uso',
       available: '· {total} disponibili',
-      images: { one: '{count} immagine · {size}', other: '{count} immagini · {size}' },
+      images: {
+        one: '{count} immagine · {size}',
+        other: '{count} immagini · {size}',
+      },
       persistent:
         'L’archiviazione è persistente: il browser non cancellerà le tue note per recuperare spazio.',
       notPersistent:
@@ -248,7 +265,6 @@ const it: Messages = {
       cleanUp: 'Pulisci le immagini inutilizzate',
       unsupported: 'Questo browser non riporta l’uso dell’archiviazione.',
     },
-
     backup: {
       title: 'Backup e trasferimento',
       about:
@@ -275,7 +291,6 @@ const it: Messages = {
       restore: 'Ripristina',
       restoring: 'Ripristino…',
     },
-
     auto: {
       title: 'Backup automatici',
       about:
@@ -353,6 +368,11 @@ const it: Messages = {
       ringFor: 'Continua a suonare per',
       customSounds: 'I tuoi suoni',
       customSoundsHint: 'Crea i tuoi bip: scegli le note, il timbro e il ritmo.',
+      pomodoroHint: 'Quanto dura ogni fase e cosa succede quando una finisce.',
+      longEvery: 'Pausa lunga ogni',
+      autoStart: 'Avvia da sola la fase successiva',
+      autoStartHint: 'Un breve suono segna il cambio invece di una sveglia.',
+      pomodoroSound: 'Suono del Pomodoro',
     },
     notifications: {
       enable: 'Mostra notifiche',
@@ -374,12 +394,18 @@ const it: Messages = {
       about: 'La cassaforte si chiude da sola così un dispositivo incustodito non resta aperto.',
       autoLock: 'Blocca dopo inattività',
       autoLockHint: 'Contato dall’ultima azione nella cassaforte.',
-      minutes: { one: '{count} minuto', other: '{count} minuti' },
+      minutes: {
+        one: '{count} minuto',
+        other: '{count} minuti',
+      },
       lockOnHide: 'Blocca quando l’app è nascosta',
       lockOnHideHint: 'Cambio scheda, riduzione a icona o schermo spento.',
       clipboard: 'Cancella i segreti copiati dopo',
       clipboardHint: 'Password e numeri di carta vengono cancellati dagli appunti.',
-      seconds: { one: '{count} secondo', other: '{count} secondi' },
+      seconds: {
+        one: '{count} secondo',
+        other: '{count} secondi',
+      },
       never: 'Mai',
       masterPassword: 'Password principale',
       change: 'Cambia password principale',
@@ -406,12 +432,13 @@ const it: Messages = {
         stats: 'Numeri a colpo d’occhio',
         activity: 'Attività di scrittura',
         calendar: 'Calendario delle note giornaliere',
-        meds: 'Farmaci',
-        timers: 'Timer',
         recent: 'Note recenti',
         pinned: 'Note fissate',
         topics: 'Tag e cartelle',
         vault: 'Cassaforte',
+        today: 'Oggi',
+        focus: 'Avvio rapido e concentrazione',
+        habits: 'Abitudini',
       },
     },
   },
@@ -422,7 +449,10 @@ const it: Messages = {
     copySuffix: 'copia di {name}',
     customTheme: 'Tema personalizzato',
     base: 'Base',
-    modes: { light: 'Chiaro', dark: 'Scuro' },
+    modes: {
+      light: 'Chiaro',
+      dark: 'Scuro',
+    },
     accent: 'Accento',
     accentHint: 'Prima il colore, poi luminosità e saturazione.',
     accentLightness: 'Luminosità dell’accento',
@@ -573,8 +603,14 @@ const it: Messages = {
       one: '{count} immagine inutilizzata rimossa.',
       other: '{count} immagini inutilizzate rimosse.',
     },
-    notesEncrypted: { one: '{count} nota cifrata.', other: '{count} note cifrate.' },
-    notesDecrypted: { one: '{count} nota decifrata.', other: '{count} note decifrate.' },
+    notesEncrypted: {
+      one: '{count} nota cifrata.',
+      other: '{count} note cifrate.',
+    },
+    notesDecrypted: {
+      one: '{count} nota decifrata.',
+      other: '{count} note decifrate.',
+    },
     themeSaved: 'Tema salvato.',
     themeLoaded: 'Tema caricato. Salvalo per conservarlo.',
     themeInvalid: 'Quel file non è un tema di Noter.',
@@ -605,7 +641,6 @@ const it: Messages = {
       'Le voci della cassaforte in questo backup appartengono a un’altra cassaforte e non sono state importate.',
   },
 
-  update: { ready: 'È pronta una nuova versione di Noter. Ricaricare ora?' },
   menu: {
     moveTo: 'Sposta in',
     markTemplate: 'Usa come modello',
@@ -613,12 +648,16 @@ const it: Messages = {
     showNotesTagged: 'Mostra le note con #{tag}',
     searchTag: 'Cerca con questo tag',
   },
+
   nav: {
     main: 'Navigazione principale',
     home: 'Home',
     notes: 'Note',
     search: 'Cerca',
-    alerts: { one: '{count} avviso', other: '{count} avvisi' },
+    alerts: {
+      one: '{count} avviso',
+      other: '{count} avvisi',
+    },
     resizeSidebar: 'Ridimensiona la barra delle cartelle',
     resizeList: 'Ridimensiona l’elenco delle note',
     collapseSidebar: 'Nascondi cartelle',
@@ -626,7 +665,9 @@ const it: Messages = {
     timers: 'Timer',
     meds: 'Farmaci',
     vault: 'Cassaforte',
+    habits: 'Abitudini',
   },
+
   home: {
     greeting: {
       night: 'Ancora sveglio?',
@@ -639,7 +680,6 @@ const it: Messages = {
     noNotes: 'Ancora niente di scritto. Inizia con una nuova nota.',
     customize: 'Personalizza',
     pinned: 'Fissate',
-    medsEmpty: 'Nessun farmaco aggiunto.',
     weekOf: 'Settimana del {date}',
     daily: {
       title: 'La nota di oggi è ancora vuota',
@@ -653,22 +693,40 @@ const it: Messages = {
       thisWeek: 'Inizia a scrivere per vederlo crescere',
       streak: 'Serie di scrittura',
       tasks: 'Attività aperte',
-      createdThisWeek: { one: '{count} nuova questa settimana', other: '{count} nuove questa settimana' },
+      createdThisWeek: {
+        one: '{count} nuova questa settimana',
+        other: '{count} nuove questa settimana',
+      },
       vsLastWeek: {
         one: '{count} parola rispetto alla settimana scorsa',
         other: '{count} parole rispetto alla settimana scorsa',
       },
-      days: { one: 'giorno di fila', other: 'giorni di fila' },
-      tasksDone: { one: '{count} completata', other: '{count} completate' },
+      days: {
+        one: 'giorno di fila',
+        other: 'giorni di fila',
+      },
+      tasksDone: {
+        one: '{count} completata',
+        other: '{count} completate',
+      },
     },
     activity: {
       title: 'Attività di scrittura',
       weekly: 'Parole a settimana',
       less: 'Meno',
       more: 'Più',
-      edits: { one: '{count} modifica', other: '{count} modifiche' },
-      words: { one: '{count} parola', other: '{count} parole' },
-      cell: { one: '{date}: {count} modifica', other: '{date}: {count} modifiche' },
+      edits: {
+        one: '{count} modifica',
+        other: '{count} modifiche',
+      },
+      words: {
+        one: '{count} parola',
+        other: '{count} parole',
+      },
+      cell: {
+        one: '{date}: {count} modifica',
+        other: '{date}: {count} modifiche',
+      },
       summary: {
         one: 'Scrittura in {count} giorno nelle ultime {weeks} settimane',
         other: 'Scrittura in {count} giorni nelle ultime {weeks} settimane',
@@ -685,16 +743,60 @@ const it: Messages = {
       folders: 'Cartelle più grandi',
       noTags: 'Aggiungi #tag alle note per vederli qui.',
       noFolders: 'Le note nelle cartelle compaiono qui.',
-      notes: { one: '{count} nota', other: '{count} note' },
+      notes: {
+        one: '{count} nota',
+        other: '{count} note',
+      },
+      title: 'Tag e cartelle',
     },
     vault: {
       notSet: 'Non configurata',
       open: 'Aperta',
       locked: 'Bloccata',
       setUp: 'Configura',
-      entries: { one: '{count} voce', other: '{count} voci' },
+      entries: {
+        one: '{count} voce',
+        other: '{count} voci',
+      },
+    },
+    seeAll: 'Vedi tutto',
+    summary: {
+      doses: {
+        one: '{count} dose da prendere',
+        other: '{count} dosi da prendere',
+      },
+      habits: {
+        one: 'manca {count} abitudine',
+        other: 'mancano {count} abitudini',
+      },
+      timers: {
+        one: '{count} timer in corso',
+        other: '{count} timer in corso',
+      },
+      clear: 'Niente in sospeso. Un buon momento per annotare qualcosa.',
+    },
+    today: {
+      title: 'Oggi',
+      pending: {
+        one: '{count} cosa da fare',
+        other: '{count} cose da fare',
+      },
+      clear: 'Tutto fatto per oggi',
+      clearHint: 'Qui compaiono dosi, abitudini e timer in corso.',
+      medAt: 'Alle {time} · tra {span}',
+      habit: 'Tocca il cerchio quando fatto',
+    },
+    focus: {
+      title: 'Avvio rapido',
+      start: 'Concentrati',
+      running: 'Pomodoro in corso',
+      minutes: {
+        one: '{count} minuto di concentrazione oggi',
+        other: '{count} minuti di concentrazione oggi',
+      },
     },
   },
+
   blocks: {
     text: 'Testo',
     h1: 'Titolo 1',
@@ -721,6 +823,7 @@ const it: Messages = {
     editSource: 'Modifica come markdown',
     hint: 'Digita / per i blocchi',
   },
+
   timers: {
     defaults: {
       quick: 'Veloce',
@@ -756,7 +859,8 @@ const it: Messages = {
     addMinute: 'Aggiungi un minuto',
     restart: 'Ricomincia',
     cancel: 'Annulla timer',
-    about: 'Tocca un timer per avviarlo. Aggiungi i tuoi e trascinali nell’ordine che preferisci.',
+    about:
+      'Conti alla rovescia da avviare con un tocco. Aggiungi i tuoi e trascinali nell’ordine che preferisci.',
     quickPlaceholder: '10, 1h30, 5:00…',
     quickLabel: 'Avvia un timer di… (minuti, o es. 1h30, 90s, 5:00)',
     start: 'Avvia',
@@ -768,8 +872,22 @@ const it: Messages = {
     dragToReorder: 'Trascina per riordinare',
     presetActions: 'Azioni del timer',
     presetDeleted: 'Timer eliminato.',
-    moreRinging: { one: '…e altro {count}', other: '…e altri {count}' },
+    moreRinging: {
+      one: '…e altro {count}',
+      other: '…e altri {count}',
+    },
+    tabs: {
+      alarms: 'Sveglie',
+      pomodoro: 'Pomodoro',
+      stopwatch: 'Cronometro',
+    },
+    previewNamed: 'Ascolta {name}',
+    hours: 'Ore',
+    minutes: 'Minuti',
+    seconds: 'Secondi',
+    deletePresetTitle: 'Eliminare “{label}”?',
   },
+
   sounds: {
     classic: 'Bip classico',
     bell: 'Campana',
@@ -799,7 +917,10 @@ const it: Messages = {
     speed: 'Durata delle note · {ms} ms',
     pause: 'Pausa tra le ripetizioni · {ms} ms',
     volume: 'Volume',
+    deleteTitle: 'Eliminare “{name}”?',
+    deleteBody: 'I timer che lo usano suoneranno il suono predefinito.',
   },
+
   meds: {
     about: 'Registra ogni dose con un tocco; la successiva si calcola dall’ultima presa.',
     add: 'Aggiungi farmaco',
@@ -835,7 +956,10 @@ const it: Messages = {
     today: 'Oggi',
     lastWeek: 'Ultimi sette giorni',
     everyN: 'Ogni {hours} h',
-    left: { one: 'resta {count} dose', other: 'restano {count} dosi' },
+    left: {
+      one: 'resta {count} dose',
+      other: 'restano {count} dosi',
+    },
     state: {
       first: 'Tocca “Presa” alla prima dose',
       paused: 'Promemoria sospesi',
@@ -854,7 +978,30 @@ const it: Messages = {
     },
     notifyBody: 'Dose: {dose}. Apri Noter e tocca Presa.',
     notifyBodyPlain: 'Apri Noter e tocca Presa.',
+    logged: '{name}: dose registrata',
+    deleteTitle: 'Eliminare “{name}”?',
+    deleteBody: 'Viene eliminata anche la cronologia delle dosi. Sospendi i promemoria per conservarla.',
+    confirm: {
+      title: 'Già un’altra dose di {name}?',
+      body: 'È prima del previsto. Controlla prima di registrarla.',
+      schedule: {
+        one: 'Schema: ogni {hours} h ({count} dose al giorno)',
+        other: 'Schema: ogni {hours} h ({count} dosi al giorno)',
+      },
+      recent: {
+        one: 'Già presa: {count} dose nelle ultime {hours} h',
+        other: 'Già prese: {count} dosi nelle ultime {hours} h',
+      },
+      next: 'Prossima dose alle {time}, tra {span}',
+      today: {
+        one: 'Oggi: già presa {count} dose su {max}',
+        other: 'Oggi: già prese {count} dosi su {max}',
+      },
+      anyway: 'Registra comunque',
+      cancel: 'Non registrare',
+    },
   },
+
   vault: {
     setupTitle: 'Configura la cassaforte',
     setupBody:
@@ -944,6 +1091,202 @@ const it: Messages = {
     deleted: 'Voce eliminata.',
     passwordChanged: 'Password principale modificata.',
     destroyed: 'La cassaforte è stata eliminata.',
+  },
+
+  pomodoro: {
+    title: 'Pomodoro',
+    about: 'Concentrati a blocchi con brevi pause tra uno e l’altro, e una più lunga ogni qualche giro.',
+    next: 'Avanti',
+    phase: {
+      focus: 'Concentrazione',
+      short: 'Pausa breve',
+      long: 'Pausa lunga',
+    },
+    start: {
+      focus: 'Concentrati',
+      short: 'Fai una pausa breve',
+      long: 'Fai una pausa lunga',
+    },
+    session: 'Giro {n} di {total}',
+    reset: 'Azzera',
+    skip: 'Passa alla fase successiva',
+    lengths: '{focus} · {short} · {long} min',
+    today: 'Concentrazione oggi',
+    week: 'Ultimi 7 giorni',
+    sessions: {
+      one: '{count} sessione completata',
+      other: '{count} sessioni completate',
+    },
+  },
+
+  stopwatch: {
+    about: 'Spazio avvia e ferma, L segna un giro. Continua anche se chiudi l’app.',
+    hint: 'Tocca Avvia, o la barra spaziatrice',
+    lap: 'Giro {n}',
+    lapAction: 'Giro',
+    reset: 'Azzera',
+    laps: 'Giri',
+    split: 'Tempo del giro',
+    total: 'Totale',
+    best: 'il più veloce',
+    worst: 'il più lento',
+  },
+
+  habits: {
+    about: 'Piccole cose che vuoi fare. Spuntale con un tocco e guarda crescere la serie.',
+    new: 'Nuova abitudine',
+    edit: 'Modifica abitudine',
+    empty: 'Ancora nessuna abitudine',
+    emptyBody:
+      'Acqua, una passeggiata, dieci pagine: aggiungi ciò che vuoi fare con regolarità e spuntalo ogni giorno.',
+    name: 'Nome',
+    namePlaceholder: 'es. Bere acqua, Leggere, Stretching',
+    icon: 'Icona e colore',
+    when: 'Quando',
+    schedule: {
+      daily: 'Ogni giorno',
+      weekdays: 'Alcuni giorni',
+      perWeek: 'Volte a settimana',
+    },
+    perWeekShort: {
+      one: '{count} volta a settimana',
+      other: '{count} volte a settimana',
+    },
+    timesPerWeek: 'volte a settimana, in qualsiasi giorno',
+    target: 'Volte al giorno',
+    targetHint: 'Più di una per le cose che conti, come i bicchieri d’acqua.',
+    remind: 'Ricordamelo se non è fatto entro le',
+    done: 'Fatto',
+    notDone: 'non fatto',
+    doneNamed: '{name}: fatto — tocca per annullare',
+    checkNamed: 'Segna {name} come fatto',
+    undoOne: 'Uno in meno',
+    archive: 'Archivia',
+    unarchive: 'Ripristina',
+    archived: {
+      one: '{count} abitudine archiviata',
+      other: '{count} abitudini archiviate',
+    },
+    actions: 'Azioni dell’abitudine',
+    thisWeek: 'Questa settimana',
+    today: 'Oggi',
+    todayHint: 'Abitudini di oggi',
+    allDone: 'Tutto fatto per oggi',
+    left: {
+      one: 'manca {count} abitudine',
+      other: 'mancano {count} abitudini',
+    },
+    history: 'Le ultime 17 settimane',
+    current: 'Serie attuale',
+    best: 'Serie migliore',
+    last30: 'Ultimi 30 giorni',
+    bestStreak: {
+      one: 'Record: {count}',
+      other: 'Record: {count}',
+    },
+    streakDays: {
+      one: '{count} giorno',
+      other: '{count} giorni',
+    },
+    streakWeeks: {
+      one: '{count} settimana',
+      other: '{count} settimane',
+    },
+    alert: 'È ora di: {name}',
+    notifyBody: 'Apri Noter e spuntala.',
+    deleteTitle: 'Eliminare “{name}”?',
+    deleteBody: 'Se ne va anche tutta la cronologia. Archiviala per conservarla.',
+    deleted: 'Abitudine eliminata.',
+  },
+
+  updates: {
+    title: 'Aggiornamenti',
+    check: 'Cerca aggiornamenti',
+    checking: 'Ricerca…',
+    current: 'Hai l’ultima versione.',
+    available: 'Noter {version} è disponibile',
+    availableWeb: 'Una nuova versione di Noter è pronta',
+    ready: 'Aggiornamento installato',
+    failed: 'Impossibile cercare aggiornamenti. Riprova più tardi.',
+    store: 'Il Microsoft Store tiene aggiornata questa copia.',
+    auto: 'Cerca automaticamente all’avvio di Noter',
+    installHint: 'Si scarica in background; le tue note restano come sono.',
+    downloadHint: 'Scaricala dalla pagina della versione e installala sopra questa.',
+    install: 'Aggiorna ora',
+    download: 'Scarica',
+    reload: 'Ricarica',
+    restart: 'Riavvia ora',
+    later: 'Più tardi',
+    skip: 'Salta questa versione',
+    how: {
+      web: 'L’app web si aggiorna da sola; chiede prima di ricaricare.',
+      store: 'Installata dal Microsoft Store, che installa gli aggiornamenti per te.',
+      installer: 'Noter scarica e installa da solo le nuove versioni.',
+      appimage: 'Noter scarica e installa da solo le nuove versioni.',
+      'system-package':
+        'Installata come pacchetto di sistema. Noter ti avvisa quando esce una nuova versione.',
+      android: 'Noter ti avvisa quando esce una nuova versione e ti porta al download.',
+    },
+  },
+
+  tour: {
+    invite: {
+      title: 'Sei nuovo? Fai il tour di due minuti',
+      body: 'Uno sguardo rapido a note, timer, abitudini, farmaci e cassaforte.',
+      start: 'Mostrami',
+    },
+    settingsTitle: 'Tour di benvenuto',
+    settingsHint: 'Rivedi cosa fa ogni parte di Noter.',
+    progress: 'Passo {n} di {total}',
+    skip: 'Salta',
+    back: 'Indietro',
+    next: 'Avanti',
+    start: 'Andiamo',
+    finish: 'Inizia a usare Noter',
+    welcome: {
+      title: 'Benvenuto in Noter',
+      body: 'Le tue note, timer, abitudini, farmaci e password, tutto su questo dispositivo. Nulla esce da qui se non lo esporti.',
+    },
+    nav: {
+      title: 'Tutto a un clic',
+      body: 'Ogni area ha il suo posto qui. Ctrl/⌘ + 1…6 ti porta direttamente.',
+    },
+    home: {
+      title: 'La Home è la tua giornata a colpo d’occhio',
+      body: 'Da qui crei una nota, apri la nota di oggi o una sessione di concentrazione. “Oggi” elenca dosi, abitudini e timer da gestire subito.',
+    },
+    customize: {
+      title: 'Rendi tua la Home',
+      body: 'Scegli quali blocchi mostrare e in che ordine. Il layout si riordina da solo, senza buchi.',
+    },
+    notes: {
+      title: 'Note fatte di blocchi',
+      body: 'Digita / in una nota per liste, bacheche, gallerie e codice. Collega le note con [[doppie parentesi]] e aggiungi #tag.',
+    },
+    timers: {
+      title: 'Sveglie, Pomodoro e cronometro',
+      body: 'Conti alla rovescia con un tocco e suoni da ascoltare prima, sessioni di concentrazione con pause e un cronometro con giri.',
+    },
+    habits: {
+      title: 'Crea abitudini, mantieni la serie',
+      body: 'Ogni giorno, alcuni giorni o tot volte a settimana. Spuntale e guarda crescere serie e cronologia.',
+    },
+    meds: {
+      title: 'Non perdere mai il conto di una dose',
+      body: 'Registra ogni dose con un tocco. Noter ti ricorda la prossima e chiede conferma prima di registrarne una troppo presto.',
+    },
+    vault: {
+      title: 'Una cassaforte per i tuoi segreti',
+      body: 'Password, carte e note private, cifrate con una password principale che conosci solo tu.',
+    },
+    search: {
+      title: 'Trova qualsiasi cosa',
+      body: 'Ctrl/⌘ + K cerca in tutte le note ed esegue qualsiasi comando, anche questo tour.',
+    },
+    done: {
+      title: 'Tutto pronto',
+      body: 'Inizia con una nota, un’abitudine o un timer. Puoi rivedere il tour dalle Impostazioni quando vuoi.',
+    },
   },
 }
 

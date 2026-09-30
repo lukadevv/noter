@@ -1,5 +1,5 @@
 import { shortId } from '$lib/utils/uuid'
-import type { Section } from '../../routes/router'
+import type { Section, TimerTab } from '../../routes/router'
 
 export type Pane = 'folders' | 'list' | 'note'
 
@@ -19,6 +19,10 @@ class UiStore {
   section = $state<Section | 'settings'>('home')
   /** The settings page's open section id, e.g. 'appearance'. */
   settingsSection = $state<string | null>(null)
+  /** The open tab of the timers section. */
+  timersTab = $state<TimerTab>('alarms')
+  /** The welcome tour is running. */
+  tourOpen = $state(false)
   /** Which pane is visible on narrow screens. Ignored on wide layouts. */
   pane = $state<Pane>('list')
   narrow = $state(false)

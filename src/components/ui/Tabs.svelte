@@ -5,8 +5,8 @@
     value: T
     label: string
     icon?: string
-    /** A small count or dot next to the label. */
-    badge?: string | number | null
+    /** A count next to the label, or `true` for a "something is running" dot. */
+    badge?: string | number | boolean | null
   }
 
   interface Props {
@@ -88,7 +88,10 @@
     >
       {#if tab.icon}<Icon name={tab.icon} size={15} />{/if}
       <span>{tab.label}</span>
-      {#if tab.badge != null && tab.badge !== ''}<span class="badge">{tab.badge}</span>{/if}
+      {#if tab.badge === true}<span class="live" aria-hidden="true"></span>
+      {:else if tab.badge != null && tab.badge !== false && tab.badge !== ''}<span class="badge"
+          >{tab.badge}</span
+        >{/if}
     </button>
   {/each}
 </div>
@@ -156,6 +159,20 @@
 
   .tab:active {
     transform: scale(0.97);
+  }
+
+  .live {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--ok);
+    animation: live 1.6s var(--ease-in-out) infinite;
+  }
+
+  @keyframes live {
+    50% {
+      opacity: 0.35;
+    }
   }
 
   .badge {

@@ -39,7 +39,7 @@
   let hover = $state<number | null>(null)
 
   let points = $derived.by(() => {
-    if (series.length < 2) return []
+    if (series.length < 2 || series.every((v) => v === 0)) return []
     const max = Math.max(1, ...series)
     const step = W / (series.length - 1)
     // 2px of headroom so the line and its end dot are never clipped.

@@ -74,7 +74,7 @@ test.describe('home dashboard', () => {
     await expect(page.getByTestId('home-timers')).toBeVisible()
 
     await page.getByTestId('customize-home').click()
-    await page.getByTestId('widget-timers').uncheck()
+    await page.getByTestId('widget-focus').uncheck()
     await page.getByTestId('nav-home').click()
     await expect(page.getByTestId('home')).toBeVisible()
     await expect(page.getByTestId('home-timers')).toHaveCount(0)

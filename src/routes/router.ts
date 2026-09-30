@@ -5,13 +5,18 @@
  */
 
 /** The top-level areas of the app, one per entry in the navigation rail. */
-export type Section = 'home' | 'notes' | 'vault' | 'meds' | 'timers'
+export type Section = 'home' | 'notes' | 'vault' | 'meds' | 'timers' | 'habits'
+
+/** The tabs of the timers section. */
+export const TIMER_TABS = ['alarms', 'pomodoro', 'stopwatch'] as const
+export type TimerTab = (typeof TIMER_TABS)[number]
 
 export type Route =
   | { kind: 'home' }
   | { kind: 'vault' }
   | { kind: 'meds' }
-  | { kind: 'timers' }
+  | { kind: 'timers'; tab?: TimerTab }
+  | { kind: 'habits' }
   | { kind: 'notes'; folderId: string | null; noteId: string | null }
   | { kind: 'trash'; noteId: string | null }
   | { kind: 'archive'; noteId: string | null }
@@ -33,6 +38,7 @@ export function sectionOf(route: Route): Section | null {
     case 'vault':
     case 'meds':
     case 'timers':
+    case 'habits':
       return route.kind
     case 'settings':
     case 'share':
@@ -62,8 +68,12 @@ export function parseHash(hash: string): Route {
       return ALL_NOTES
     case 'vault':
     case 'meds':
-    case 'timers':
+    case 'habits':
       return { kind: head }
+    case 'timers': {
+      const tab = TIMER_TABS.find((t) => t === rest[0])
+      return tab ? { kind: 'timers', tab } : { kind: 'timers' }
+    }
     case 'f': {
       const folderId = rest[0] ?? null
       const noteId = rest[1] === 'n' ? (rest[2] ?? null) : null
@@ -97,8 +107,10 @@ export function formatRoute(route: Route): string {
       return '#/'
     case 'vault':
     case 'meds':
-    case 'timers':
+    case 'habits':
       return `#/${route.kind}`
+    case 'timers':
+      return route.tab ? `#/timers/${route.tab}` : '#/timers'
     case 'notes': {
       const parts: string[] = []
       if (route.folderId) parts.push('f', enc(route.folderId))

@@ -17,6 +17,7 @@ export function goTo(section: Section): void {
     vault: { kind: 'vault' },
     meds: { kind: 'meds' },
     timers: { kind: 'timers' },
+    habits: { kind: 'habits' },
   }
   navigate(routes[section])
 }

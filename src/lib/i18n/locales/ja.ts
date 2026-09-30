@@ -2,7 +2,10 @@ import type { Messages } from '../index.svelte'
 
 /** Japanese. `Intl.PluralRules` reports a single `other` category. */
 const ja: Messages = {
-  app: { name: 'Noter', tagline: 'オフラインでも使えるローカルなノート' },
+  app: {
+    name: 'Noter',
+    tagline: 'オフラインでも使えるローカルなノート',
+  },
 
   common: {
     dismiss: '閉じる',
@@ -160,7 +163,9 @@ const ja: Messages = {
     tagsHint: 'タグ',
   },
 
-  backlinks: { other: '{count} 件のノートがここにリンクしています' },
+  backlinks: {
+    other: '{count} 件のノートがここにリンクしています',
+  },
 
   actions: {
     newNote: '新しいノート',
@@ -196,6 +201,10 @@ const ja: Messages = {
     goMeds: '服薬へ',
     goVault: '金庫へ',
     lockVault: '金庫をロック',
+    goHabits: '習慣へ移動',
+    startFocus: '集中セッションを始める',
+    openStopwatch: 'ストップウォッチを開く',
+    tour: 'ツアーを見る',
   },
 
   settings: {
@@ -209,14 +218,22 @@ const ja: Messages = {
     customThemeHint: '組み込みテーマをカスタマイズすると複製が保存され、元のテーマはそのまま残ります。',
     custom: '（カスタム）',
     density: '密度',
-    densities: { compact: 'コンパクト', cozy: '標準', comfortable: 'ゆったり' },
+    densities: {
+      compact: 'コンパクト',
+      cozy: '標準',
+      comfortable: 'ゆったり',
+    },
     font: 'インターフェースのフォント',
-    fonts: { system: 'システム', sans: 'ゴシック', serif: '明朝', mono: '等幅' },
+    fonts: {
+      system: 'システム',
+      sans: 'ゴシック',
+      serif: '明朝',
+      mono: '等幅',
+    },
     editorTextSize: 'エディタの文字サイズ · {size}px',
     cornerRoundness: '角の丸み',
     reduceMotion: 'アニメーションを減らす',
     lineNumbers: 'エディタに行番号を表示',
-
     daily: {
       title: 'デイリーノート',
       about:
@@ -231,12 +248,13 @@ const ja: Messages = {
       homeAlert: 'ホームで今日のノートを書くよう通知',
       homeAlertHint: '書き込むか、今日は非表示にするまで表示されます。',
     },
-
     storage: {
       title: 'ストレージ',
       used: '{used} 使用中',
       available: '· {total} 利用可能',
-      images: { other: '画像 {count} 件 · {size}' },
+      images: {
+        other: '画像 {count} 件 · {size}',
+      },
       persistent: 'ストレージは永続的です。ブラウザが空き容量のためにノートを消すことはありません。',
       notPersistent:
         'ストレージは永続的ではありません。空き容量が減るとブラウザが消すことがあり、Safari は7日間アクセスがないと消します。定期的にバックアップを書き出してください。',
@@ -244,7 +262,6 @@ const ja: Messages = {
       cleanUp: '未使用の画像を整理',
       unsupported: 'このブラウザはストレージ使用量を報告しません。',
     },
-
     backup: {
       title: 'バックアップと移行',
       about:
@@ -270,7 +287,6 @@ const ja: Messages = {
       restore: '復元',
       restoring: '復元中…',
     },
-
     auto: {
       title: '自動バックアップ',
       about:
@@ -281,7 +297,12 @@ const ja: Messages = {
       writing: '書き込み中…',
       forget: '解除',
       frequency: '頻度',
-      frequencies: { off: 'オフ', manual: '手動', daily: '毎日', weekly: '毎週' },
+      frequencies: {
+        off: 'オフ',
+        manual: '手動',
+        daily: '毎日',
+        weekly: '毎週',
+      },
       lastBackup: '前回のバックアップ: {date}',
       never: 'まだバックアップは作られていません。',
       unsupported:
@@ -343,6 +364,11 @@ const ja: Messages = {
       ringFor: '鳴り続ける時間',
       customSounds: 'あなたのサウンド',
       customSoundsHint: '自分だけのアラーム音を作成：音符、音色、リズムを選べます。',
+      pomodoroHint: '各フェーズの長さと、終わったときの動作。',
+      longEvery: '長い休憩の間隔',
+      autoStart: '次のフェーズを自動で開始',
+      autoStartHint: 'アラームの代わりに短いチャイムで切り替えを知らせます。',
+      pomodoroSound: 'ポモドーロの音',
     },
     notifications: {
       enable: '通知を表示',
@@ -364,12 +390,16 @@ const ja: Messages = {
       about: '放置された端末で開いたままにならないよう、金庫は自動で閉じます。',
       autoLock: '操作がないときにロック',
       autoLockHint: '金庫での最後の操作から数えます。',
-      minutes: { other: '{count} 分' },
+      minutes: {
+        other: '{count} 分',
+      },
       lockOnHide: 'アプリが隠れたらロック',
       lockOnHideHint: 'タブの切り替え、最小化、画面オフのとき。',
       clipboard: 'コピーした秘密を消去するまで',
       clipboardHint: 'パスワードやカード番号をクリップボードから消去します。',
-      seconds: { other: '{count} 秒' },
+      seconds: {
+        other: '{count} 秒',
+      },
       never: 'しない',
       masterPassword: 'マスターパスワード',
       change: 'マスターパスワードを変更',
@@ -378,7 +408,9 @@ const ja: Messages = {
       new: '新しいパスワード',
       delete: '金庫を削除',
       deleteHint: 'すべての項目とマスターパスワードを消去します。元に戻せません。',
-      deleteConfirm: { other: '{count} 件の項目を完全に消去します。' },
+      deleteConfirm: {
+        other: '{count} 件の項目を完全に消去します。',
+      },
       typeDelete: '確認のため「{word}」と入力',
       deleteWord: '削除',
     },
@@ -393,12 +425,13 @@ const ja: Messages = {
         stats: '数字の概要',
         activity: '執筆アクティビティ',
         calendar: 'デイリーノートのカレンダー',
-        meds: '服薬',
-        timers: 'タイマー',
         recent: '最近のノート',
         pinned: 'ピン留めしたノート',
         topics: 'タグとフォルダー',
         vault: '金庫',
+        today: '今日',
+        focus: 'クイックスタートと集中',
+        habits: '習慣',
       },
     },
   },
@@ -409,7 +442,10 @@ const ja: Messages = {
     copySuffix: '{name} のコピー',
     customTheme: 'カスタムテーマ',
     base: 'ベース',
-    modes: { light: 'ライト', dark: 'ダーク' },
+    modes: {
+      light: 'ライト',
+      dark: 'ダーク',
+    },
     accent: 'アクセント',
     accentHint: 'まず色、次に明度と彩度。',
     accentLightness: 'アクセントの明度',
@@ -500,7 +536,9 @@ const ja: Messages = {
       'ノート全体がリンクそのものに詰め込まれます。どこにもアップロードされず、リンクを開いた人が自分のブラウザで復号します。',
     noImages: '画像は共有されません。',
     noImagesBody: 'リンクが運ぶのはノートの文字だけです。',
-    imageCount: { other: 'このノートには画像が {count} 件ありますが、相手には表示されません。' },
+    imageCount: {
+      other: 'このノートには画像が {count} 件ありますが、相手には表示されません。',
+    },
     characters: '{count} 文字',
     tooLong: '{max} を超えています。アプリによっては途中で切られます。',
     warning: 'リンクを持っている人は誰でもこのノートを読めます。ノートそのものと同じ扱いをしてください。',
@@ -533,19 +571,31 @@ const ja: Messages = {
     notesDeleted: 'ノート {count} 件を完全に削除しました。',
     notesDeletedForGood: 'ノート {count} 件を完全に削除しました。',
     folderDeleted: 'フォルダを削除しました。',
-    folderDeletedWithNotes: { other: 'フォルダを削除し、ノート {count} 件をゴミ箱へ移動しました。' },
+    folderDeletedWithNotes: {
+      other: 'フォルダを削除し、ノート {count} 件をゴミ箱へ移動しました。',
+    },
     cannotNestInSelf: 'フォルダを自分自身の中へは移動できません。',
     searchSaved: '検索を保存しました。',
-    linksUpdated: { other: 'ノート {count} 件のリンクを更新しました。' },
+    linksUpdated: {
+      other: 'ノート {count} 件のリンクを更新しました。',
+    },
     templateSaved: 'テンプレートとして保存しました。',
     templateRemoved: 'テンプレートではなくなりました。',
-    trashPurged: { other: '保持期間30日を過ぎたノート {count} 件を削除しました。' },
+    trashPurged: {
+      other: '保持期間30日を過ぎたノート {count} 件を削除しました。',
+    },
     persistGranted: 'ストレージを永続として登録しました。',
     persistDenied: 'ブラウザに拒否されました。念のためバックアップの書き出しを続けてください。',
     noOrphanImages: '整理が必要な未使用画像はありません。',
-    orphanImagesRemoved: { other: '未使用の画像 {count} 件を削除しました。' },
-    notesEncrypted: { other: 'ノート {count} 件を暗号化しました。' },
-    notesDecrypted: { other: 'ノート {count} 件を復号しました。' },
+    orphanImagesRemoved: {
+      other: '未使用の画像 {count} 件を削除しました。',
+    },
+    notesEncrypted: {
+      other: 'ノート {count} 件を暗号化しました。',
+    },
+    notesDecrypted: {
+      other: 'ノート {count} 件を復号しました。',
+    },
     themeSaved: 'テーマを保存しました。',
     themeLoaded: 'テーマを読み込みました。保存すると残ります。',
     themeInvalid: 'このファイルは Noter のテーマではありません。',
@@ -576,7 +626,6 @@ const ja: Messages = {
     secretsSkipped: 'このバックアップの金庫項目は別の金庫のもののため、インポートされませんでした。',
   },
 
-  update: { ready: 'Noter の新しいバージョンがあります。今すぐ再読み込みしますか？' },
   menu: {
     moveTo: '移動先',
     markTemplate: 'テンプレートにする',
@@ -584,12 +633,15 @@ const ja: Messages = {
     showNotesTagged: '#{tag} のノートを表示',
     searchTag: 'このタグで検索',
   },
+
   nav: {
     main: 'メインナビゲーション',
     home: 'ホーム',
     notes: 'ノート',
     search: '検索',
-    alerts: { other: '{count} 件のお知らせ' },
+    alerts: {
+      other: '{count} 件のお知らせ',
+    },
     resizeSidebar: 'フォルダバーの幅を変更',
     resizeList: 'ノート一覧の幅を変更',
     collapseSidebar: 'フォルダを隠す',
@@ -597,7 +649,9 @@ const ja: Messages = {
     timers: 'タイマー',
     meds: '服薬',
     vault: '金庫',
+    habits: '習慣',
   },
+
   home: {
     greeting: {
       night: 'まだ起きていますか？',
@@ -610,7 +664,6 @@ const ja: Messages = {
     noNotes: 'まだ何も書かれていません。新しいノートから始めましょう。',
     customize: 'カスタマイズ',
     pinned: 'ピン留め',
-    medsEmpty: '薬は登録されていません。',
     weekOf: '{date} の週',
     daily: {
       title: '今日のノートはまだ空です',
@@ -624,20 +677,36 @@ const ja: Messages = {
       thisWeek: '書き始めると増えていきます',
       streak: '連続記録',
       tasks: '未完了のタスク',
-      createdThisWeek: { other: '今週 {count} 件追加' },
-      vsLastWeek: { other: '先週比 {count} 語' },
-      days: { other: '日連続' },
-      tasksDone: { other: '{count} 件完了' },
+      createdThisWeek: {
+        other: '今週 {count} 件追加',
+      },
+      vsLastWeek: {
+        other: '先週比 {count} 語',
+      },
+      days: {
+        other: '日連続',
+      },
+      tasksDone: {
+        other: '{count} 件完了',
+      },
     },
     activity: {
       title: '執筆アクティビティ',
       weekly: '週ごとの単語数',
       less: '少',
       more: '多',
-      edits: { other: '{count} 回編集' },
-      words: { other: '{count} 語' },
-      cell: { other: '{date}：{count} 回編集' },
-      summary: { other: '過去 {weeks} 週間のうち {count} 日執筆' },
+      edits: {
+        other: '{count} 回編集',
+      },
+      words: {
+        other: '{count} 語',
+      },
+      cell: {
+        other: '{date}：{count} 回編集',
+      },
+      summary: {
+        other: '過去 {weeks} 週間のうち {count} 日執筆',
+      },
     },
     calendar: {
       title: 'デイリーノート',
@@ -650,16 +719,53 @@ const ja: Messages = {
       folders: '大きいフォルダー',
       noTags: 'ノートに #タグ を付けるとここに表示されます。',
       noFolders: 'フォルダー内のノートがここに表示されます。',
-      notes: { other: '{count} 件のノート' },
+      notes: {
+        other: '{count} 件のノート',
+      },
+      title: 'タグとフォルダー',
     },
     vault: {
       notSet: '未設定',
       open: '開いています',
       locked: 'ロック中',
       setUp: '設定する',
-      entries: { other: '{count} 件' },
+      entries: {
+        other: '{count} 件',
+      },
+    },
+    seeAll: 'すべて表示',
+    summary: {
+      doses: {
+        other: '服用予定 {count} 回',
+      },
+      habits: {
+        other: '残りの習慣 {count} 件',
+      },
+      timers: {
+        other: 'タイマー {count} 件が作動中',
+      },
+      clear: 'やることはありません。何か書き留めるのに良いタイミングです。',
+    },
+    today: {
+      title: '今日',
+      pending: {
+        other: 'やること {count} 件',
+      },
+      clear: '今日はすべて完了',
+      clearHint: '服用、習慣、作動中のタイマーがここに表示されます。',
+      medAt: '{time} · あと {span}',
+      habit: '終わったら丸をタップ',
+    },
+    focus: {
+      title: 'クイックスタート',
+      start: '集中を始める',
+      running: 'ポモドーロ実行中',
+      minutes: {
+        other: '今日の集中 {count} 分',
+      },
     },
   },
+
   blocks: {
     text: 'テキスト',
     h1: '見出し 1',
@@ -686,6 +792,7 @@ const ja: Messages = {
     editSource: 'Markdown で編集',
     hint: '/ でブロックを挿入',
   },
+
   timers: {
     defaults: {
       quick: 'クイック',
@@ -721,7 +828,7 @@ const ja: Messages = {
     addMinute: '1 分追加',
     restart: '最初から',
     cancel: 'タイマーを取り消す',
-    about: 'タイマーをタップして開始。自分用を追加して好きな順に並べ替えられます。',
+    about: 'ワンタップで始められるカウントダウン。自分用を追加して、好きな順にドラッグで並べ替えできます。',
     quickPlaceholder: '10、1h30、5:00…',
     quickLabel: 'タイマーを開始…（分、または 1h30・90s・5:00 など）',
     start: '開始',
@@ -733,8 +840,21 @@ const ja: Messages = {
     dragToReorder: 'ドラッグで並べ替え',
     presetActions: 'タイマーの操作',
     presetDeleted: 'タイマーを削除しました。',
-    moreRinging: { other: '…ほか {count} 件' },
+    moreRinging: {
+      other: '…ほか {count} 件',
+    },
+    tabs: {
+      alarms: 'アラーム',
+      pomodoro: 'ポモドーロ',
+      stopwatch: 'ストップウォッチ',
+    },
+    previewNamed: '{name} を再生',
+    hours: '時間',
+    minutes: '分',
+    seconds: '秒',
+    deletePresetTitle: '「{label}」を削除しますか？',
   },
+
   sounds: {
     classic: 'クラシックビープ',
     bell: 'ベル',
@@ -764,7 +884,10 @@ const ja: Messages = {
     speed: '音の長さ · {ms} ms',
     pause: '繰り返しの間隔 · {ms} ms',
     volume: '音量',
+    deleteTitle: '「{name}」を削除しますか？',
+    deleteBody: 'この音を使うタイマーは既定の音で鳴ります。',
   },
+
   meds: {
     about: 'ワンタップで服用を記録。次回は最後に服用した時刻から計算されます。',
     add: '薬を追加',
@@ -800,7 +923,9 @@ const ja: Messages = {
     today: '今日',
     lastWeek: '過去 7 日間',
     everyN: '{hours} 時間ごと',
-    left: { other: '残り {count} 回' },
+    left: {
+      other: '残り {count} 回',
+    },
     state: {
       first: '最初の服用時に「服用済み」をタップ',
       paused: '通知を一時停止中',
@@ -812,11 +937,33 @@ const ja: Messages = {
       soon: '{name}：次の服用まで {span}',
       due: '{name} の時間です',
       overdue: '{name} が {span} 遅れています',
-      lowStock: { other: '{name} が残りわずかです：残り {count} 回' },
+      lowStock: {
+        other: '{name} が残りわずかです：残り {count} 回',
+      },
     },
     notifyBody: '用量：{dose}。Noter を開いて「服用済み」をタップ。',
     notifyBodyPlain: 'Noter を開いて「服用済み」をタップ。',
+    logged: '{name}: 服用を記録しました',
+    deleteTitle: '「{name}」を削除しますか？',
+    deleteBody: '服用履歴も削除されます。残すには通知を一時停止してください。',
+    confirm: {
+      title: '{name} をもう一度服用しますか？',
+      body: '予定より早い服用です。記録する前に確認してください。',
+      schedule: {
+        other: '予定: {hours} 時間ごと（1 日 {count} 回）',
+      },
+      recent: {
+        other: '服用済み: 直近 {hours} 時間で {count} 回',
+      },
+      next: '次回は {time}（あと {span}）',
+      today: {
+        other: '今日: {max} 回中 {count} 回服用済み',
+      },
+      anyway: 'それでも記録する',
+      cancel: '記録しない',
+    },
   },
+
   vault: {
     setupTitle: '金庫を設定',
     setupBody:
@@ -882,7 +1029,9 @@ const ja: Messages = {
     generate: 'パスワードを生成',
     regenerate: '別の候補',
     length: '長さ {length}',
-    count: { other: '{count} 件の項目（この端末で暗号化）' },
+    count: {
+      other: '{count} 件の項目（この端末で暗号化）',
+    },
     empty: '金庫は空です',
     emptyBody: 'ログインやカードなど、パスワードで守りたいものを追加しましょう。',
     search: '金庫を検索',
@@ -903,6 +1052,194 @@ const ja: Messages = {
     deleted: '項目を削除しました。',
     passwordChanged: 'マスターパスワードを変更しました。',
     destroyed: '金庫を削除しました。',
+  },
+
+  pomodoro: {
+    title: 'ポモドーロ',
+    about: '短い休憩を挟みながらブロック単位で集中し、数ラウンドごとに長めの休憩を取ります。',
+    next: '次へ',
+    phase: {
+      focus: '集中',
+      short: '短い休憩',
+      long: '長い休憩',
+    },
+    start: {
+      focus: '集中を始める',
+      short: '短い休憩を取る',
+      long: '長い休憩を取る',
+    },
+    session: 'ラウンド {n} / {total}',
+    reset: 'リセット',
+    skip: '次のフェーズへスキップ',
+    lengths: '{focus} · {short} · {long} 分',
+    today: '今日の集中',
+    week: '過去 7 日間',
+    sessions: {
+      other: '{count} セッション完了',
+    },
+  },
+
+  stopwatch: {
+    about: 'スペースで開始・停止、L でラップを記録。アプリを閉じても計測は続きます。',
+    hint: '開始をタップするか、スペースキーを押します',
+    lap: 'ラップ {n}',
+    lapAction: 'ラップ',
+    reset: 'リセット',
+    laps: 'ラップ',
+    split: 'ラップタイム',
+    total: '合計',
+    best: '最速',
+    worst: '最遅',
+  },
+
+  habits: {
+    about: '続けたい小さなこと。タップでチェックして、連続記録が伸びるのを見ましょう。',
+    new: '新しい習慣',
+    edit: '習慣を編集',
+    empty: '習慣はまだありません',
+    emptyBody: '水を飲む、散歩、10 ページ読む。続けたいことを追加して毎日チェックしましょう。',
+    name: '名前',
+    namePlaceholder: '例: 水を飲む、読書、ストレッチ',
+    icon: 'アイコンと色',
+    when: 'いつ',
+    schedule: {
+      daily: '毎日',
+      weekdays: '特定の曜日',
+      perWeek: '週に回数',
+    },
+    perWeekShort: {
+      other: '週 {count} 回',
+    },
+    timesPerWeek: '回 / 週（曜日は自由）',
+    target: '1 日の回数',
+    targetHint: '水の杯数など、数えるものは 2 以上に。',
+    remind: 'この時刻までに未完了なら通知',
+    done: '完了',
+    notDone: '未完了',
+    doneNamed: '{name}: 完了 — タップで取り消し',
+    checkNamed: '{name} を完了にする',
+    undoOne: '1 つ減らす',
+    archive: 'アーカイブ',
+    unarchive: '元に戻す',
+    archived: {
+      other: 'アーカイブ済みの習慣 {count} 件',
+    },
+    actions: '習慣の操作',
+    thisWeek: '今週',
+    today: '今日',
+    todayHint: '今日の習慣',
+    allDone: '今日はすべて完了',
+    left: {
+      other: '残り {count} 件',
+    },
+    history: '過去 17 週間',
+    current: '現在の連続記録',
+    best: '最長記録',
+    last30: '過去 30 日間',
+    bestStreak: {
+      other: '最長: {count}',
+    },
+    streakDays: {
+      other: '{count} 日',
+    },
+    streakWeeks: {
+      other: '{count} 週',
+    },
+    alert: '{name} の時間です',
+    notifyBody: 'Noter を開いてチェックしましょう。',
+    deleteTitle: '「{name}」を削除しますか？',
+    deleteBody: '履歴もすべて削除されます。記録を残すにはアーカイブしてください。',
+    deleted: '習慣を削除しました。',
+  },
+
+  updates: {
+    title: 'アップデート',
+    check: 'アップデートを確認',
+    checking: '確認中…',
+    current: '最新バージョンです。',
+    available: 'Noter {version} が利用可能です',
+    availableWeb: 'Noter の新しいバージョンの準備ができました',
+    ready: 'アップデートをインストールしました',
+    failed: 'アップデートを確認できませんでした。後でもう一度お試しください。',
+    store: 'このコピーは Microsoft Store が最新に保ちます。',
+    auto: 'Noter 起動時に自動で確認',
+    installHint: 'バックグラウンドでダウンロードされ、ノートはそのままです。',
+    downloadHint: 'リリースページからダウンロードして、上書きインストールしてください。',
+    install: '今すぐ更新',
+    download: 'ダウンロード',
+    reload: '再読み込み',
+    restart: '今すぐ再起動',
+    later: '後で',
+    skip: 'このバージョンをスキップ',
+    how: {
+      web: 'Web アプリは自動で更新され、再読み込みの前に確認します。',
+      store: 'Microsoft Store からインストールされており、更新は Store が行います。',
+      installer: 'Noter が新しいバージョンを自動でダウンロード・インストールします。',
+      appimage: 'Noter が新しいバージョンを自動でダウンロード・インストールします。',
+      'system-package':
+        'システムパッケージとしてインストールされています。新しいバージョンが出るとお知らせします。',
+      android: '新しいバージョンが出るとお知らせし、ダウンロード先を案内します。',
+    },
+  },
+
+  tour: {
+    invite: {
+      title: 'はじめてですか？ 2 分のツアーをどうぞ',
+      body: 'ノート、タイマー、習慣、服薬、保管庫をさっと紹介します。',
+      start: '見てみる',
+    },
+    settingsTitle: 'ウェルカムツアー',
+    settingsHint: 'Noter の各機能をもう一度見て回ります。',
+    progress: 'ステップ {n} / {total}',
+    skip: 'スキップ',
+    back: '戻る',
+    next: '次へ',
+    start: '始める',
+    finish: 'Noter を使い始める',
+    welcome: {
+      title: 'Noter へようこそ',
+      body: 'ノート、タイマー、習慣、服薬、パスワードをすべてこのデバイスに。エクスポートしない限り外には出ません。',
+    },
+    nav: {
+      title: 'すべてワンクリック',
+      body: '各エリアはここにあります。Ctrl/⌘ + 1…6 で直接移動できます。',
+    },
+    home: {
+      title: 'ホームで一日をひと目で',
+      body: 'ここからノートの作成、今日のノート、集中セッションを開始できます。「今日」には服用、習慣、タイマーがまとめて表示されます。',
+    },
+    customize: {
+      title: 'ホームを自分好みに',
+      body: '表示するブロックと順番を選べます。レイアウトは隙間なく自動で並びます。',
+    },
+    notes: {
+      title: 'ブロックで作るノート',
+      body: 'ノートで / を入力すると、チェックリスト、ボード、ギャラリー、コードを挿入できます。[[二重かっこ]] でリンク、#タグ で分類。',
+    },
+    timers: {
+      title: 'アラーム、ポモドーロ、ストップウォッチ',
+      body: '事前に試聴できる音付きのワンタップのカウントダウン、休憩付きの集中セッション、ラップ付きストップウォッチ。',
+    },
+    habits: {
+      title: '習慣を作り、連続記録を伸ばす',
+      body: '毎日、特定の曜日、または週に何回か。チェックして連続記録と履歴を育てましょう。',
+    },
+    meds: {
+      title: '服用を見失わない',
+      body: '服用はワンタップで記録。次の時間を知らせ、早すぎる記録の前には確認します。',
+    },
+    vault: {
+      title: '秘密のための保管庫',
+      body: 'パスワード、カード、プライベートなメモを、あなただけが知るマスターパスワードで暗号化します。',
+    },
+    search: {
+      title: '何でも見つかる',
+      body: 'Ctrl/⌘ + K ですべてのノートを検索し、このツアーを含むあらゆるコマンドを実行できます。',
+    },
+    done: {
+      title: '準備完了',
+      body: 'ノート、習慣、タイマーから始めましょう。ツアーは設定からいつでも見直せます。',
+    },
   },
 }
 

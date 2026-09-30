@@ -10,12 +10,14 @@
     /** Shown after the number, e.g. "min". */
     unit?: string
     testid?: string
+    onchange?: (value: number) => void
   }
 
-  let { value = $bindable(), min = 0, max = 999, step = 1, label, unit, testid }: Props = $props()
+  let { value = $bindable(), min = 0, max = 999, step = 1, label, unit, testid, onchange }: Props = $props()
 
   function set(next: number) {
     value = Math.min(max, Math.max(min, Number.isFinite(next) ? next : min))
+    onchange?.(value)
   }
 </script>
 

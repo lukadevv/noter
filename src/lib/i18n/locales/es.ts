@@ -201,6 +201,10 @@ const es: Messages = {
     goMeds: 'Ir a Medicación',
     goVault: 'Ir a la Bóveda',
     lockVault: 'Bloquear la bóveda',
+    goHabits: 'Ir a Hábitos',
+    startFocus: 'Empezar una sesión de foco',
+    openStopwatch: 'Abrir el cronómetro',
+    tour: 'Hacer el recorrido',
   },
 
   settings: {
@@ -214,14 +218,22 @@ const es: Messages = {
     customThemeHint: 'Personalizar un tema incluido guarda una copia, así el original sigue disponible.',
     custom: '(personalizado)',
     density: 'Densidad',
-    densities: { compact: 'Compacta', cozy: 'Normal', comfortable: 'Amplia' },
+    densities: {
+      compact: 'Compacta',
+      cozy: 'Normal',
+      comfortable: 'Amplia',
+    },
     font: 'Fuente de la interfaz',
-    fonts: { system: 'Sistema', sans: 'Sans', serif: 'Serif', mono: 'Mono' },
+    fonts: {
+      system: 'Sistema',
+      sans: 'Sans',
+      serif: 'Serif',
+      mono: 'Mono',
+    },
     editorTextSize: 'Tamaño del texto del editor · {size}px',
     cornerRoundness: 'Redondeo de esquinas',
     reduceMotion: 'Reducir el movimiento',
     lineNumbers: 'Mostrar números de línea en el editor',
-
     daily: {
       title: 'Notas diarias',
       about:
@@ -236,7 +248,6 @@ const es: Messages = {
       homeAlert: 'Recordarme en Inicio escribir la nota de hoy',
       homeAlertHint: 'Se muestra hasta que escribas en ella o la descartes por hoy.',
     },
-
     storage: {
       title: 'Almacenamiento',
       used: '{used} en uso',
@@ -253,7 +264,6 @@ const es: Messages = {
       cleanUp: 'Limpiar imágenes sin usar',
       unsupported: 'Este navegador no informa el uso de almacenamiento.',
     },
-
     backup: {
       title: 'Copias de seguridad y traslado',
       about:
@@ -280,7 +290,6 @@ const es: Messages = {
       restore: 'Restaurar',
       restoring: 'Restaurando…',
     },
-
     auto: {
       title: 'Copias automáticas',
       about:
@@ -291,7 +300,12 @@ const es: Messages = {
       writing: 'Escribiendo…',
       forget: 'Olvidar',
       frequency: 'Frecuencia',
-      frequencies: { off: 'Desactivadas', manual: 'Manual', daily: 'Diaria', weekly: 'Semanal' },
+      frequencies: {
+        off: 'Desactivadas',
+        manual: 'Manual',
+        daily: 'Diaria',
+        weekly: 'Semanal',
+      },
       lastBackup: 'Última copia: {date}.',
       never: 'Todavía no se escribió ninguna copia.',
       unsupported:
@@ -352,6 +366,11 @@ const es: Messages = {
       ringFor: 'Seguir sonando durante',
       customSounds: 'Tus sonidos',
       customSoundsHint: 'Diseñá tus propios pitidos: elegí las notas, el timbre y el ritmo.',
+      pomodoroHint: 'Cuánto dura cada fase y qué pasa cuando termina una.',
+      longEvery: 'Descanso largo cada',
+      autoStart: 'Empezar la siguiente fase sola',
+      autoStartHint: 'Un sonido corto marca el cambio en lugar de una alarma.',
+      pomodoroSound: 'Sonido del Pomodoro',
     },
     notifications: {
       enable: 'Mostrar notificaciones',
@@ -377,12 +396,18 @@ const es: Messages = {
       about: 'La bóveda se cierra sola para que un dispositivo desatendido no quede abierto.',
       autoLock: 'Bloquear tras inactividad',
       autoLockHint: 'Se cuenta desde tu última acción en la bóveda.',
-      minutes: { one: '{count} minuto', other: '{count} minutos' },
+      minutes: {
+        one: '{count} minuto',
+        other: '{count} minutos',
+      },
       lockOnHide: 'Bloquear al ocultar la app',
       lockOnHideHint: 'Al cambiar de pestaña, minimizar o apagar la pantalla.',
       clipboard: 'Limpiar secretos copiados tras',
       clipboardHint: 'Las contraseñas y números de tarjeta se borran del portapapeles.',
-      seconds: { one: '{count} segundo', other: '{count} segundos' },
+      seconds: {
+        one: '{count} segundo',
+        other: '{count} segundos',
+      },
       never: 'Nunca',
       masterPassword: 'Contraseña maestra',
       change: 'Cambiar contraseña maestra',
@@ -409,12 +434,13 @@ const es: Messages = {
         stats: 'Números de un vistazo',
         activity: 'Actividad de escritura',
         calendar: 'Calendario de notas diarias',
-        meds: 'Medicación',
-        timers: 'Temporizadores',
         recent: 'Notas recientes',
         pinned: 'Notas fijadas',
         topics: 'Etiquetas y carpetas',
         vault: 'Bóveda',
+        today: 'Hoy',
+        focus: 'Inicio rápido y foco',
+        habits: 'Hábitos',
       },
     },
   },
@@ -425,7 +451,10 @@ const es: Messages = {
     copySuffix: 'copia de {name}',
     customTheme: 'Tema personalizado',
     base: 'Base',
-    modes: { light: 'Claro', dark: 'Oscuro' },
+    modes: {
+      light: 'Claro',
+      dark: 'Oscuro',
+    },
     accent: 'Acento',
     accentHint: 'Color, después luminosidad y saturación.',
     accentLightness: 'Luminosidad del acento',
@@ -612,9 +641,6 @@ const es: Messages = {
     secretsSkipped: 'Las entradas de bóveda de esta copia pertenecen a otra bóveda y no se importaron.',
   },
 
-  update: {
-    ready: 'Hay una versión nueva de Noter lista. ¿Recargar ahora?',
-  },
   menu: {
     moveTo: 'Mover a',
     markTemplate: 'Usar como plantilla',
@@ -622,12 +648,16 @@ const es: Messages = {
     showNotesTagged: 'Ver notas con #{tag}',
     searchTag: 'Buscar con esta etiqueta',
   },
+
   nav: {
     main: 'Navegación principal',
     home: 'Inicio',
     notes: 'Notas',
     search: 'Buscar',
-    alerts: { one: '{count} alerta', other: '{count} alertas' },
+    alerts: {
+      one: '{count} alerta',
+      other: '{count} alertas',
+    },
     resizeSidebar: 'Cambiar el ancho de la barra de carpetas',
     resizeList: 'Cambiar el ancho de la lista de notas',
     collapseSidebar: 'Ocultar carpetas',
@@ -635,7 +665,9 @@ const es: Messages = {
     timers: 'Temporizadores',
     meds: 'Medicación',
     vault: 'Bóveda',
+    habits: 'Hábitos',
   },
+
   home: {
     greeting: {
       night: '¿Todavía despierto?',
@@ -648,7 +680,6 @@ const es: Messages = {
     noNotes: 'Todavía no escribiste nada. Empezá con una nota nueva.',
     customize: 'Personalizar',
     pinned: 'Fijadas',
-    medsEmpty: 'No hay medicamentos cargados.',
     weekOf: 'Semana del {date}',
     daily: {
       title: 'La nota de hoy sigue en blanco',
@@ -662,22 +693,40 @@ const es: Messages = {
       thisWeek: 'Empezá a escribir para verlo crecer',
       streak: 'Racha de escritura',
       tasks: 'Tareas pendientes',
-      createdThisWeek: { one: '{count} nueva esta semana', other: '{count} nuevas esta semana' },
+      createdThisWeek: {
+        one: '{count} nueva esta semana',
+        other: '{count} nuevas esta semana',
+      },
       vsLastWeek: {
         one: '{count} palabra vs. la semana pasada',
         other: '{count} palabras vs. la semana pasada',
       },
-      days: { one: 'día seguido', other: 'días seguidos' },
-      tasksDone: { one: '{count} hecha', other: '{count} hechas' },
+      days: {
+        one: 'día seguido',
+        other: 'días seguidos',
+      },
+      tasksDone: {
+        one: '{count} hecha',
+        other: '{count} hechas',
+      },
     },
     activity: {
       title: 'Actividad de escritura',
       weekly: 'Palabras por semana',
       less: 'Menos',
       more: 'Más',
-      edits: { one: '{count} edición', other: '{count} ediciones' },
-      words: { one: '{count} palabra', other: '{count} palabras' },
-      cell: { one: '{date}: {count} edición', other: '{date}: {count} ediciones' },
+      edits: {
+        one: '{count} edición',
+        other: '{count} ediciones',
+      },
+      words: {
+        one: '{count} palabra',
+        other: '{count} palabras',
+      },
+      cell: {
+        one: '{date}: {count} edición',
+        other: '{date}: {count} ediciones',
+      },
       summary: {
         one: 'Escritura en {count} día de las últimas {weeks} semanas',
         other: 'Escritura en {count} días de las últimas {weeks} semanas',
@@ -694,16 +743,60 @@ const es: Messages = {
       folders: 'Carpetas más grandes',
       noTags: 'Agregá #etiquetas a tus notas para verlas acá.',
       noFolders: 'Las notas en carpetas aparecen acá.',
-      notes: { one: '{count} nota', other: '{count} notas' },
+      notes: {
+        one: '{count} nota',
+        other: '{count} notas',
+      },
+      title: 'Etiquetas y carpetas',
     },
     vault: {
       notSet: 'Sin configurar',
       open: 'Abierta',
       locked: 'Bloqueada',
       setUp: 'Configurar',
-      entries: { one: '{count} entrada', other: '{count} entradas' },
+      entries: {
+        one: '{count} entrada',
+        other: '{count} entradas',
+      },
+    },
+    seeAll: 'Ver todo',
+    summary: {
+      doses: {
+        one: '{count} toma pendiente',
+        other: '{count} tomas pendientes',
+      },
+      habits: {
+        one: 'falta {count} hábito',
+        other: 'faltan {count} hábitos',
+      },
+      timers: {
+        one: '{count} temporizador en marcha',
+        other: '{count} temporizadores en marcha',
+      },
+      clear: 'Nada pendiente. Buen momento para anotar algo.',
+    },
+    today: {
+      title: 'Hoy',
+      pending: {
+        one: '{count} cosa por hacer',
+        other: '{count} cosas por hacer',
+      },
+      clear: 'Todo listo por hoy',
+      clearHint: 'Acá aparecen las tomas, los hábitos y los temporizadores en marcha.',
+      medAt: 'A las {time} · en {span}',
+      habit: 'Tocá el círculo cuando lo hagas',
+    },
+    focus: {
+      title: 'Inicio rápido',
+      start: 'Empezar a enfocarme',
+      running: 'Pomodoro en curso',
+      minutes: {
+        one: '{count} minuto de foco hoy',
+        other: '{count} minutos de foco hoy',
+      },
     },
   },
+
   blocks: {
     text: 'Texto',
     h1: 'Título 1',
@@ -730,6 +823,7 @@ const es: Messages = {
     editSource: 'Editar como markdown',
     hint: 'Escribí / para insertar bloques',
   },
+
   timers: {
     defaults: {
       quick: 'Rápido',
@@ -765,7 +859,8 @@ const es: Messages = {
     addMinute: 'Sumar un minuto',
     restart: 'Empezar de nuevo',
     cancel: 'Cancelar temporizador',
-    about: 'Tocá un temporizador para empezarlo. Agregá los tuyos y arrastralos al orden que prefieras.',
+    about:
+      'Cuentas regresivas que empezás con un toque. Agregá las tuyas y arrastralas al orden que prefieras.',
     quickPlaceholder: '10, 1h30, 5:00…',
     quickLabel: 'Iniciar un temporizador de… (minutos, o p. ej. 1h30, 90s, 5:00)',
     start: 'Iniciar',
@@ -777,8 +872,22 @@ const es: Messages = {
     dragToReorder: 'Arrastrá para reordenar',
     presetActions: 'Acciones del temporizador',
     presetDeleted: 'Temporizador eliminado.',
-    moreRinging: { one: '…y {count} más', other: '…y {count} más' },
+    moreRinging: {
+      one: '…y {count} más',
+      other: '…y {count} más',
+    },
+    tabs: {
+      alarms: 'Alarmas',
+      pomodoro: 'Pomodoro',
+      stopwatch: 'Cronómetro',
+    },
+    previewNamed: 'Escuchar {name}',
+    hours: 'Horas',
+    minutes: 'Minutos',
+    seconds: 'Segundos',
+    deletePresetTitle: '¿Eliminar “{label}”?',
   },
+
   sounds: {
     classic: 'Bip clásico',
     bell: 'Campana',
@@ -808,7 +917,10 @@ const es: Messages = {
     speed: 'Duración de cada nota · {ms} ms',
     pause: 'Pausa entre repeticiones · {ms} ms',
     volume: 'Volumen',
+    deleteTitle: '¿Eliminar “{name}”?',
+    deleteBody: 'Los temporizadores que lo usan van a sonar con el sonido predeterminado.',
   },
+
   meds: {
     about: 'Registrá cada toma con un toque: la siguiente se calcula desde la última que tomaste.',
     add: 'Agregar medicamento',
@@ -844,7 +956,10 @@ const es: Messages = {
     today: 'Hoy',
     lastWeek: 'Últimos siete días',
     everyN: 'Cada {hours} h',
-    left: { one: 'queda {count} toma', other: 'quedan {count} tomas' },
+    left: {
+      one: 'queda {count} toma',
+      other: 'quedan {count} tomas',
+    },
     state: {
       first: 'Tocá “Tomé” cuando tomes la primera',
       paused: 'Recordatorios en pausa',
@@ -863,7 +978,30 @@ const es: Messages = {
     },
     notifyBody: 'Dosis: {dose}. Abrí Noter y tocá Tomé.',
     notifyBodyPlain: 'Abrí Noter y tocá Tomé.',
+    logged: '{name}: toma registrada',
+    deleteTitle: '¿Eliminar “{name}”?',
+    deleteBody: 'También se borra su historial de tomas. Pausá los recordatorios si querés conservarlo.',
+    confirm: {
+      title: '¿Otra toma de {name} tan pronto?',
+      body: 'Es antes de lo que indica tu horario. Revisalo antes de registrarla.',
+      schedule: {
+        one: 'Horario: cada {hours} h ({count} toma por día)',
+        other: 'Horario: cada {hours} h ({count} tomas por día)',
+      },
+      recent: {
+        one: 'Ya tomaste: {count} toma en las últimas {hours} h',
+        other: 'Ya tomaste: {count} tomas en las últimas {hours} h',
+      },
+      next: 'La próxima toca a las {time}, en {span}',
+      today: {
+        one: 'Hoy: ya tomaste {count} de {max} toma',
+        other: 'Hoy: ya tomaste {count} de {max} tomas',
+      },
+      anyway: 'Registrarla igual',
+      cancel: 'No registrar',
+    },
   },
+
   vault: {
     setupTitle: 'Configurá tu bóveda',
     setupBody:
@@ -955,6 +1093,200 @@ const es: Messages = {
     deleted: 'Entrada eliminada.',
     passwordChanged: 'Contraseña maestra cambiada.',
     destroyed: 'La bóveda se eliminó.',
+  },
+
+  pomodoro: {
+    title: 'Pomodoro',
+    about: 'Enfocate en bloques con descansos cortos entre ellos, y uno más largo cada algunas rondas.',
+    next: 'Siguiente',
+    phase: {
+      focus: 'Foco',
+      short: 'Descanso corto',
+      long: 'Descanso largo',
+    },
+    start: {
+      focus: 'Empezar a enfocarme',
+      short: 'Tomar un descanso corto',
+      long: 'Tomar un descanso largo',
+    },
+    session: 'Ronda {n} de {total}',
+    reset: 'Reiniciar',
+    skip: 'Pasar a la siguiente fase',
+    lengths: '{focus} · {short} · {long} min',
+    today: 'Foco de hoy',
+    week: 'Últimos 7 días',
+    sessions: {
+      one: '{count} sesión completada',
+      other: '{count} sesiones completadas',
+    },
+  },
+
+  stopwatch: {
+    about: 'Espacio inicia y detiene, L marca una vuelta. Sigue corriendo aunque cierres la app.',
+    hint: 'Tocá iniciar, o la barra espaciadora',
+    lap: 'Vuelta {n}',
+    lapAction: 'Vuelta',
+    reset: 'Reiniciar',
+    laps: 'Vueltas',
+    split: 'Tiempo de vuelta',
+    total: 'Total',
+    best: 'la más rápida',
+    worst: 'la más lenta',
+  },
+
+  habits: {
+    about: 'Cosas chicas que querés hacer. Tildalas con un toque y mirá cómo crece la racha.',
+    new: 'Nuevo hábito',
+    edit: 'Editar hábito',
+    empty: 'Todavía no hay hábitos',
+    emptyBody: 'Agua, una caminata, diez páginas: agregá lo que querés hacer seguido y tildalo cada día.',
+    name: 'Nombre',
+    namePlaceholder: 'p. ej. Tomar agua, Leer, Estirar',
+    icon: 'Ícono y color',
+    when: 'Cuándo',
+    schedule: {
+      daily: 'Todos los días',
+      weekdays: 'Algunos días',
+      perWeek: 'Veces por semana',
+    },
+    perWeekShort: {
+      one: '{count} vez por semana',
+      other: '{count} veces por semana',
+    },
+    timesPerWeek: 'veces por semana, cualquier día',
+    target: 'Veces por día',
+    targetHint: 'Más de una para cosas que contás, como vasos de agua.',
+    remind: 'Avisarme si no lo hice antes de las',
+    done: 'Hecho',
+    notDone: 'sin hacer',
+    doneNamed: '{name}: hecho — tocá para deshacer',
+    checkNamed: 'Marcar {name} como hecho',
+    undoOne: 'Uno menos',
+    archive: 'Archivar',
+    unarchive: 'Recuperar',
+    archived: {
+      one: '{count} hábito archivado',
+      other: '{count} hábitos archivados',
+    },
+    actions: 'Acciones del hábito',
+    thisWeek: 'Esta semana',
+    today: 'Hoy',
+    todayHint: 'Hábitos de hoy',
+    allDone: 'Todo hecho por hoy',
+    left: {
+      one: 'falta {count} hábito',
+      other: 'faltan {count} hábitos',
+    },
+    history: 'Las últimas 17 semanas',
+    current: 'Racha actual',
+    best: 'Mejor racha',
+    last30: 'Últimos 30 días',
+    bestStreak: {
+      one: 'Mejor: {count}',
+      other: 'Mejor: {count}',
+    },
+    streakDays: {
+      one: '{count} día',
+      other: '{count} días',
+    },
+    streakWeeks: {
+      one: '{count} semana',
+      other: '{count} semanas',
+    },
+    alert: 'Es hora de: {name}',
+    notifyBody: 'Abrí Noter y tildalo.',
+    deleteTitle: '¿Eliminar “{name}”?',
+    deleteBody: 'Se borra todo su historial. Archivalo si querés conservar el registro.',
+    deleted: 'Hábito eliminado.',
+  },
+
+  updates: {
+    title: 'Actualizaciones',
+    check: 'Buscar actualizaciones',
+    checking: 'Buscando…',
+    current: 'Tenés la última versión.',
+    available: 'Noter {version} está disponible',
+    availableWeb: 'Hay una nueva versión de Noter lista',
+    ready: 'Actualización instalada',
+    failed: 'No se pudo buscar actualizaciones. Probá más tarde.',
+    store: 'Microsoft Store mantiene esta copia actualizada.',
+    auto: 'Buscar automáticamente al abrir Noter',
+    installHint: 'Se descarga en segundo plano; tus notas quedan como están.',
+    downloadHint: 'Descargala desde la página de la versión e instalala sobre esta.',
+    install: 'Actualizar ahora',
+    download: 'Descargar',
+    reload: 'Recargar',
+    restart: 'Reiniciar ahora',
+    later: 'Más tarde',
+    skip: 'Saltear esta versión',
+    how: {
+      web: 'La app web se actualiza sola; te pregunta antes de recargar.',
+      store: 'Instalada desde Microsoft Store, que instala las actualizaciones por vos.',
+      installer: 'Noter descarga e instala las nuevas versiones solo.',
+      appimage: 'Noter descarga e instala las nuevas versiones solo.',
+      'system-package': 'Instalada como paquete del sistema. Noter te avisa cuando sale una nueva versión.',
+      android: 'Noter te avisa cuando sale una nueva versión y te lleva a la descarga.',
+    },
+  },
+
+  tour: {
+    invite: {
+      title: '¿Recién llegás? Hacé el recorrido de dos minutos',
+      body: 'Un vistazo rápido a notas, temporizadores, hábitos, medicación y la bóveda.',
+      start: 'Mostrame',
+    },
+    settingsTitle: 'Recorrido de bienvenida',
+    settingsHint: 'Volvé a ver qué hace cada parte de Noter.',
+    progress: 'Paso {n} de {total}',
+    skip: 'Saltear',
+    back: 'Atrás',
+    next: 'Siguiente',
+    start: 'Vamos',
+    finish: 'Empezar a usar Noter',
+    welcome: {
+      title: 'Te damos la bienvenida a Noter',
+      body: 'Tus notas, temporizadores, hábitos, medicación y contraseñas, todo en este dispositivo. Nada sale de acá salvo que lo exportes.',
+    },
+    nav: {
+      title: 'Todo a un clic',
+      body: 'Cada área tiene su lugar acá. Ctrl/⌘ + 1…6 te lleva directo.',
+    },
+    home: {
+      title: 'Inicio es tu día de un vistazo',
+      body: 'Desde acá empezás una nota, la nota de hoy o una sesión de foco. “Hoy” lista tomas, hábitos y temporizadores para resolver en el momento.',
+    },
+    customize: {
+      title: 'Hacé tuyo el Inicio',
+      body: 'Elegí qué bloques aparecen y en qué orden. El diseño se acomoda solo para que no queden huecos.',
+    },
+    notes: {
+      title: 'Notas hechas de bloques',
+      body: 'Escribí / en una nota para listas, tableros, galerías y código. Enlazá notas con [[dobles corchetes]] y etiquetalas con #etiquetas.',
+    },
+    timers: {
+      title: 'Alarmas, Pomodoro y cronómetro',
+      body: 'Cuentas regresivas de un toque con sonidos que podés escuchar antes, sesiones de foco con descansos y un cronómetro con vueltas.',
+    },
+    habits: {
+      title: 'Armá hábitos, mantené la racha',
+      body: 'Todos los días, algunos días o tantas veces por semana. Tildalos y mirá crecer la racha y el historial.',
+    },
+    meds: {
+      title: 'Nunca pierdas la cuenta de una toma',
+      body: 'Registrá cada toma con un toque. Noter te avisa cuando toca la siguiente y te pregunta antes de registrar una demasiado pronto.',
+    },
+    vault: {
+      title: 'Una bóveda para tus secretos',
+      body: 'Contraseñas, tarjetas y notas privadas, cifradas con una contraseña maestra que solo vos sabés.',
+    },
+    search: {
+      title: 'Encontrá cualquier cosa',
+      body: 'Ctrl/⌘ + K busca en todas las notas y ejecuta cualquier comando, incluido este recorrido.',
+    },
+    done: {
+      title: '¡Listo!',
+      body: 'Empezá con una nota, un hábito o un temporizador. Podés repetir el recorrido desde Ajustes cuando quieras.',
+    },
   },
 }
 
