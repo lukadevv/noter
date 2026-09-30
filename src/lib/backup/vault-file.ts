@@ -85,6 +85,7 @@ export const BACKUP_TABLES: { name: string; merge: 'newer' | 'put' }[] = [
   // The vault travels as ciphertext; it opens with the same master password.
   { name: 'secretsMeta', merge: 'newer' },
   { name: 'secretItems', merge: 'newer' },
+  { name: 'activity', merge: 'newer' },
 ]
 
 function concat(parts: Uint8Array[]): Uint8Array<ArrayBuffer> {

@@ -1,6 +1,8 @@
 import Dexie, { type Table } from 'dexie'
 import { migrateBodyForView, needsMigration } from '$lib/md/migrate'
+import { dayKey } from '$lib/utils/dates'
 import type {
+  ActivityDay,
   Asset,
   Dose,
   Folder,
@@ -36,6 +38,7 @@ export class NoterDB extends Dexie {
   doses!: Table<Dose, string>
   secretItems!: Table<SecretItem, string>
   secretsMeta!: Table<SecretsMeta, string>
+  activity!: Table<ActivityDay, string>
 
   constructor(name = 'noter') {
     super(name)
@@ -101,6 +104,29 @@ export class NoterDB extends Dexie {
       secretItems: 'id, order',
       secretsMeta: 'id',
     })
+
+    // v6: daily activity counters for Home. Seeded from what the notes already
+    // say (when each was created and last edited), so the chart is not empty
+    // on the first day.
+    this.version(6)
+      .stores({ activity: 'day' })
+      .upgrade(async (tx) => {
+        const days = new Map<string, ActivityDay>()
+        const row = (day: string) => {
+          let entry = days.get(day)
+          if (!entry) {
+            entry = { day, edits: 0, created: 0, words: 0, updatedAt: Date.now() }
+            days.set(day, entry)
+          }
+          return entry
+        }
+        await tx.table<Note, string>('notes').each((note) => {
+          if (note.deletedAt > 0 || note.system) return
+          row(dayKey(new Date(note.createdAt))).created++
+          row(dayKey(new Date(note.updatedAt))).edits++
+        })
+        await tx.table<ActivityDay, string>('activity').bulkPut([...days.values()])
+      })
   }
 }
 

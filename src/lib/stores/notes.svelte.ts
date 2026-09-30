@@ -13,6 +13,7 @@ import * as foldersRepo from '$lib/db/repo/folders'
 import { debounce } from '$lib/utils/debounce'
 import * as smartRepo from '$lib/db/repo/smartFolders'
 import * as dailyRepo from '$lib/db/repo/daily'
+import { bumpActivity, countWords } from '$lib/db/repo/activity'
 import { buildBacklinks, extractTags, linkKey, renameWikiLinks, type BacklinkEntry } from '$lib/md/links'
 import { searchIndex } from '$lib/search/index'
 import {
@@ -43,6 +44,15 @@ export type ListScope =
  * indexing and backlinks synchronous. If a store ever outgrows this, only this
  * class and the repos change — components read through the derived getters.
  */
+/** Fills a template's `{{date}}`, `{{time}}` and `{{title}}` placeholders. */
+export function expandTemplate(body: string, title: string, at: Date): string {
+  return body
+    .replace(/\{\{date\}\}/g, at.toLocaleDateString())
+    .replace(/\{\{time\}\}/g, at.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))
+    .replace(/\{\{title\}\}/g, title)
+    .replace(/\{\{cursor\}\}/g, '')
+}
+
 class NotesStore {
   folders = $state<Folder[]>([])
   smartFolders = $state<SmartFolder[]>([])
@@ -270,11 +280,16 @@ class NotesStore {
   async create(input: notesRepo.NewNoteInput = {}): Promise<Note> {
     const folderId = input.folderId ?? ROOT
     const folder = folderId ? this.folders.find((f) => f.id === folderId) : undefined
-    if (folder?.encrypted !== 1) return notesRepo.createNote(input)
-
-    const sealed = await sealNote(folderId, input.title ?? '', input.body ?? '')
-    if (!sealed) throw new FolderLockedError(folderId)
-    return notesRepo.createNote({ ...input, ...sealed, tags: [], encrypted: 1 })
+    let note: Note
+    if (folder?.encrypted !== 1) {
+      note = await notesRepo.createNote(input)
+    } else {
+      const sealed = await sealNote(folderId, input.title ?? '', input.body ?? '')
+      if (!sealed) throw new FolderLockedError(folderId)
+      note = await notesRepo.createNote({ ...input, ...sealed, tags: [], encrypted: 1 })
+    }
+    if (!input.system) void bumpActivity({ created: 1 })
+    return note
   }
 
   async newNote(): Promise<Note> {
@@ -309,10 +324,26 @@ class NotesStore {
   /** Resolves when the most recently started write batch has committed. */
   #inFlight: Promise<void> = Promise.resolve()
 
+  /**
+   * Word count of each note as of its last save this session, to count the
+   * words each save adds. Seeded on the first edit from the text before it.
+   */
+  #wordsBefore = new Map<string, number>()
+
   #writeBodies = debounce(() => {
     const pending = [...this.#pendingBody.entries()]
     this.#pendingBody.clear()
     if (pending.length === 0) return
+
+    let added = 0
+    for (const [id, patch] of pending) {
+      const words = countWords(patch.body)
+      // An encrypted note's earlier text is not at hand, so its first save
+      // only sets the baseline.
+      added += Math.max(0, words - (this.#wordsBefore.get(id) ?? words))
+      this.#wordsBefore.set(id, words)
+    }
+    void bumpActivity({ edits: pending.length, words: added })
 
     this.#inFlight = (async () => {
       for (const [id, patch] of pending) {
@@ -345,6 +376,7 @@ class NotesStore {
     // IndexedDB can index them. The markdown stays the source of truth. A
     // locked note contributes no tags at all, so nothing leaks through them.
     const tags = encrypted ? [] : extractTags(body)
+    if (!encrypted && note && !this.#wordsBefore.has(id)) this.#wordsBefore.set(id, countWords(note.body))
 
     this.#pendingBody.set(id, {
       title,
@@ -477,11 +509,7 @@ class NotesStore {
     if (!plain) throw new FolderLockedError(template.folderId)
 
     const nowDate = new Date()
-    const body = plain.body
-      .replace(/\{\{date\}\}/g, nowDate.toLocaleDateString())
-      .replace(/\{\{time\}\}/g, nowDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))
-      .replace(/\{\{title\}\}/g, plain.title)
-      .replace(/\{\{cursor\}\}/g, '')
+    const body = expandTemplate(plain.body, plain.title, nowDate)
 
     const folderId = this.scope.kind === 'folder' ? (this.scope.id ?? template.folderId) : template.folderId
     const note = await this.create({
@@ -506,11 +534,23 @@ class NotesStore {
 
   // --- Daily notes and scratchpad -----------------------------------------
 
+  /**
+   * The daily note opened most recently, so it can be discarded when the user
+   * leaves it empty — whether they go to another note or to the next day.
+   */
+  openedDaily: string | null = null
+
   /** Opens (creating if needed) the daily note for a day key. */
   async openDaily(key: string, settings: Parameters<typeof dailyRepo.openDailyNote>[1]): Promise<Note> {
     const source = settings.templateId ? this.notes.find((n) => n.id === settings.templateId) : undefined
-    const template = source ? ((await this.#templateText(source))?.body ?? '') : ''
+    const plain = source ? await this.#templateText(source) : null
+    const [year, month, day] = key.split('-').map(Number)
+    // Placeholders take the day the note is for, not the day it was opened.
+    const template = plain ? expandTemplate(plain.body, plain.title, new Date(year!, month! - 1, day)) : ''
     const note = await dailyRepo.openDailyNote(key, settings, template, (input) => this.create(input))
+    const previous = this.openedDaily
+    this.openedDaily = note.id
+    if (previous && previous !== note.id) void this.discardEmptyDaily(previous)
     this.select(note.id)
     return note
   }

@@ -1,18 +1,31 @@
 # Noter
 
-A local-first note-taking PWA. Everything runs in the browser: notes live in
-IndexedDB, the build is a folder of static files, and there is no server to talk
-to. Install it, go offline, keep writing.
+A local-first personal workspace: notes, a password vault, medication
+reminders and timers. Everything runs on your device: data lives in IndexedDB,
+the build is a folder of static files, and there is no server to talk to.
+Install it, go offline, keep writing.
 
 ## Features
 
+**Home**
+
+- A dashboard that opens first: alerts (a dose due, a timer ringing, today's
+  note not written yet), numbers at a glance (notes, words this week, writing
+  streak, open tasks), a writing-activity heatmap, words per week, top tags and
+  folders, a daily-notes calendar, and quick views of medication, timers and
+  the vault
+- Every block can be hidden or reordered in Settings → Home
+
 **Writing**
 
-- Markdown notes in a CodeMirror 6 editor, with a sanitised reading view
-- Five views over the same markdown — document, checklist, board, gallery, code —
-  so a note can change shape without changing format
+- Markdown notes in a CodeMirror 6 editor that is always editable; a padlock
+  (`Ctrl+Shift+L`) protects a note from accidental edits
+- Blocks inline: type `/` for headings, lists, checklists, callouts, tables,
+  code, a kanban **board** or an image **gallery**. Each block has a handle to
+  drag it, duplicate it or turn it into another kind
+- Live preview hides markdown punctuation away from the cursor
 - Interactive checkboxes in both the editor and the reading view
-- A kanban board built from `##` headings and list items, with drag-and-drop
+- Boards built from `##` headings and list items, with drag-and-drop
 - Images from a paste, a drop, a file picker, or a pasted URL; every image is
   re-encoded to WebP, thumbnailed and deduplicated by hash
 - Full-screen image viewer with zoom, pan and copy
@@ -26,11 +39,14 @@ to. Install it, go offline, keep writing.
 - Multi-select with bulk move, pin, archive and delete
 - Saved searches (`tag:bug AND is:todo AND modified:<7d`) that live in the sidebar
   as smart folders
-- Templates, and daily notes that are **off by default** and created only when opened
+- Templates (`{{date}}`, `{{time}}`, `{{title}}`), and daily notes created only
+  when opened — an untouched one is removed again when you leave it
 
 **Finding**
 
 - `Ctrl+K` command palette: notes, commands, tags and structured queries in one place
+- Right-click (or long-press) anything for its menu: folders, notes, blocks,
+  timers, medication, vault entries
 - Full-text search (MiniSearch) indexed incrementally in idle time
 - A small query language: `tag:`, `folder:`, `view:`, `is:`, `has:`, `modified:`,
   with `AND` / `OR` / `NOT` and parentheses
@@ -42,7 +58,22 @@ to. Install it, go offline, keep writing.
 - Custom themes are saved, exported and imported as JSON
 - Icon picker over the full Lucide catalogue (~2000 icons) plus emoji
 - Per-folder accent colours that tint the interface while you are inside a folder
-- Density, font family, editor text size, corner radius, reduced motion
+- Density, font family, editor text size, corner radius, and animations
+  (follow the system, full, reduced or off)
+
+**Beyond notes**
+
+- **Vault**: logins, cards, secure notes, documents and Wi-Fi passwords behind
+  a master password. Entries (titles included) are sealed with AES-GCM under a
+  random key wrapped by PBKDF2; the vault locks after idle minutes and when the
+  app is hidden, and copied secrets are wiped from the clipboard. Nothing in it
+  reaches search, the palette or statistics
+- **Medication**: "every X hours" reminders timed from the last dose you took,
+  a one-tap _Taken_ button, "next dose in 5 h" heads-up, adherence and stock
+- **Timers**: one-tap presets you can create, colour and reorder by dragging,
+  typed durations (`1h 20m`), and alarm sounds synthesised in the browser —
+  including your own
+- Local notifications on the web, Windows (Tauri) and Android (Capacitor)
 
 **Keeping your data**
 
@@ -97,13 +128,16 @@ browser: `pnpm exec playwright install chromium`.
 
 ## Keyboard
 
-| Shortcut           | Action             |
-| ------------------ | ------------------ |
-| `Ctrl+K`           | Command palette    |
-| `Ctrl+N`           | New note           |
-| `Ctrl+,`           | Settings           |
-| `Ctrl+Shift+D`     | Today's daily note |
-| `Ctrl+Shift+Space` | Scratchpad         |
+| Shortcut            | Action                                 |
+| ------------------- | -------------------------------------- |
+| `Ctrl+K`            | Command palette                        |
+| `Ctrl+N`            | New note                               |
+| `Ctrl+,`            | Settings                               |
+| `Ctrl+Shift+D`      | Today's daily note                     |
+| `Ctrl+Shift+Space`  | Scratchpad                             |
+| `Ctrl+Shift+L`      | Lock or unlock editing                 |
+| `Ctrl+1` … `Ctrl+5` | Home, Notes, Timers, Medication, Vault |
+| `Ctrl+\`            | Hide or show the folders               |
 
 ## Architecture
 

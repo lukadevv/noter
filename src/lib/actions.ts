@@ -53,7 +53,6 @@ export function buildActions(open: { settings: () => void; daily: () => void }):
       hint: 'Mod+Shift+D',
       icon: 'calendar',
       group: 'Create',
-      available: () => theme.settings.dailyNotes.enabled,
       run: () => open.daily(),
     },
     {
@@ -259,7 +258,7 @@ export function buildActions(open: { settings: () => void; daily: () => void }):
     })
   }
 
-  if (theme.settings.dailyNotes.enabled) {
+  {
     actions.push(
       {
         id: 'daily.yesterday',

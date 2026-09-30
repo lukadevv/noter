@@ -55,7 +55,27 @@ describe('migrateSettings', () => {
   })
 
   it('fills in nested defaults added after the group was stored', () => {
-    const migrated = migrateSettings({ dailyNotes: { enabled: true } as never })
-    expect(migrated.dailyNotes).toEqual({ ...DEFAULT_SETTINGS.dailyNotes, enabled: true })
+    const migrated = migrateSettings({ dailyNotes: { folderId: 'f1' } as never })
+    expect(migrated.dailyNotes).toEqual({ ...DEFAULT_SETTINGS.dailyNotes, folderId: 'f1' })
+  })
+
+  it('drops the old daily-notes switch', () => {
+    const migrated = migrateSettings({ dailyNotes: { enabled: false } as never })
+    expect(migrated.dailyNotes).toEqual(DEFAULT_SETTINGS.dailyNotes)
+  })
+
+  it('keeps the chosen widget order and appends widgets it has not seen', () => {
+    const migrated = migrateSettings({
+      home: {
+        widgets: [
+          { id: 'recent', visible: false },
+          { id: 'gone' as never, visible: true },
+        ],
+        dailyDismissed: '',
+      },
+    })
+    expect(migrated.home.widgets[0]).toEqual({ id: 'recent', visible: false })
+    expect(migrated.home.widgets.map((w) => w.id)).not.toContain('gone')
+    expect(migrated.home.widgets).toHaveLength(DEFAULT_SETTINGS.home.widgets.length)
   })
 })

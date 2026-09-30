@@ -20,60 +20,59 @@
 
 <Group description={t('settings.daily.about')}>
   <Switch
-    label={t('settings.daily.enable')}
-    checked={daily.enabled}
-    onchange={(enabled) => set({ enabled })}
+    label={t('settings.daily.homeAlert')}
+    hint={t('settings.daily.homeAlertHint')}
+    checked={daily.homeAlert}
+    onchange={(homeAlert) => set({ homeAlert })}
   />
 
-  {#if daily.enabled}
-    <Field label={t('settings.daily.folder')} for="daily-folder">
+  <Field label={t('settings.daily.folder')} for="daily-folder">
+    <select
+      id="daily-folder"
+      class="input"
+      value={daily.folderId}
+      onchange={(e) => set({ folderId: e.currentTarget.value })}
+    >
+      <option value={ROOT}>{t('settings.daily.noFolder')}</option>
+      {#each notes.visibleFolders as folder (folder.id)}
+        <option value={folder.id}>{' '.repeat(folder.depth * 2)}{folder.name}</option>
+      {/each}
+    </select>
+  </Field>
+
+  <Field
+    label={t('settings.daily.titleFormat', { preview: formatDailyTitle(todayKey(), daily.titleFormat) })}
+    hint={t('settings.daily.formatTokens')}
+    for="daily-format"
+  >
+    <input
+      id="daily-format"
+      class="input"
+      value={daily.titleFormat}
+      onchange={(e) => set({ titleFormat: e.currentTarget.value })}
+    />
+  </Field>
+
+  {#if notes.templates.length > 0}
+    <Field label={t('settings.daily.template')} for="daily-template">
       <select
-        id="daily-folder"
+        id="daily-template"
         class="input"
-        value={daily.folderId}
-        onchange={(e) => set({ folderId: e.currentTarget.value })}
+        value={daily.templateId ?? ''}
+        onchange={(e) => set({ templateId: e.currentTarget.value || null })}
       >
-        <option value={ROOT}>{t('settings.daily.noFolder')}</option>
-        {#each notes.visibleFolders as folder (folder.id)}
-          <option value={folder.id}>{' '.repeat(folder.depth * 2)}{folder.name}</option>
+        <option value="">{t('common.none')}</option>
+        {#each notes.templates as template (template.id)}
+          <option value={template.id}>{derivedTitle(template)}</option>
         {/each}
       </select>
     </Field>
-
-    <Field
-      label={t('settings.daily.titleFormat', { preview: formatDailyTitle(todayKey(), daily.titleFormat) })}
-      hint={t('settings.daily.formatTokens')}
-      for="daily-format"
-    >
-      <input
-        id="daily-format"
-        class="input"
-        value={daily.titleFormat}
-        onchange={(e) => set({ titleFormat: e.currentTarget.value })}
-      />
-    </Field>
-
-    {#if notes.templates.length > 0}
-      <Field label={t('settings.daily.template')} for="daily-template">
-        <select
-          id="daily-template"
-          class="input"
-          value={daily.templateId ?? ''}
-          onchange={(e) => set({ templateId: e.currentTarget.value || null })}
-        >
-          <option value="">{t('common.none')}</option>
-          {#each notes.templates as template (template.id)}
-            <option value={template.id}>{derivedTitle(template)}</option>
-          {/each}
-        </select>
-      </Field>
-    {/if}
-
-    <p class="faint shortcut">
-      {t('settings.daily.shortcutLabel')}
-      <Kbd keys="Mod+Shift+D" />
-    </p>
   {/if}
+
+  <p class="faint shortcut">
+    {t('settings.daily.shortcutLabel')}
+    <Kbd keys="Mod+Shift+D" />
+  </p>
 </Group>
 
 <style>

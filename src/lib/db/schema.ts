@@ -299,3 +299,18 @@ export interface SecretItem {
   createdAt: number
   updatedAt: number
 }
+
+/**
+ * One day of writing activity, for the Home dashboard. Only numbers are kept:
+ * no titles or text, so it reveals nothing even for encrypted notes.
+ */
+export interface ActivityDay {
+  /** 'YYYY-MM-DD' in local time. */
+  day: string
+  /** Saved edit batches (a burst of typing is one). */
+  edits: number
+  created: number
+  /** Words added; deletions do not subtract. */
+  words: number
+  updatedAt: number
+}

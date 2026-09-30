@@ -45,6 +45,13 @@ export const SETTINGS_SECTIONS: SettingsSectionEntry[] = [
     load: () => import('./EditorSettings.svelte'),
   },
   {
+    id: 'home',
+    icon: 'layout-dashboard',
+    label: 'settings.sections.home',
+    keywords: ['settings.home.widgets', 'settings.daily.homeAlert'],
+    load: () => import('./HomeSettings.svelte'),
+  },
+  {
     id: 'daily',
     icon: 'calendar-days',
     label: 'settings.sections.daily',

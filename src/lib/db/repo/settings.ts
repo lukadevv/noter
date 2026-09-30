@@ -6,8 +6,11 @@ export type Density = 'compact' | 'cozy' | 'comfortable'
 export type FontChoice = 'system' | 'sans' | 'serif' | 'mono'
 
 export interface DailyNoteSettings {
-  /** Off by default: the app never creates a dated note the user did not ask for. */
-  enabled: boolean
+  /**
+   * Remind on Home when today's note is not written yet. The note itself is
+   * still only created when opened: the app never makes one on its own.
+   */
+  homeAlert: boolean
   folderId: string
   /** Date pattern for the note title, e.g. 'YYYY-MM-DD'. */
   titleFormat: string
@@ -33,6 +36,27 @@ export interface VaultSettings {
   clipboardSeconds: number
 }
 
+/** The blocks Home can show, in the order the user chose. */
+export const HOME_WIDGETS = [
+  'alerts',
+  'stats',
+  'activity',
+  'calendar',
+  'meds',
+  'timers',
+  'recent',
+  'pinned',
+  'topics',
+  'vault',
+] as const
+export type HomeWidget = (typeof HOME_WIDGETS)[number]
+
+export interface HomeSettings {
+  widgets: { id: HomeWidget; visible: boolean }[]
+  /** Day key on which the "write today's note" reminder was dismissed. */
+  dailyDismissed: string
+}
+
 export interface AppSettings {
   themeId: string
   density: Density
@@ -55,6 +79,7 @@ export interface AppSettings {
   /** Show a system notification when a timer or a dose is due. */
   notifications: boolean
   vault: VaultSettings
+  home: HomeSettings
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
@@ -66,7 +91,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   motion: 'system',
   showLineNumbers: false,
   dailyNotes: {
-    enabled: false,
+    homeAlert: true,
     folderId: '',
     titleFormat: 'YYYY-MM-DD',
     templateId: null,
@@ -80,6 +105,10 @@ export const DEFAULT_SETTINGS: AppSettings = {
   timers: { volume: 0.8, ringSeconds: 60, defaultSoundId: 'classic', seeded: false },
   notifications: true,
   vault: { autoLockMinutes: 5, lockOnHide: true, clipboardSeconds: 30 },
+  home: {
+    widgets: HOME_WIDGETS.map((id) => ({ id, visible: true })),
+    dailyDismissed: '',
+  },
 }
 
 const KEY = 'app'
@@ -147,6 +176,20 @@ export function migrateSettings(stored: Partial<AppSettings> & LegacySettings): 
   }
   // The old checkbox was "Reduce motion"; people who ticked it wanted none.
   if (reduceMotion === true && rest.motion === undefined) merged.motion = 'off'
+
+  // Daily notes used to need switching on; now they always open and the
+  // switch became the Home reminder.
+  const daily = merged.dailyNotes as DailyNoteSettings & { enabled?: boolean }
+  if ('enabled' in daily) {
+    const { enabled: _enabled, ...kept } = daily
+    merged.dailyNotes = kept
+  }
+
+  // Widgets added in a later version join the end of the user's own order.
+  const home = merged.home as HomeSettings
+  const known = home.widgets.filter((w) => (HOME_WIDGETS as readonly string[]).includes(w.id))
+  const missing = HOME_WIDGETS.filter((id) => !known.some((w) => w.id === id))
+  merged.home = { ...home, widgets: [...known, ...missing.map((id) => ({ id, visible: true }))] }
   return merged as unknown as AppSettings
 }
 

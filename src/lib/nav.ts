@@ -21,6 +21,11 @@ export function goTo(section: Section): void {
   navigate(routes[section])
 }
 
+/** Shows one note, in the notes section, under "All notes". */
+export function openNote(noteId: string): void {
+  navigate({ kind: 'notes', folderId: null, noteId })
+}
+
 export function openSettings(section: string | null = null): void {
   if (!location.hash.startsWith('#/settings')) beforeSettings = location.hash || '#/'
   navigate({ kind: 'settings', section })

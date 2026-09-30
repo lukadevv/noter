@@ -20,7 +20,7 @@
     sectionOf,
     type Route,
   } from './routes/router'
-  import { goTo, openSettings } from '$lib/nav'
+  import { goTo, openNote, openSettings } from '$lib/nav'
   import { fadeIn } from '$lib/ui/motion.svelte'
   import { snapshot } from '$lib/db/repo/versions'
   import { purgeExpiredTrash } from '$lib/db/repo/notes'
@@ -38,8 +38,6 @@
   let paletteOpen = $state(false)
   /** The reminder engine has loaded, so the ringing dialog can be mounted. */
   let remindersReady = $state(false)
-  /** The daily note the user is currently looking at, if any. */
-  let openDailyId: string | null = null
   /** Non-null while a shared link is open, which replaces the whole shell. */
   let sharedPayload = $state<string | null>(null)
   /** Set while applying a route, so the reverse sync does not fight it. */
@@ -143,17 +141,10 @@
   }
 
   async function openToday() {
-    const settings = theme.settings.dailyNotes
-    if (!settings.enabled) {
-      ui.toast(t('toast.dailyOff'), 'info', {
-        label: t('sidebar.settings'),
-        run: () => openSettings('daily'),
-      })
-      return
-    }
-    const note = await notes.openDaily(todayKey(), settings)
-    openDailyId = note.id
-    goTo('notes')
+    const note = await notes.openDaily(todayKey(), theme.settings.dailyNotes)
+    // Straight to the note: a bare "notes" address would select nothing, and
+    // leaving the fresh daily note unselected discards it as empty.
+    openNote(note.id)
     if (ui.narrow) ui.showPane('note')
   }
 
@@ -161,9 +152,9 @@
   // it, so the app never accumulates empty dated files.
   $effect(() => {
     const selected = notes.selectedNoteId
-    const previous = openDailyId
+    const previous = notes.openedDaily
     if (previous && previous !== selected) {
-      openDailyId = null
+      notes.openedDaily = null
       void notes.discardEmptyDaily(previous)
     }
   })
