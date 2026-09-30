@@ -80,6 +80,8 @@ function tableOf(name: string): Table<Record<string, unknown>, string> {
 export const BACKUP_TABLES: { name: string; merge: 'newer' | 'put' }[] = [
   { name: 'timerPresets', merge: 'newer' },
   { name: 'sounds', merge: 'newer' },
+  { name: 'meds', merge: 'newer' },
+  { name: 'doses', merge: 'newer' },
 ]
 
 function concat(parts: Uint8Array[]): Uint8Array<ArrayBuffer> {

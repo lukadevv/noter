@@ -200,6 +200,14 @@ export function buildActions(open: { settings: () => void; daily: () => void }):
       run: () => goTo('timers'),
     },
     {
+      id: 'go.meds',
+      label: t('actions.goMeds'),
+      icon: 'pill',
+      hint: 'Mod+4',
+      group: 'Go',
+      run: () => goTo('meds'),
+    },
+    {
       id: 'note.lock',
       label: t('actions.toggleLock'),
       icon: 'lock-keyhole',

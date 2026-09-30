@@ -232,3 +232,42 @@ export interface RunningTimer {
   firedAt: number
   createdAt: number
 }
+
+// --- Medication --------------------------------------------------------------
+
+export interface Med {
+  id: string
+  name: string
+  /** Free text: "500 mg", "2 drops", "1 tablet". */
+  dose: string
+  color: string | null
+  /** Hours between doses: 24 = daily, 12 = twice a day, 8 = three times. */
+  intervalHours: number
+  /** How long before a dose the "coming up" alert appears, in minutes. */
+  leadMinutes: number
+  notes: string
+  /** Pills or doses left, or null when not tracked. */
+  stock: number | null
+  /** How much one dose uses from the stock. */
+  perDose: number
+  /** Paused medications keep their history but stop reminding. */
+  active: Flag
+  /**
+   * The due time a reminder was last fired for. Claimed in a transaction so a
+   * dose reminds once, not once per open tab.
+   */
+  notifiedDue: number
+  order: number
+  createdAt: number
+  updatedAt: number
+}
+
+export interface Dose {
+  id: string
+  medId: string
+  /** When it was taken (or, for a skipped dose, when it was skipped). */
+  takenAt: number
+  status: 'taken' | 'skipped'
+  createdAt: number
+  updatedAt: number
+}

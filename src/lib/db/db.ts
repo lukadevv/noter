@@ -2,7 +2,9 @@ import Dexie, { type Table } from 'dexie'
 import { migrateBodyForView, needsMigration } from '$lib/md/migrate'
 import type {
   Asset,
+  Dose,
   Folder,
+  Med,
   Note,
   RunningTimer,
   Setting,
@@ -28,6 +30,8 @@ export class NoterDB extends Dexie {
   timerPresets!: Table<TimerPreset, string>
   timers!: Table<RunningTimer, string>
   sounds!: Table<Sound, string>
+  meds!: Table<Med, string>
+  doses!: Table<Dose, string>
 
   constructor(name = 'noter') {
     super(name)
@@ -80,6 +84,12 @@ export class NoterDB extends Dexie {
       timerPresets: 'id, order',
       timers: 'id, endAt, firedAt',
       sounds: 'id',
+    })
+
+    // v4: medication and the log of doses taken.
+    this.version(4).stores({
+      meds: 'id, order',
+      doses: 'id, medId, takenAt, [medId+takenAt]',
     })
   }
 }

@@ -107,6 +107,8 @@
         timers.start()
         remindersReady = true
       })
+      // Medication reminders and alerts run from any section too.
+      void import('$lib/meds/store.svelte').then(({ meds }) => meds.start())
     })
     void maybeRunScheduledBackup()
     void purgeExpiredTrash().then(async (count) => {
@@ -361,6 +363,10 @@
               </Lazy>
             {:else if ui.section === 'timers'}
               <Lazy load={() => import('$components/sections/Timers.svelte')}>
+                {#snippet fallback()}<Skeleton rows={6} />{/snippet}
+              </Lazy>
+            {:else if ui.section === 'meds'}
+              <Lazy load={() => import('$components/sections/Meds.svelte')}>
                 {#snippet fallback()}<Skeleton rows={6} />{/snippet}
               </Lazy>
             {:else if ui.section === 'settings'}
