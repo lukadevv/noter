@@ -1,7 +1,7 @@
 # Privacy policy
 
 The published version lives at <https://noter.lukadevv.com/privacy.html>
-(source: [`public/privacy.html`](public/privacy.html), in English and Spanish).
+(source: [`public/privacy.html`](public/privacy.html)).
 
 **In short:** Noter keeps everything on your device. There is no account and no
 Noter server, and the desktop and Android apps send no analytics or telemetry.
