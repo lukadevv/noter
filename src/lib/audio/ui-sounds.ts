@@ -48,13 +48,13 @@ const recipe = (
 
 /** Pitches are notes of one scale (A minor pentatonic-ish) so they never clash. */
 export const UI_SOUNDS: Record<UiSoundId, SoundRecipe> = {
-  tab: recipe('sine', [523.25, 659.25], 45, 0.5, 45),
-  note: recipe('triangle', [440, 587.33], 35, 0.35, 40),
+  tab: recipe('sine', [329.63], 40, 0.5, 50),
+  note: recipe('sine', [659.25], 25, 0.35, 25),
   primary: recipe('triangle', [783.99], 70, 0.6, 60),
   secondary: recipe('sine', [493.88], 40, 0.4, 35),
   switchOn: recipe('triangle', [523.25, 783.99], 55, 0.5, 50),
   switchOff: recipe('triangle', [783.99, 523.25], 55, 0.45, 50),
-  create: recipe('sine', [880, 1318.51], 70, 0.5, 90),
+  create: recipe('sine', [698.46], 30, 0.3, 40),
   complete: recipe('sine', [523.25, 659.25, 783.99], 55, 0.55, 90),
   delete: recipe('triangle', [220, 164.81], 70, 0.6, 70),
   error: recipe('sawtooth', [196, 0, 196], 60, 0.22, 40),
