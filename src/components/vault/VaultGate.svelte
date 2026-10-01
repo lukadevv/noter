@@ -2,7 +2,6 @@
   import Icon from '../Icon.svelte'
   import { secrets } from '$lib/secrets/store.svelte'
   import { strengthOf } from '$lib/secrets/generate'
-  import { rise } from '$lib/ui/motion.svelte'
   import { t } from '$lib/i18n/index.svelte'
 
   /** First run creates the vault; afterwards this is the unlock screen. */
@@ -41,7 +40,7 @@
   }
 </script>
 
-<div class="gate" in:rise>
+<div class="gate enter">
   <div class="badge"><Icon name={creating ? 'shield' : 'lock-keyhole'} size={30} /></div>
   <h1>{t(creating ? 'vault.setupTitle' : 'vault.lockedTitle')}</h1>
   <p class="faint lead">{t(creating ? 'vault.setupBody' : 'vault.lockedBody')}</p>

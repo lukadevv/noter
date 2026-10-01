@@ -80,8 +80,13 @@
     border-radius: 50%;
     background: var(--text-dim);
     transition:
-      transform var(--dur-2) var(--ease-out),
+      transform var(--dur-3) var(--ease-spring),
+      width var(--dur-2) var(--ease-out),
       background var(--dur-2);
+  }
+
+  .switch:active .thumb {
+    width: 18px;
   }
 
   input:checked + .track {

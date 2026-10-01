@@ -2,7 +2,10 @@ import type { Messages } from '../index.svelte'
 
 /** Korean. `Intl.PluralRules` reports a single `other` category. */
 const ko: Messages = {
-  app: { name: 'Noter', tagline: '오프라인에서도 쓰는 로컬 노트' },
+  app: {
+    name: 'Noter',
+    tagline: '오프라인에서도 쓰는 로컬 노트',
+  },
 
   common: {
     dismiss: '닫기',
@@ -160,7 +163,9 @@ const ko: Messages = {
     tagsHint: '태그',
   },
 
-  backlinks: { other: '{count}개의 노트가 여기를 가리킵니다' },
+  backlinks: {
+    other: '{count}개의 노트가 여기를 가리킵니다',
+  },
 
   actions: {
     newNote: '새 노트',
@@ -182,13 +187,24 @@ const ko: Messages = {
     toggleTheme: '밝게/어둡게 전환',
     themeNamed: '테마: {name}',
     fromTemplate: '「{title}」에서 새 노트',
-    groups: { Create: '만들기', Note: '노트', Go: '이동', View: '보기', Appearance: '모양', App: '앱' },
+    groups: {
+      Create: '만들기',
+      Note: '노트',
+      Go: '이동',
+      View: '보기',
+      Appearance: '모양',
+      App: '앱',
+    },
     goHome: '홈으로 이동',
     toggleLock: '편집 잠금/해제',
     goTimers: '타이머로 이동',
     goMeds: '복약으로 이동',
     goVault: '보관함으로 이동',
     lockVault: '보관함 잠그기',
+    goHabits: '습관으로 이동',
+    startFocus: '집중 세션 시작',
+    openStopwatch: '스톱워치 열기',
+    tour: '둘러보기',
   },
 
   settings: {
@@ -202,14 +218,22 @@ const ko: Messages = {
     customThemeHint: '기본 테마를 사용자화하면 사본이 저장되므로 원래 테마는 그대로 남습니다.',
     custom: '(사용자 지정)',
     density: '밀도',
-    densities: { compact: '조밀하게', cozy: '보통', comfortable: '넉넉하게' },
+    densities: {
+      compact: '조밀하게',
+      cozy: '보통',
+      comfortable: '넉넉하게',
+    },
     font: '인터페이스 글꼴',
-    fonts: { system: '시스템', sans: '고딕', serif: '명조', mono: '고정폭' },
+    fonts: {
+      system: '시스템',
+      sans: '고딕',
+      serif: '명조',
+      mono: '고정폭',
+    },
     editorTextSize: '편집기 글자 크기 · {size}px',
     cornerRoundness: '모서리 둥글기',
     reduceMotion: '동작 줄이기',
     lineNumbers: '편집기에 줄 번호 표시',
-
     daily: {
       title: '일일 노트',
       about:
@@ -224,12 +248,13 @@ const ko: Messages = {
       homeAlert: '홈에서 오늘의 노트 작성 알림',
       homeAlertHint: '작성하거나 오늘 닫을 때까지 표시됩니다.',
     },
-
     storage: {
       title: '저장 공간',
       used: '{used} 사용 중',
       available: '· {total} 사용 가능',
-      images: { other: '이미지 {count}개 · {size}' },
+      images: {
+        other: '이미지 {count}개 · {size}',
+      },
       persistent: '저장 공간이 영구적입니다. 브라우저가 공간 확보를 위해 노트를 지우지 않습니다.',
       notPersistent:
         '저장 공간이 영구적이지 않습니다. 디스크가 부족하면 브라우저가 지울 수 있고, Safari는 7일 동안 방문이 없으면 지웁니다. 정기적으로 백업을 내보내세요.',
@@ -237,7 +262,6 @@ const ko: Messages = {
       cleanUp: '사용하지 않는 이미지 정리',
       unsupported: '이 브라우저는 저장 공간 사용량을 알려주지 않습니다.',
     },
-
     backup: {
       title: '백업과 이전',
       about:
@@ -263,7 +287,6 @@ const ko: Messages = {
       restore: '복원',
       restoring: '복원 중…',
     },
-
     auto: {
       title: '자동 백업',
       about:
@@ -274,7 +297,12 @@ const ko: Messages = {
       writing: '쓰는 중…',
       forget: '해제',
       frequency: '주기',
-      frequencies: { off: '끔', manual: '수동', daily: '매일', weekly: '매주' },
+      frequencies: {
+        off: '끔',
+        manual: '수동',
+        daily: '매일',
+        weekly: '매주',
+      },
       lastBackup: '마지막 백업: {date}',
       never: '아직 백업이 없습니다.',
       unsupported:
@@ -335,6 +363,11 @@ const ko: Messages = {
       ringFor: '울리는 시간',
       customSounds: '내 소리',
       customSoundsHint: '나만의 알람 소리를 만드세요: 음, 음색, 리듬을 고르세요.',
+      pomodoroHint: '각 단계의 길이와 단계가 끝났을 때의 동작입니다.',
+      longEvery: '긴 휴식 간격',
+      autoStart: '다음 단계를 자동으로 시작',
+      autoStartHint: '울리는 알람 대신 짧은 알림음으로 전환을 알립니다.',
+      pomodoroSound: '뽀모도로 소리',
     },
     notifications: {
       enable: '알림 표시',
@@ -356,12 +389,16 @@ const ko: Messages = {
       about: '자리를 비운 기기에서 열려 있지 않도록 보관함은 자동으로 닫힙니다.',
       autoLock: '비활성 후 잠금',
       autoLockHint: '보관함에서의 마지막 동작부터 계산합니다.',
-      minutes: { other: '{count}분' },
+      minutes: {
+        other: '{count}분',
+      },
       lockOnHide: '앱이 숨겨지면 잠금',
       lockOnHideHint: '탭 전환, 최소화, 화면 끄기 시.',
       clipboard: '복사한 비밀 지우기',
       clipboardHint: '비밀번호와 카드 번호가 클립보드에서 지워집니다.',
-      seconds: { other: '{count}초' },
+      seconds: {
+        other: '{count}초',
+      },
       never: '안 함',
       masterPassword: '마스터 비밀번호',
       change: '마스터 비밀번호 변경',
@@ -370,7 +407,9 @@ const ko: Messages = {
       new: '새 비밀번호',
       delete: '보관함 삭제',
       deleteHint: '모든 항목과 마스터 비밀번호를 지웁니다. 되돌릴 수 없습니다.',
-      deleteConfirm: { other: '항목 {count}개가 영구히 삭제됩니다.' },
+      deleteConfirm: {
+        other: '항목 {count}개가 영구히 삭제됩니다.',
+      },
       typeDelete: '확인하려면 “{word}”를 입력하세요',
       deleteWord: '삭제',
     },
@@ -385,12 +424,13 @@ const ko: Messages = {
         stats: '한눈에 보는 수치',
         activity: '작성 활동',
         calendar: '데일리 노트 달력',
-        meds: '복약',
-        timers: '타이머',
         recent: '최근 노트',
         pinned: '고정된 노트',
         topics: '태그와 폴더',
         vault: '보관함',
+        today: '오늘',
+        focus: '빠른 시작과 집중',
+        habits: '습관',
       },
     },
   },
@@ -401,7 +441,10 @@ const ko: Messages = {
     copySuffix: '{name} 사본',
     customTheme: '사용자 테마',
     base: '기본',
-    modes: { light: '밝게', dark: '어둡게' },
+    modes: {
+      light: '밝게',
+      dark: '어둡게',
+    },
     accent: '강조색',
     accentHint: '색을 먼저 고르고, 밝기와 채도를 조절하세요.',
     accentLightness: '강조색 밝기',
@@ -491,7 +534,9 @@ const ko: Messages = {
       '노트 전체가 링크 자체에 담깁니다. 어디에도 업로드되지 않으며, 링크를 연 사람이 자기 브라우저에서 해독합니다.',
     noImages: '이미지는 공유되지 않습니다.',
     noImagesBody: '링크에는 노트의 글만 담깁니다.',
-    imageCount: { other: '이 노트에는 이미지가 {count}개 있지만 받는 사람에게는 보이지 않습니다.' },
+    imageCount: {
+      other: '이 노트에는 이미지가 {count}개 있지만 받는 사람에게는 보이지 않습니다.',
+    },
     characters: '{count}자',
     tooLong: '{max}보다 깁니다. 일부 앱은 링크를 잘라냅니다.',
     warning: '링크를 가진 사람은 누구나 이 노트를 읽을 수 있습니다. 노트 자체처럼 다루세요.',
@@ -523,19 +568,31 @@ const ko: Messages = {
     notesDeleted: '노트 {count}개를 영구 삭제했습니다.',
     notesDeletedForGood: '노트 {count}개를 완전히 삭제했습니다.',
     folderDeleted: '폴더를 삭제했습니다.',
-    folderDeletedWithNotes: { other: '폴더를 삭제하고 노트 {count}개를 휴지통으로 옮겼습니다.' },
+    folderDeletedWithNotes: {
+      other: '폴더를 삭제하고 노트 {count}개를 휴지통으로 옮겼습니다.',
+    },
     cannotNestInSelf: '폴더를 자기 자신 안으로 옮길 수 없습니다.',
     searchSaved: '검색을 저장했습니다.',
-    linksUpdated: { other: '노트 {count}개의 링크를 갱신했습니다.' },
+    linksUpdated: {
+      other: '노트 {count}개의 링크를 갱신했습니다.',
+    },
     templateSaved: '서식으로 저장했습니다.',
     templateRemoved: '더 이상 서식이 아닙니다.',
-    trashPurged: { other: '보관 기간 30일이 지난 노트 {count}개를 정리했습니다.' },
+    trashPurged: {
+      other: '보관 기간 30일이 지난 노트 {count}개를 정리했습니다.',
+    },
     persistGranted: '저장 공간을 영구로 표시했습니다.',
     persistDenied: '브라우저가 거부했습니다. 안전하게 백업 내보내기를 계속하세요.',
     noOrphanImages: '정리할 미사용 이미지가 없습니다.',
-    orphanImagesRemoved: { other: '미사용 이미지 {count}개를 삭제했습니다.' },
-    notesEncrypted: { other: '노트 {count}개를 암호화했습니다.' },
-    notesDecrypted: { other: '노트 {count}개를 복호화했습니다.' },
+    orphanImagesRemoved: {
+      other: '미사용 이미지 {count}개를 삭제했습니다.',
+    },
+    notesEncrypted: {
+      other: '노트 {count}개를 암호화했습니다.',
+    },
+    notesDecrypted: {
+      other: '노트 {count}개를 복호화했습니다.',
+    },
     themeSaved: '테마를 저장했습니다.',
     themeLoaded: '테마를 불러왔습니다. 저장해야 유지됩니다.',
     themeInvalid: '그 파일은 Noter 테마가 아닙니다.',
@@ -565,7 +622,6 @@ const ko: Messages = {
     secretsSkipped: '이 백업의 보관함 항목은 다른 보관함의 것이라 가져오지 않았습니다.',
   },
 
-  update: { ready: 'Noter 새 버전이 준비되었습니다. 지금 새로 고칠까요?' },
   menu: {
     moveTo: '이동',
     markTemplate: '템플릿으로 사용',
@@ -573,12 +629,15 @@ const ko: Messages = {
     showNotesTagged: '#{tag} 태그 노트 보기',
     searchTag: '이 태그로 검색',
   },
+
   nav: {
     main: '주 탐색',
     home: '홈',
     notes: '노트',
     search: '검색',
-    alerts: { other: '알림 {count}개' },
+    alerts: {
+      other: '알림 {count}개',
+    },
     resizeSidebar: '폴더 사이드바 크기 조절',
     resizeList: '노트 목록 크기 조절',
     collapseSidebar: '폴더 숨기기',
@@ -586,7 +645,9 @@ const ko: Messages = {
     timers: '타이머',
     meds: '복약',
     vault: '보관함',
+    habits: '습관',
   },
+
   home: {
     greeting: {
       night: '아직 안 주무세요?',
@@ -599,7 +660,6 @@ const ko: Messages = {
     noNotes: '아직 작성한 내용이 없습니다. 새 노트로 시작하세요.',
     customize: '사용자 지정',
     pinned: '고정됨',
-    medsEmpty: '추가된 약이 없습니다.',
     weekOf: '{date} 주',
     daily: {
       title: '오늘의 노트가 아직 비어 있습니다',
@@ -613,20 +673,36 @@ const ko: Messages = {
       thisWeek: '작성을 시작하면 늘어나요',
       streak: '연속 작성',
       tasks: '남은 할 일',
-      createdThisWeek: { other: '이번 주 {count}개 추가' },
-      vsLastWeek: { other: '지난주 대비 {count}단어' },
-      days: { other: '일 연속' },
-      tasksDone: { other: '{count}개 완료' },
+      createdThisWeek: {
+        other: '이번 주 {count}개 추가',
+      },
+      vsLastWeek: {
+        other: '지난주 대비 {count}단어',
+      },
+      days: {
+        other: '일 연속',
+      },
+      tasksDone: {
+        other: '{count}개 완료',
+      },
     },
     activity: {
       title: '작성 활동',
       weekly: '주별 단어 수',
       less: '적음',
       more: '많음',
-      edits: { other: '{count}회 편집' },
-      words: { other: '{count}단어' },
-      cell: { other: '{date}: {count}회 편집' },
-      summary: { other: '최근 {weeks}주 중 {count}일 작성' },
+      edits: {
+        other: '{count}회 편집',
+      },
+      words: {
+        other: '{count}단어',
+      },
+      cell: {
+        other: '{date}: {count}회 편집',
+      },
+      summary: {
+        other: '최근 {weeks}주 중 {count}일 작성',
+      },
     },
     calendar: {
       title: '데일리 노트',
@@ -639,16 +715,53 @@ const ko: Messages = {
       folders: '가장 큰 폴더',
       noTags: '노트에 #태그를 추가하면 여기에 표시됩니다.',
       noFolders: '폴더에 있는 노트가 여기에 표시됩니다.',
-      notes: { other: '노트 {count}개' },
+      notes: {
+        other: '노트 {count}개',
+      },
+      title: '태그와 폴더',
     },
     vault: {
       notSet: '설정 안 됨',
       open: '열림',
       locked: '잠김',
       setUp: '설정',
-      entries: { other: '항목 {count}개' },
+      entries: {
+        other: '항목 {count}개',
+      },
+    },
+    seeAll: '모두 보기',
+    summary: {
+      doses: {
+        other: '복용 {count}회 예정',
+      },
+      habits: {
+        other: '남은 습관 {count}개',
+      },
+      timers: {
+        other: '타이머 {count}개 작동 중',
+      },
+      clear: '밀린 일이 없어요. 뭔가 적어 두기 좋은 때예요.',
+    },
+    today: {
+      title: '오늘',
+      pending: {
+        other: '할 일 {count}개',
+      },
+      clear: '오늘 할 일을 모두 마쳤어요',
+      clearHint: '복용, 습관, 작동 중인 타이머가 여기에 표시됩니다.',
+      medAt: '{time} · {span} 후',
+      habit: '하고 나면 동그라미를 누르세요',
+    },
+    focus: {
+      title: '빠른 시작',
+      start: '집중 시작',
+      running: '뽀모도로 진행 중',
+      minutes: {
+        other: '오늘 집중 {count}분',
+      },
     },
   },
+
   blocks: {
     text: '텍스트',
     h1: '제목 1',
@@ -675,6 +788,7 @@ const ko: Messages = {
     editSource: '마크다운으로 편집',
     hint: '/ 를 입력해 블록 추가',
   },
+
   timers: {
     defaults: {
       quick: '빠르게',
@@ -710,7 +824,8 @@ const ko: Messages = {
     addMinute: '1분 추가',
     restart: '다시 시작',
     cancel: '타이머 취소',
-    about: '타이머를 탭해 시작하세요. 직접 추가하고 원하는 순서로 끌어 정렬할 수 있습니다.',
+    about:
+      '한 번 탭으로 시작하는 카운트다운입니다. 나만의 타이머를 추가하고 원하는 순서로 끌어다 놓으세요.',
     quickPlaceholder: '10, 1h30, 5:00…',
     quickLabel: '타이머 시작… (분 또는 1h30, 90s, 5:00 등)',
     start: '시작',
@@ -722,8 +837,21 @@ const ko: Messages = {
     dragToReorder: '끌어서 순서 변경',
     presetActions: '타이머 작업',
     presetDeleted: '타이머를 삭제했습니다.',
-    moreRinging: { other: '…외 {count}개' },
+    moreRinging: {
+      other: '…외 {count}개',
+    },
+    tabs: {
+      alarms: '알람',
+      pomodoro: '뽀모도로',
+      stopwatch: '스톱워치',
+    },
+    previewNamed: '{name} 재생',
+    hours: '시간',
+    minutes: '분',
+    seconds: '초',
+    deletePresetTitle: '“{label}”을(를) 삭제할까요?',
   },
+
   sounds: {
     classic: '클래식 삐삐',
     bell: '종소리',
@@ -753,7 +881,10 @@ const ko: Messages = {
     speed: '음 길이 · {ms} ms',
     pause: '반복 간격 · {ms} ms',
     volume: '볼륨',
+    deleteTitle: '“{name}”을(를) 삭제할까요?',
+    deleteBody: '이 소리를 쓰는 타이머는 기본 소리로 울립니다.',
   },
+
   meds: {
     about: '한 번 탭해 복용을 기록하세요. 다음 복용은 마지막 복용 시각부터 계산됩니다.',
     add: '약 추가',
@@ -789,7 +920,9 @@ const ko: Messages = {
     today: '오늘',
     lastWeek: '지난 7일',
     everyN: '{hours}시간마다',
-    left: { other: '{count}회 남음' },
+    left: {
+      other: '{count}회 남음',
+    },
     state: {
       first: '첫 복용 때 “복용함”을 누르세요',
       paused: '알림 일시정지됨',
@@ -801,11 +934,33 @@ const ko: Messages = {
       soon: '{name}: {span} 후 다음 복용',
       due: '{name} 복용 시간',
       overdue: '{name} 복용이 {span} 늦었습니다',
-      lowStock: { other: '{name}이(가) 얼마 남지 않았습니다: {count}회 남음' },
+      lowStock: {
+        other: '{name}이(가) 얼마 남지 않았습니다: {count}회 남음',
+      },
     },
     notifyBody: '용량: {dose}. Noter를 열고 복용함을 누르세요.',
     notifyBodyPlain: 'Noter를 열고 복용함을 누르세요.',
+    logged: '{name}: 복용 기록됨',
+    deleteTitle: '“{name}”을(를) 삭제할까요?',
+    deleteBody: '복용 기록도 삭제됩니다. 보존하려면 알림을 일시정지하세요.',
+    confirm: {
+      title: '{name}을(를) 벌써 또 복용하나요?',
+      body: '일정보다 이릅니다. 기록하기 전에 확인하세요.',
+      schedule: {
+        other: '일정: {hours}시간마다 (하루 {count}회)',
+      },
+      recent: {
+        other: '이미 복용: 최근 {hours}시간 동안 {count}회',
+      },
+      next: '다음 복용은 {time}, {span} 후',
+      today: {
+        other: '오늘: {max}회 중 {count}회 복용함',
+      },
+      anyway: '그래도 기록',
+      cancel: '기록 안 함',
+    },
   },
+
   vault: {
     setupTitle: '보관함 설정',
     setupBody: '비밀번호, 카드, 비공개 메모를 나만 아는 마스터 비밀번호로 이 기기에서 암호화합니다.',
@@ -870,7 +1025,9 @@ const ko: Messages = {
     generate: '비밀번호 생성',
     regenerate: '다시 생성',
     length: '길이 {length}',
-    count: { other: '항목 {count}개, 이 기기에서 암호화됨' },
+    count: {
+      other: '항목 {count}개, 이 기기에서 암호화됨',
+    },
     empty: '보관함이 비어 있습니다',
     emptyBody: '로그인, 카드 등 비밀번호로 지키고 싶은 것을 추가하세요.',
     search: '보관함 검색',
@@ -891,6 +1048,193 @@ const ko: Messages = {
     deleted: '항목을 삭제했습니다.',
     passwordChanged: '마스터 비밀번호를 변경했습니다.',
     destroyed: '보관함을 삭제했습니다.',
+  },
+
+  pomodoro: {
+    title: '뽀모도로',
+    about: '짧은 휴식을 사이에 두고 블록 단위로 집중하고, 몇 라운드마다 긴 휴식을 가집니다.',
+    next: '다음',
+    phase: {
+      focus: '집중',
+      short: '짧은 휴식',
+      long: '긴 휴식',
+    },
+    start: {
+      focus: '집중 시작',
+      short: '짧은 휴식 갖기',
+      long: '긴 휴식 갖기',
+    },
+    session: '라운드 {n} / {total}',
+    reset: '초기화',
+    skip: '다음 단계로 건너뛰기',
+    lengths: '{focus} · {short} · {long}분',
+    today: '오늘 집중',
+    week: '지난 7일',
+    sessions: {
+      other: '{count}세션 완료',
+    },
+  },
+
+  stopwatch: {
+    about: '스페이스로 시작·정지, L로 랩을 기록합니다. 앱을 닫아도 계속 흘러갑니다.',
+    hint: '시작을 누르거나 스페이스 바를 누르세요',
+    lap: '랩 {n}',
+    lapAction: '랩',
+    reset: '초기화',
+    laps: '랩',
+    split: '랩 시간',
+    total: '합계',
+    best: '가장 빠름',
+    worst: '가장 느림',
+  },
+
+  habits: {
+    about: '꾸준히 하고 싶은 작은 일들. 탭해서 체크하고 연속 기록이 늘어나는 걸 지켜보세요.',
+    new: '새 습관',
+    edit: '습관 편집',
+    empty: '아직 습관이 없어요',
+    emptyBody: '물 마시기, 산책, 10쪽 읽기: 꾸준히 하고 싶은 일을 추가하고 매일 체크하세요.',
+    name: '이름',
+    namePlaceholder: '예: 물 마시기, 독서, 스트레칭',
+    icon: '아이콘과 색',
+    when: '언제',
+    schedule: {
+      daily: '매일',
+      weekdays: '특정 요일',
+      perWeek: '주당 횟수',
+    },
+    perWeekShort: {
+      other: '주 {count}회',
+    },
+    timesPerWeek: '회 / 주 (요일 무관)',
+    target: '하루 횟수',
+    targetHint: '물 잔 수처럼 세는 일이라면 2 이상으로.',
+    remind: '이 시각까지 안 했으면 알림',
+    done: '완료',
+    notDone: '미완료',
+    doneNamed: '{name}: 완료 — 탭하여 취소',
+    checkNamed: '{name} 완료로 표시',
+    undoOne: '하나 빼기',
+    archive: '보관',
+    unarchive: '되돌리기',
+    archived: {
+      other: '보관된 습관 {count}개',
+    },
+    actions: '습관 작업',
+    thisWeek: '이번 주',
+    today: '오늘',
+    todayHint: '오늘의 습관',
+    allDone: '오늘은 모두 완료',
+    left: {
+      other: '{count}개 남음',
+    },
+    history: '최근 17주',
+    current: '현재 연속 기록',
+    best: '최고 연속 기록',
+    last30: '최근 30일',
+    bestStreak: {
+      other: '최고: {count}',
+    },
+    streakDays: {
+      other: '{count}일',
+    },
+    streakWeeks: {
+      other: '{count}주',
+    },
+    alert: '{name} 할 시간이에요',
+    notifyBody: 'Noter를 열고 체크하세요.',
+    deleteTitle: '“{name}”을(를) 삭제할까요?',
+    deleteBody: '모든 기록도 함께 삭제됩니다. 기록을 남기려면 보관하세요.',
+    deleted: '습관을 삭제했어요.',
+  },
+
+  updates: {
+    title: '업데이트',
+    check: '업데이트 확인',
+    checking: '확인 중…',
+    current: '최신 버전을 사용 중입니다.',
+    available: 'Noter {version} 사용 가능',
+    availableWeb: 'Noter 새 버전이 준비되었습니다',
+    ready: '업데이트 설치됨',
+    failed: '업데이트를 확인하지 못했습니다. 나중에 다시 시도하세요.',
+    store: 'Microsoft Store가 이 앱을 최신 상태로 유지합니다.',
+    auto: 'Noter 시작 시 자동으로 확인',
+    installHint: '백그라운드에서 다운로드되며 노트는 그대로 유지됩니다.',
+    downloadHint: '릴리스 페이지에서 다운로드해 이 버전 위에 설치하세요.',
+    install: '지금 업데이트',
+    download: '다운로드',
+    reload: '새로고침',
+    restart: '지금 다시 시작',
+    later: '나중에',
+    skip: '이 버전 건너뛰기',
+    how: {
+      web: '웹 앱은 자동으로 업데이트되며 새로고침 전에 물어봅니다.',
+      store: 'Microsoft Store에서 설치되어 Store가 업데이트를 설치합니다.',
+      installer: 'Noter가 새 버전을 직접 다운로드하고 설치합니다.',
+      appimage: 'Noter가 새 버전을 직접 다운로드하고 설치합니다.',
+      'system-package': '시스템 패키지로 설치되었습니다. 새 버전이 나오면 알려 드립니다.',
+      android: '새 버전이 나오면 알려 드리고 다운로드로 연결합니다.',
+    },
+  },
+
+  tour: {
+    invite: {
+      title: '처음이신가요? 2분 둘러보기',
+      body: '노트, 타이머, 습관, 복약, 금고를 빠르게 살펴봅니다.',
+      start: '보여 주세요',
+    },
+    settingsTitle: '환영 둘러보기',
+    settingsHint: 'Noter의 각 기능을 다시 살펴봅니다.',
+    progress: '{total}단계 중 {n}단계',
+    skip: '건너뛰기',
+    back: '뒤로',
+    next: '다음',
+    start: '시작하기',
+    finish: 'Noter 사용 시작',
+    welcome: {
+      title: 'Noter에 오신 것을 환영합니다',
+      body: '노트, 타이머, 습관, 복약, 비밀번호를 모두 이 기기에. 내보내지 않는 한 밖으로 나가지 않습니다.',
+    },
+    nav: {
+      title: '모든 것이 클릭 한 번',
+      body: '각 영역이 여기에 있습니다. Ctrl/⌘ + 1…6으로 바로 이동하세요.',
+    },
+    home: {
+      title: '홈에서 하루를 한눈에',
+      body: '여기서 노트를 만들고, 오늘의 노트나 집중 세션을 시작하세요. “오늘”에는 바로 처리할 복용, 습관, 타이머가 모입니다.',
+    },
+    customize: {
+      title: '홈을 내 마음대로',
+      body: '표시할 블록과 순서를 고르세요. 레이아웃이 빈틈없이 알아서 정리됩니다.',
+    },
+    notes: {
+      title: '블록으로 만드는 노트',
+      body: '노트에서 /를 입력해 체크리스트, 보드, 갤러리, 코드를 넣으세요. [[이중 괄호]]로 연결하고 #태그로 분류하세요.',
+    },
+    timers: {
+      title: '알람, 뽀모도로, 스톱워치',
+      body: '미리 들어볼 수 있는 소리의 원탭 카운트다운, 휴식이 있는 집중 세션, 랩 기록 스톱워치.',
+    },
+    habits: {
+      title: '습관을 만들고 연속 기록 유지',
+      body: '매일, 특정 요일, 또는 주 몇 회. 체크하고 연속 기록과 이력이 쌓이는 걸 보세요.',
+    },
+    meds: {
+      title: '복용을 놓치지 마세요',
+      body: '한 번 탭으로 복용을 기록하세요. 다음 복용을 알려 주고, 너무 이른 기록은 먼저 확인합니다.',
+    },
+    vault: {
+      title: '비밀을 위한 금고',
+      body: '비밀번호, 카드, 개인 메모를 나만 아는 마스터 비밀번호로 암호화합니다.',
+    },
+    search: {
+      title: '무엇이든 찾기',
+      body: 'Ctrl/⌘ + K로 모든 노트를 검색하고 이 둘러보기를 포함한 모든 명령을 실행하세요.',
+    },
+    done: {
+      title: '준비 완료',
+      body: '노트, 습관, 타이머로 시작해 보세요. 둘러보기는 설정에서 언제든 다시 볼 수 있습니다.',
+    },
   },
 }
 

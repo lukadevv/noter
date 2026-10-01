@@ -8,7 +8,9 @@ import { alerts, type Alert } from '$lib/stores/alerts.svelte'
 import { theme } from '$lib/stores/theme.svelte'
 import { alarm, BUILTIN_SOUNDS } from '$lib/audio/beeps'
 import * as notify from '$lib/platform/notify'
-import { dosesLeft, formatSpan, lowStock, statusOf, DAY, type MedStatus } from './schedule'
+import { confirm } from '$lib/stores/confirm.svelte'
+import { ui } from '$lib/stores/ui.svelte'
+import { doseCheck, dosesLeft, formatSpan, lowStock, statusOf, DAY, type MedStatus } from './schedule'
 import { t } from '$lib/i18n/index.svelte'
 
 /** How far back dose history is kept in memory (the database keeps everything). */
@@ -85,7 +87,7 @@ class MedsStore {
     for (const med of this.active) {
       const status = this.statuses.get(med.id)
       if (!status) continue
-      const take = { label: t('meds.taken'), run: () => void this.take(med.id) }
+      const take = { label: t('meds.taken'), run: () => void this.requestTake(med.id) }
       const title = `${med.name}${med.dose ? ` · ${med.dose}` : ''}`
       if (status.state === 'soon') {
         list.push({
@@ -160,6 +162,46 @@ class MedsStore {
   }
 
   // --- Doses ----------------------------------------------------------------
+
+  /**
+   * The "Taken" button. Logs the dose — unless it comes well before the next
+   * one is due, in which case it says so and asks first: a second tap, a
+   * double dose or the wrong row are all easy to do and worth a pause. Then
+   * a toast offers to undo. Resolves to whether a dose was logged.
+   */
+  async requestTake(medId: string, at = Date.now()): Promise<boolean> {
+    const med = this.meds.find((m) => m.id === medId)
+    if (!med) return false
+    const warning = doseCheck(med, this.doses, at)
+    if (warning) {
+      const time = (ms: number) =>
+        new Date(ms).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      const details = [
+        t('meds.confirm.schedule', { hours: med.intervalHours, count: warning.perDay }),
+        t('meds.confirm.recent', { count: warning.recent, hours: med.intervalHours }),
+        t('meds.confirm.next', { time: time(warning.nextDue), span: formatSpan(warning.early) }),
+      ]
+      if (warning.today >= warning.perDay) {
+        details.push(t('meds.confirm.today', { count: warning.today, max: warning.perDay }))
+      }
+      const ok = await confirm.ask({
+        title: t('meds.confirm.title', { name: med.name }),
+        body: t('meds.confirm.body'),
+        details,
+        confirmLabel: t('meds.confirm.anyway'),
+        cancelLabel: t('meds.confirm.cancel'),
+        tone: 'warn',
+        icon: 'pill',
+      })
+      if (!ok) return false
+    }
+    const dose = await this.take(medId, at)
+    ui.toast(t('meds.logged', { name: med.name }), 'ok', {
+      label: t('meds.undo'),
+      run: () => void this.undo(dose.id),
+    })
+    return true
+  }
 
   /** Logs a dose (now, or at a time the user picks) and reschedules the next. */
   async take(medId: string, at = Date.now(), status: Dose['status'] = 'taken'): Promise<Dose> {

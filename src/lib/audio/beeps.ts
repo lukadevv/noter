@@ -181,10 +181,14 @@ class AlarmPlayer {
     return patternMs(recipe)
   }
 
-  /** A single pass, for previews in the sound picker and editor. */
-  preview(recipe: SoundRecipe, volume = 1): void {
+  /**
+   * A single pass, for previews in the sound picker and editor. Returns how
+   * long it sounds, in ms, so a picker can show it playing until it ends.
+   */
+  preview(recipe: SoundRecipe, volume = 1): number {
     this.unlock()
     this.#playOnce(recipe, volume)
+    return recipe.notes.length * recipe.noteMs + recipe.releaseMs
   }
 
   /**

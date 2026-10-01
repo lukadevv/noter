@@ -17,6 +17,50 @@ fn write_export(path: String, contents: String) -> Result<(), String> {
     std::fs::write(&path, bytes).map_err(|error| format!("{path} could not be written: {error}"))
 }
 
+/// How this copy of the app was installed, which decides how it updates.
+///
+/// - `store`: the Microsoft Store package (MSIX). The Store updates it; the app
+///   must not try to replace its own files, which it cannot write anyway.
+/// - `appimage`: a Linux AppImage, which the updater can replace in place.
+/// - `system-package`: a Linux .deb or .rpm, owned by the package manager. The
+///   app only says a new version exists and links to it.
+/// - `installer`: the Windows installer (NSIS/MSI) or macOS app bundle, both of
+///   which the updater can update.
+#[tauri::command]
+fn install_kind() -> &'static str {
+    let exe = std::env::current_exe()
+        .map(|path| path.to_string_lossy().to_lowercase())
+        .unwrap_or_default();
+    if cfg!(target_os = "windows") && exe.contains("\\windowsapps\\") {
+        "store"
+    } else if cfg!(target_os = "linux") {
+        if std::env::var_os("APPIMAGE").is_some() {
+            "appimage"
+        } else {
+            "system-package"
+        }
+    } else {
+        "installer"
+    }
+}
+
+/// Opens a release page in the system browser, for installs the app cannot
+/// update itself (Linux .deb/.rpm). Only this project's GitHub pages are
+/// accepted, so the webview cannot be used to launch arbitrary programs.
+#[tauri::command]
+fn open_release_page(url: String) -> Result<(), String> {
+    if !url.starts_with("https://github.com/lukadevv/noter/") {
+        return Err("Only Noter's release pages can be opened.".into());
+    }
+    #[cfg(target_os = "windows")]
+    let result = std::process::Command::new("explorer").arg(&url).spawn();
+    #[cfg(target_os = "macos")]
+    let result = std::process::Command::new("open").arg(&url).spawn();
+    #[cfg(not(any(target_os = "windows", target_os = "macos")))]
+    let result = std::process::Command::new("xdg-open").arg(&url).spawn();
+    result.map(|_| ()).map_err(|error| error.to_string())
+}
+
 /// Starts the window described by `tauri.conf.json`.
 ///
 /// One setting there is worth explaining, since JSON cannot: `dragDropEnabled`
@@ -29,11 +73,22 @@ fn write_export(path: String, contents: String) -> Result<(), String> {
 /// first `--disable-features` flag repeats them.
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    tauri::Builder::default()
+    let builder = tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
         // Timer and medication reminders are shown as system notifications.
-        .plugin(tauri_plugin_notification::init())
-        .invoke_handler(tauri::generate_handler![write_export])
+        .plugin(tauri_plugin_notification::init());
+
+    // In-app updates: the updater checks the latest GitHub release's
+    // `latest.json` and verifies the download against the public key baked
+    // into tauri.conf.json at build time; `process` restarts into the new
+    // version.
+    #[cfg(desktop)]
+    let builder = builder
+        .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(tauri_plugin_process::init());
+
+    builder
+        .invoke_handler(tauri::generate_handler![write_export, install_kind, open_release_page])
         .run(tauri::generate_context!())
         .expect("Noter failed to start");
 }

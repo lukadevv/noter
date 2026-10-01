@@ -27,6 +27,26 @@ export interface TimerSettings {
   seeded: boolean
 }
 
+export interface PomodoroSettings {
+  focusMinutes: number
+  shortMinutes: number
+  longMinutes: number
+  /** A long break after this many focus sessions. */
+  longEvery: number
+  /** Start the next phase by itself when one ends. */
+  autoStart: boolean
+  soundId: string
+}
+
+export interface UpdateSettings {
+  /** Look for a new version when the app starts (at most once a day). */
+  autoCheck: boolean
+  /** When the last automatic check ran. */
+  lastCheck: number
+  /** A version the user chose to skip. */
+  skipped: string
+}
+
 export interface VaultSettings {
   /** Minutes without activity before the vault locks itself. */
   autoLockMinutes: number
@@ -39,22 +59,30 @@ export interface VaultSettings {
 /** The blocks Home can show, in the order the user chose. */
 export const HOME_WIDGETS = [
   'alerts',
-  'stats',
-  'activity',
+  'today',
   'calendar',
-  'meds',
-  'timers',
+  'stats',
   'recent',
   'pinned',
+  'focus',
+  'habits',
+  'activity',
   'topics',
   'vault',
 ] as const
+
+/**
+ * Bumped when the default arrangement changes enough that existing users
+ * should get it once. Their choice of what is visible is kept.
+ */
+export const HOME_LAYOUT_VERSION = 2
 export type HomeWidget = (typeof HOME_WIDGETS)[number]
 
 export interface HomeSettings {
   widgets: { id: HomeWidget; visible: boolean }[]
   /** Day key on which the "write today's note" reminder was dismissed. */
   dailyDismissed: string
+  layoutVersion: number
 }
 
 export interface AppSettings {
@@ -76,6 +104,10 @@ export interface AppSettings {
   /** What opening the app shows first. */
   startSection: 'home' | 'notes'
   timers: TimerSettings
+  pomodoro: PomodoroSettings
+  /** The welcome tour was finished or skipped. */
+  tourDone: boolean
+  updates: UpdateSettings
   /** Show a system notification when a timer or a dose is due. */
   notifications: boolean
   vault: VaultSettings
@@ -103,11 +135,22 @@ export const DEFAULT_SETTINGS: AppSettings = {
   sidebarCollapsed: false,
   startSection: 'home',
   timers: { volume: 0.8, ringSeconds: 60, defaultSoundId: 'classic', seeded: false },
+  pomodoro: {
+    focusMinutes: 25,
+    shortMinutes: 5,
+    longMinutes: 15,
+    longEvery: 4,
+    autoStart: false,
+    soundId: 'bell',
+  },
+  tourDone: false,
+  updates: { autoCheck: true, lastCheck: 0, skipped: '' },
   notifications: true,
   vault: { autoLockMinutes: 5, lockOnHide: true, clipboardSeconds: 30 },
   home: {
     widgets: HOME_WIDGETS.map((id) => ({ id, visible: true })),
     dailyDismissed: '',
+    layoutVersion: HOME_LAYOUT_VERSION,
   },
 }
 
@@ -185,8 +228,15 @@ export function migrateSettings(stored: Partial<AppSettings> & LegacySettings): 
     merged.dailyNotes = kept
   }
 
-  // Widgets added in a later version join the end of the user's own order.
   const home = merged.home as HomeSettings
+  // A new default arrangement is applied once, keeping what the user hid.
+  // (Stored settings without a version predate versioning, hence the 1.)
+  if ((stored.home?.layoutVersion ?? (stored.home ? 1 : HOME_LAYOUT_VERSION)) < HOME_LAYOUT_VERSION) {
+    const hidden = new Set(home.widgets.filter((w) => !w.visible).map((w) => w.id as string))
+    home.widgets = HOME_WIDGETS.map((id) => ({ id, visible: !hidden.has(id) }))
+    home.layoutVersion = HOME_LAYOUT_VERSION
+  }
+  // Widgets added in a later version join the end of the user's own order.
   const known = home.widgets.filter((w) => (HOME_WIDGETS as readonly string[]).includes(w.id))
   const missing = HOME_WIDGETS.filter((id) => !known.some((w) => w.id === id))
   merged.home = { ...home, widgets: [...known, ...missing.map((id) => ({ id, visible: true }))] }

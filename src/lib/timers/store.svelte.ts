@@ -1,6 +1,13 @@
 import { liveQuery, type Subscription } from 'dexie'
 import { db } from '$lib/db/db'
-import type { RunningTimer, Sound, SoundRecipe, TimerPreset } from '$lib/db/schema'
+import type {
+  FocusSession,
+  PomodoroPhase,
+  RunningTimer,
+  Sound,
+  SoundRecipe,
+  TimerPreset,
+} from '$lib/db/schema'
 import { uuid } from '$lib/utils/uuid'
 import { orderAfterLast, orderBetween } from '$lib/utils/order'
 import { alarm, BUILTIN_SOUNDS, DEFAULT_SOUND_ID } from '$lib/audio/beeps'
@@ -9,6 +16,8 @@ import { alerts } from '$lib/stores/alerts.svelte'
 import { theme } from '$lib/stores/theme.svelte'
 import * as notify from '$lib/platform/notify'
 import { formatLength } from './duration'
+import { nextStep, phaseMinutes, type PomodoroStep } from './pomodoro'
+import { addDays, dayKey } from '$lib/utils/dates'
 import { t } from '$lib/i18n/index.svelte'
 
 /** One, three, five… the timers people reach for most, created on first run. */
@@ -31,12 +40,28 @@ class TimersStore {
   presets = $state<TimerPreset[]>([])
   running = $state<RunningTimer[]>([])
   sounds = $state<Sound[]>([])
+  /** Finished focus sessions of the last few weeks, oldest first. */
+  focus = $state<FocusSession[]>([])
   loaded = $state(false)
 
   #subs: Subscription[] = []
   #started = false
 
   ringing: RunningTimer[] = $derived(this.running.filter((timer) => timer.firedAt > 0))
+
+  /** Plain countdowns, the "Alarms" tab: everything but the pomodoro. */
+  alarms: RunningTimer[] = $derived(this.running.filter((timer) => timer.kind !== 'pomodoro'))
+
+  /** The pomodoro phase in progress (running, paused or ringing), if any. */
+  pomodoro: RunningTimer | null = $derived(this.running.find((timer) => timer.kind === 'pomodoro') ?? null)
+
+  /** Focus minutes per day key. */
+  focusByDay: Map<string, number> = $derived.by(() => {
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity -- rebuilt whole on every change
+    const map = new Map<string, number>()
+    for (const session of this.focus) map.set(session.day, (map.get(session.day) ?? 0) + session.minutes)
+    return map
+  })
 
   start(): void {
     if (this.#started) return
@@ -54,6 +79,11 @@ class TimersStore {
       liveQuery(() => db.sounds.toArray()).subscribe((sounds) => {
         this.sounds = sounds
       }),
+      liveQuery(() =>
+        db.focusSessions.where('day').aboveOrEqual(addDays(dayKey(), -90)).toArray(),
+      ).subscribe((sessions) => {
+        this.focus = sessions.sort((a, b) => a.startedAt - b.startedAt)
+      }),
     )
     void this.#seed()
 
@@ -69,7 +99,10 @@ class TimersStore {
         tone: 'danger' as const,
         icon: 'alarm-clock',
         title: t('timers.ringingTitle', { label: timer.label || t('timers.timer') }),
-        action: { label: t('timers.stop'), run: () => void this.dismiss(timer.id) },
+        action: {
+          label: timer.kind === 'pomodoro' ? t('pomodoro.next') : t('timers.stop'),
+          run: () => void this.dismiss(timer.id),
+        },
       })),
     )
   }
@@ -206,8 +239,76 @@ class TimersStore {
   async dismiss(id: string): Promise<void> {
     const timer = await db.timers.get(id)
     alarm.stop(id)
-    if (timer?.repeat) await this.restart(id)
+    if (timer?.kind === 'pomodoro') await this.#advancePomodoro(timer, false)
+    else if (timer?.repeat) await this.restart(id)
     else await this.cancel(id)
+  }
+
+  // --- Pomodoro ---------------------------------------------------------------
+
+  /** Starts a focus session (or the given phase) now, replacing any pomodoro in progress. */
+  async startPomodoro(step: PomodoroStep = { phase: 'focus', cycle: 0 }, running = true): Promise<void> {
+    alarm.unlock()
+    const current = this.pomodoro
+    if (current) await this.cancel(current.id)
+    await this.#createPhase(step, running)
+  }
+
+  /** Ends the current phase early and lines up the next one, ready to start. */
+  async skipPomodoro(): Promise<void> {
+    const current = this.pomodoro
+    if (current) await this.#advancePomodoro(current, true)
+  }
+
+  async resetPomodoro(): Promise<void> {
+    const current = this.pomodoro
+    if (current) await this.cancel(current.id)
+  }
+
+  async #createPhase(step: PomodoroStep, running: boolean): Promise<void> {
+    const settings = theme.settings.pomodoro
+    const seconds = Math.max(1, Math.round(phaseMinutes(step.phase, settings) * 60))
+    const now = Date.now()
+    const timer: RunningTimer = {
+      id: uuid(),
+      presetId: null,
+      label: t(`pomodoro.phase.${step.phase}`),
+      seconds,
+      endAt: running ? now + seconds * 1000 : 0,
+      pausedRemaining: running ? null : seconds * 1000,
+      soundId: settings.soundId,
+      repeat: 0,
+      firedAt: 0,
+      createdAt: now,
+      kind: 'pomodoro',
+      phase: step.phase,
+      cycle: step.cycle,
+    }
+    await db.timers.add(timer)
+    if (running) void this.#scheduleNative(timer)
+  }
+
+  /**
+   * Moves a pomodoro on to its next phase. A phase that ran out moves on by
+   * itself when auto-start is on; a skipped one waits for Start.
+   */
+  async #advancePomodoro(timer: RunningTimer, skipped: boolean): Promise<void> {
+    const next = nextStep(
+      { phase: timer.phase ?? 'focus', cycle: timer.cycle ?? 0 },
+      theme.settings.pomodoro,
+    )
+    await this.cancel(timer.id)
+    await this.#createPhase(next, !skipped && theme.settings.pomodoro.autoStart)
+  }
+
+  /** Focus minutes on each of the last `days` days, oldest first. */
+  focusSeries(days: number): number[] {
+    const today = dayKey()
+    return Array.from({ length: days }, (_, i) => this.focusByDay.get(addDays(today, i - days + 1)) ?? 0)
+  }
+
+  phaseOf(timer: RunningTimer): PomodoroPhase {
+    return timer.phase ?? 'focus'
   }
 
   async snooze(id: string, minutes: number): Promise<void> {
@@ -224,14 +325,36 @@ class TimersStore {
     })
     if (!claimed) return
     const settings = theme.settings.timers
-    alarm.ring(id, this.recipe(claimed.soundId), settings.volume, settings.ringSeconds * 1000)
-    if (theme.settings.notifications) {
-      void notify.notify({
-        id,
-        title: t('timers.ringingTitle', { label: claimed.label || t('timers.timer') }),
-        body: t('timers.ringingBody', { length: formatLength(claimed.seconds) }),
-      })
+    if (claimed.kind === 'pomodoro') {
+      if (claimed.phase === 'focus') {
+        await db.focusSessions.add({
+          id: uuid(),
+          day: dayKey(new Date(claimed.endAt)),
+          startedAt: claimed.endAt - claimed.seconds * 1000,
+          minutes: Math.round(claimed.seconds / 60),
+          createdAt: now,
+          updatedAt: now,
+        })
+      }
+      // With auto-start the next phase simply begins: a short chime, not an alarm.
+      if (theme.settings.pomodoro.autoStart) {
+        alarm.preview(this.recipe(claimed.soundId), settings.volume)
+        await this.#advancePomodoro(claimed, false)
+        this.#notifyFired(claimed)
+        return
+      }
     }
+    alarm.ring(id, this.recipe(claimed.soundId), settings.volume, settings.ringSeconds * 1000)
+    this.#notifyFired(claimed)
+  }
+
+  #notifyFired(timer: RunningTimer): void {
+    if (!theme.settings.notifications) return
+    void notify.notify({
+      id: timer.id,
+      title: t('timers.ringingTitle', { label: timer.label || t('timers.timer') }),
+      body: t('timers.ringingBody', { length: formatLength(timer.seconds) }),
+    })
   }
 
   /** Stops the sound of timers that stopped ringing in another tab. */

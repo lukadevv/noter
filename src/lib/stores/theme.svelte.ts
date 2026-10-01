@@ -33,6 +33,9 @@ class ThemeStore {
 
   #themeSub: Subscription | null = null
 
+  /** The stored settings have been read (reactive twin of `ready`). */
+  loaded = $state(false)
+
   #resolveReady: () => void = () => {}
   /** Resolves once the stored settings have been read (not just the defaults). */
   ready: Promise<void> = new Promise((resolve) => (this.#resolveReady = resolve))
@@ -72,6 +75,7 @@ class ThemeStore {
         this.applyThemeId(this.settings.themeId, false)
     })
     this.applyAll()
+    this.loaded = true
     this.#resolveReady()
   }
 

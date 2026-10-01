@@ -2,7 +2,9 @@
   import Group from './Group.svelte'
   import Field from '../ui/Field.svelte'
   import Segmented from '../ui/Segmented.svelte'
+  import Icon from '../Icon.svelte'
   import { theme } from '$lib/stores/theme.svelte'
+  import { ui } from '$lib/stores/ui.svelte'
   import { i18n, LOCALES, LOCALE_INFO, t, type Locale } from '$lib/i18n/index.svelte'
 </script>
 
@@ -34,4 +36,12 @@
       onchange={(startSection) => theme.update({ startSection })}
     />
   </Field>
+</Group>
+
+<Group title={t('tour.settingsTitle')} description={t('tour.settingsHint')}>
+  <div>
+    <button class="btn" data-testid="replay-tour" onclick={() => (ui.tourOpen = true)}>
+      <Icon name="compass" size={14} />{t('actions.tour')}
+    </button>
+  </div>
 </Group>

@@ -231,6 +231,37 @@ export interface RunningTimer {
   /** When it rang, 0 until then. Claimed in a transaction so only one tab rings. */
   firedAt: number
   createdAt: number
+  /** A plain countdown (absent in older rows) or one phase of a pomodoro. */
+  kind?: 'timer' | 'pomodoro'
+  /** For pomodoro timers: which phase this countdown is. */
+  phase?: PomodoroPhase
+  /** For pomodoro timers: focus sessions finished in the current set, before this one. */
+  cycle?: number
+}
+
+export type PomodoroPhase = 'focus' | 'short' | 'long'
+
+/** One finished pomodoro focus session, for the focus statistics. */
+export interface FocusSession {
+  id: string
+  /** Local day key, YYYY-MM-DD. */
+  day: string
+  startedAt: number
+  minutes: number
+  createdAt: number
+  updatedAt: number
+}
+
+/** The stopwatch. A single row (id 'main'), so it survives reloads and syncs across tabs. */
+export interface Stopwatch {
+  id: string
+  /** When the current run started; 0 while stopped. */
+  startedAt: number
+  /** Milliseconds from earlier runs (before the last pause). */
+  accumulated: number
+  /** Total elapsed at each lap press, in milliseconds, oldest first. */
+  laps: number[]
+  updatedAt: number
 }
 
 // --- Medication --------------------------------------------------------------
@@ -268,6 +299,46 @@ export interface Dose {
   /** When it was taken (or, for a skipped dose, when it was skipped). */
   takenAt: number
   status: 'taken' | 'skipped'
+  createdAt: number
+  updatedAt: number
+}
+
+// --- Habits ------------------------------------------------------------------
+
+export type HabitSchedule =
+  | { kind: 'daily' }
+  /** Specific weekdays, 0 = Sunday … 6 = Saturday. */
+  | { kind: 'weekdays'; days: number[] }
+  /** Any days, so many times a week. */
+  | { kind: 'perWeek'; times: number }
+
+export interface Habit {
+  id: string
+  name: string
+  /** A Lucide icon name. */
+  icon: string
+  color: string | null
+  schedule: HabitSchedule
+  /** How many times a day counts as done: 1 for most, 8 for "glasses of water". */
+  target: number
+  /** Local "HH:MM" to remind at when not done yet, or null. */
+  reminderTime: string | null
+  /** The day key a reminder last fired for, so it fires once a day. */
+  notifiedDay: string
+  archived: Flag
+  order: number
+  createdAt: number
+  updatedAt: number
+}
+
+/** Progress on one habit on one day. */
+export interface HabitCheck {
+  /** `${habitId}:${day}` — one row per habit and day. */
+  id: string
+  habitId: string
+  /** Local day key, YYYY-MM-DD. */
+  day: string
+  count: number
   createdAt: number
   updatedAt: number
 }

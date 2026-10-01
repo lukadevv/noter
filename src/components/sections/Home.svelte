@@ -2,8 +2,12 @@
   import { onMount } from 'svelte'
   import { liveQuery } from 'dexie'
   import Icon from '../Icon.svelte'
-  import ProgressRing from '../ui/ProgressRing.svelte'
+  import Card from '../ui/Card.svelte'
+  import StatTile from '../ui/StatTile.svelte'
   import ActivityHeatmap from '../home/ActivityHeatmap.svelte'
+  import TodayAgenda from '../home/TodayAgenda.svelte'
+  import QuickStart from '../home/QuickStart.svelte'
+  import HabitsWidget from '../home/HabitsWidget.svelte'
   import WeeklyBars from '../home/WeeklyBars.svelte'
   import TopicBars from '../home/TopicBars.svelte'
   import MiniCalendar from '../home/MiniCalendar.svelte'
@@ -15,16 +19,19 @@
   import { ui } from '$lib/stores/ui.svelte'
   import { meds } from '$lib/meds/store.svelte'
   import { timers } from '$lib/timers/store.svelte'
+  import { habits } from '$lib/habits/store.svelte'
   import { vaultStatus } from '$lib/secrets/status.svelte'
-  import { formatSpan } from '$lib/meds/schedule'
-  import { formatClock, formatLength } from '$lib/timers/duration'
+  import { isScheduled } from '$lib/habits/schedule'
+  import { packRows } from '$lib/home/layout'
+  import type { HomeWidget } from '$lib/db/repo/settings'
   import { activitySince } from '$lib/db/repo/activity'
   import { derivedTitle, preview } from '$lib/db/repo/notes'
   import { streak, sumBetween, taskCounts, weekStart, weeklyTotals } from '$lib/stats/home'
   import { addDays, relativeTime } from '$lib/utils/dates'
   import { todayKey } from '$lib/db/repo/daily'
   import { goTo, openNote, openSettings } from '$lib/nav'
-  import { rise } from '$lib/ui/motion.svelte'
+  import { navigate } from '../../routes/router'
+  import { press } from '$lib/ui/press'
   import { t } from '$lib/i18n/index.svelte'
 
   interface Props {
@@ -37,6 +44,7 @@
 
   meds.start()
   timers.start()
+  habits.start()
 
   const today = todayKey()
   const thisWeek = weekStart(today)
@@ -60,7 +68,7 @@
 
   // Running timers count down here too, so tick while any is running.
   $effect(() => {
-    if (timers.running.length === 0) return
+    if (!timers.running.some((timer) => timer.pausedRemaining === null && timer.firedAt === 0)) return
     const id = setInterval(() => (now = Date.now()), 1000)
     return () => clearInterval(id)
   })
@@ -84,6 +92,8 @@
   })
 
   let weekly = $derived(weeklyTotals(rows, today, 12, (r) => r.words))
+  let weeklyCreated = $derived(weeklyTotals(rows, today, 12, (r) => r.created).map((w) => w.value))
+  let weeklyEdits = $derived(weeklyTotals(rows, today, 12, (r) => r.edits).map((w) => w.value))
 
   let recent = $derived([...readable].sort((a, b) => b.updatedAt - a.updatedAt).slice(0, 6))
   let pinned = $derived(readable.filter((n) => n.pinned === 1).slice(0, 8))
@@ -115,9 +125,64 @@
       .slice(0, 6)
   })
 
-  let activeMeds = $derived(meds.meds.filter((m) => m.active))
+  /** Preferred width of each widget, out of 12 columns. */
+  const SPAN: Record<HomeWidget, number> = {
+    alerts: 12,
+    today: 8,
+    calendar: 4,
+    stats: 12,
+    focus: 4,
+    recent: 8,
+    pinned: 4,
+    habits: 8,
+    activity: 12,
+    topics: 8,
+    vault: 4,
+  }
 
-  let widgets = $derived(theme.settings.home.widgets.filter((w) => w.visible).map((w) => w.id))
+  let todayShown = $derived(theme.settings.home.widgets.some((w) => w.id === 'today' && w.visible))
+
+  /** Doses, habits and ringing timers already sit in "Today", with their own buttons. */
+  let shownAlerts = $derived(
+    todayShown ? alerts.all.filter((a) => !['meds', 'habits', 'timers'].includes(a.section)) : alerts.all,
+  )
+
+  /** Widgets with nothing to show are left out, so the layout closes up around them. */
+  function hasContent(id: HomeWidget): boolean {
+    switch (id) {
+      case 'alerts':
+        return shownAlerts.length > 0
+      case 'pinned':
+        return pinned.length > 0
+      case 'topics':
+        return tags.length > 0 || folders.length > 0
+      case 'habits':
+        return habits.active.length > 0
+      default:
+        return true
+    }
+  }
+
+  let widgets = $derived(
+    theme.settings.home.widgets.filter((w) => w.visible && hasContent(w.id)).map((w) => w.id),
+  )
+  let spans = $derived(packRows(widgets, (id) => SPAN[id]))
+
+  /** "2 doses due · 3 habits to go · 1 timer running" under the greeting. */
+  let summary = $derived.by(() => {
+    const parts: string[] = []
+    const dosesDue = meds.active.filter((m) => {
+      const state = meds.statuses.get(m.id)?.state
+      return state === 'due' || state === 'overdue'
+    }).length
+    if (dosesDue) parts.push(t('home.summary.doses', { count: dosesDue }))
+    const habitsLeft = habits.active.filter(
+      (h) => isScheduled(h, habits.today) && !habits.isDoneOn(h),
+    ).length
+    if (habitsLeft) parts.push(t('home.summary.habits', { count: habitsLeft }))
+    if (timers.running.length) parts.push(t('home.summary.timers', { count: timers.running.length }))
+    return parts.length ? parts.join(' · ') : t('home.summary.clear')
+  })
 
   // --- Daily note reminder --------------------------------------------------
 
@@ -177,79 +242,65 @@
     void import('$lib/secrets/store.svelte').then(({ secrets }) => secrets.lock())
   }
 
-  const MED_TONE = {
-    first: 'var(--accent)',
-    ok: 'var(--ok)',
-    soon: 'var(--accent)',
-    due: 'var(--warn)',
-    overdue: 'var(--danger)',
-    paused: 'var(--text-faint)',
-  } as const
-
-  function medLine(id: string): string {
-    const status = meds.statuses.get(id)
-    if (!status) return ''
-    switch (status.state) {
-      case 'first':
-        return t('meds.state.first')
-      case 'paused':
-        return t('meds.state.paused')
-      case 'due':
-        return t('meds.state.due')
-      case 'overdue':
-        return t('meds.state.overdue', { span: formatSpan(status.remaining) })
-      default:
-        return t('meds.state.next', {
-          span: formatSpan(status.remaining),
-          time: new Date(status.nextDue!).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        })
-    }
+  async function startFocus() {
+    if (!timers.pomodoro) await timers.startPomodoro()
+    navigate({ kind: 'timers', tab: 'pomodoro' })
   }
 </script>
 
 <div class="home" data-testid="home">
-  <header class="hero" in:rise>
-    <div>
-      <p class="date">{dateLine}</p>
+  <header class="hero enter">
+    <div class="hero-text">
+      <p class="eyebrow date">{dateLine}</p>
       <h1>{greeting}</h1>
+      <p class="summary" data-testid="home-summary">{summary}</p>
     </div>
-    <button class="btn btn--ghost" data-testid="customize-home" onclick={() => openSettings('home')}>
+    <button
+      class="btn btn--ghost"
+      data-testid="customize-home"
+      data-tour="customize-home"
+      onclick={() => openSettings('home')}
+    >
       <Icon name="layout-dashboard" size={14} />{t('home.customize')}
     </button>
   </header>
 
-  <div class="actions" in:rise={{ delay: 30 }}>
-    <button class="action" onclick={onnewnote}>
-      <Icon name="plus" size={18} />
+  <div class="actions enter" style="--i: 1" data-tour="home-actions">
+    <button class="action action--primary" use:press onclick={onnewnote}>
+      <Icon name="plus" size={16} />
       <span>{t('list.newNote')}</span>
     </button>
-    <button class="action" onclick={ontoday}>
-      <Icon name="calendar-days" size={18} />
+    <button class="action" use:press onclick={ontoday}>
+      <Icon name="calendar-days" size={16} />
       <span>{t('actions.openToday')}</span>
     </button>
-    <button class="action" onclick={onsearch}>
-      <Icon name="search" size={18} />
+    <button class="action" use:press onclick={() => void startFocus()}>
+      <Icon name="target" size={16} />
+      <span>{t('home.focus.start')}</span>
+    </button>
+    <button class="action" use:press onclick={onsearch}>
+      <Icon name="search" size={16} />
       <span>{t('nav.search')}</span>
     </button>
   </div>
 
-  <div class="widgets">
+  <div class="grid">
     {#each widgets as widget, index (widget)}
-      {@const delay = Math.min(index, 6) * 40 + 60}
-      {#if widget === 'alerts'}
-        {#if alerts.all.length > 0}
-          <section class="widget widget--wide" in:rise={{ delay }} aria-labelledby="w-alerts">
-            <h2 id="w-alerts">{t('home.alerts')}</h2>
+      {@const i = Math.min(index, 8) + 2}
+      <div class="cell" style="--span: {spans.get(widget) ?? 12}">
+        {#if widget === 'alerts'}
+          <Card title={t('home.alerts')} icon="bell" tone="var(--warn)" index={i} testid="home-alerts">
             <ul class="alerts">
-              {#each alerts.all as alert (alert.id)}
+              {#each shownAlerts as alert (alert.id)}
                 <li class="alert alert--{alert.tone}">
-                  <Icon name={alert.icon} size={18} />
+                  <Icon name={alert.icon} size={16} />
                   <div class="alert-text">
                     <strong>{alert.title}</strong>
                     {#if alert.body}<span class="faint">{alert.body}</span>{/if}
                   </div>
                   {#if alert.action}
-                    <button class="btn btn--primary" onclick={alert.action.run}>{alert.action.label}</button
+                    <button class="btn btn--primary btn--pill" onclick={alert.action.run}
+                      >{alert.action.label}</button
                     >
                   {/if}
                   {#if alert.dismiss}
@@ -264,210 +315,194 @@
                 </li>
               {/each}
             </ul>
-          </section>
-        {/if}
-      {:else if widget === 'stats'}
-        <section
-          class="widget widget--wide tiles"
-          in:rise={{ delay }}
-          aria-label={t('home.stats.title')}
-          data-testid="home-stats"
-        >
-          <div class="tile">
-            <span class="tile-label"><Icon name="notebook" size={14} />{t('home.stats.notes')}</span>
-            <span class="tile-value">{compact.format(stats.notes)}</span>
-            <span class="tile-note">{t('home.stats.createdThisWeek', { count: stats.created })}</span>
-          </div>
-          <div class="tile">
-            <span class="tile-label"><Icon name="pencil" size={14} />{t('home.stats.words')}</span>
-            <span class="tile-value">{compact.format(stats.wordsWeek)}</span>
+          </Card>
+        {:else if widget === 'today'}
+          <Card title={t('home.today.title')} icon="sun" tone="var(--warn)" index={i} testid="home-today">
+            <TodayAgenda {now} />
+          </Card>
+        {:else if widget === 'stats'}
+          <div class="tiles" aria-label={t('home.stats.title')} data-testid="home-stats">
+            <StatTile
+              label={t('home.stats.notes')}
+              icon="notebook"
+              value={stats.notes}
+              format={(v) => compact.format(Math.round(v))}
+              note={t('home.stats.createdThisWeek', { count: stats.created })}
+              series={weeklyCreated}
+              describe={(v) => t('home.topics.notes', { count: v })}
+              index={i}
+              onclick={() => goTo('notes')}
+            />
             {#if stats.wordsBefore > 0 || stats.wordsWeek > 0}
               {@const diff = stats.wordsWeek - stats.wordsBefore}
-              <span class="tile-note" class:up={diff > 0}>
-                <Icon name={diff >= 0 ? 'arrow-up' : 'arrow-down'} size={12} />
-                {t('home.stats.vsLastWeek', { count: Math.abs(diff) })}
-              </span>
+              <StatTile
+                label={t('home.stats.words')}
+                icon="pencil"
+                value={stats.wordsWeek}
+                format={(v) => compact.format(Math.round(v))}
+                note={t('home.stats.vsLastWeek', { count: Math.abs(diff) })}
+                trend={diff > 0 ? 'up' : diff < 0 ? 'down' : null}
+                series={weekly.map((w) => w.value)}
+                describe={(v) => t('home.activity.words', { count: v })}
+                tone="var(--ok)"
+                index={i + 1}
+              />
             {:else}
-              <span class="tile-note">{t('home.stats.thisWeek')}</span>
+              <StatTile
+                label={t('home.stats.words')}
+                icon="pencil"
+                value={0}
+                note={t('home.stats.thisWeek')}
+                tone="var(--ok)"
+                index={i + 1}
+              />
             {/if}
+            <StatTile
+              label={t('home.stats.streak')}
+              icon="flame"
+              value={stats.streak}
+              note={t('home.stats.days', { count: stats.streak })}
+              series={weeklyEdits}
+              describe={(v) => t('home.activity.edits', { count: v })}
+              tone="var(--warn)"
+              index={i + 2}
+            />
+            <StatTile
+              label={t('home.stats.tasks')}
+              icon="check-square"
+              value={stats.tasks.open}
+              note={t('home.stats.tasksDone', { count: stats.tasks.done })}
+              tone="var(--danger)"
+              index={i + 3}
+            />
           </div>
-          <div class="tile">
-            <span class="tile-label"><Icon name="flame" size={14} />{t('home.stats.streak')}</span>
-            <span class="tile-value">{stats.streak}</span>
-            <span class="tile-note">{t('home.stats.days', { count: stats.streak })}</span>
-          </div>
-          <div class="tile">
-            <span class="tile-label"><Icon name="check-square" size={14} />{t('home.stats.tasks')}</span>
-            <span class="tile-value">{stats.tasks.open}</span>
-            <span class="tile-note">{t('home.stats.tasksDone', { count: stats.tasks.done })}</span>
-          </div>
-        </section>
-      {:else if widget === 'activity'}
-        <section class="widget widget--wide activity" in:rise={{ delay }}>
-          <div class="panel">
-            <h2>{t('home.activity.title')}</h2>
-            <ActivityHeatmap {rows} {today} />
-          </div>
-          <div class="panel">
-            <h2>{t('home.activity.weekly')}</h2>
-            <WeeklyBars weeks={weekly} unit="home.activity.words" />
-          </div>
-        </section>
-      {:else if widget === 'calendar'}
-        <section class="widget" in:rise={{ delay }}>
-          <h2>{t('home.calendar.title')}</h2>
-          <MiniCalendar {today} marked={dailyDays} onopen={(day) => void openDay(day)} />
-        </section>
-      {:else if widget === 'meds'}
-        <section class="widget" in:rise={{ delay }} data-testid="home-meds">
-          <h2>{t('nav.meds')}</h2>
-          {#if activeMeds.length === 0}
-            <p class="faint">{t('home.medsEmpty')}</p>
-            <button class="btn" onclick={() => goTo('meds')}
-              ><Icon name="plus" size={14} />{t('meds.add')}</button
-            >
-          {:else}
-            <ul class="rows">
-              {#each activeMeds.slice(0, 4) as med (med.id)}
-                {@const status = meds.statuses.get(med.id)}
-                <li>
-                  <button class="row" onclick={() => goTo('meds')}>
-                    <ProgressRing
-                      value={status?.progress ?? 0}
-                      size={34}
-                      stroke={4}
-                      color={MED_TONE[status?.state ?? 'first']}
-                    >
-                      <Icon name="pill" size={13} />
-                    </ProgressRing>
-                    <span class="row-text">
-                      <strong class="truncate">{med.name}</strong>
-                      <span class="faint small truncate">{medLine(med.id)}</span>
-                    </span>
-                  </button>
-                </li>
-              {/each}
-            </ul>
-          {/if}
-        </section>
-      {:else if widget === 'timers'}
-        <section class="widget" in:rise={{ delay }} data-testid="home-timers">
-          <h2>{t('nav.timers')}</h2>
-          {#if timers.running.length > 0}
-            <ul class="rows">
-              {#each timers.running.slice(0, 3) as timer (timer.id)}
-                {@const remaining =
-                  timer.firedAt > 0
-                    ? 0
-                    : timer.pausedRemaining !== null
-                      ? timer.pausedRemaining
-                      : Math.max(0, timer.endAt - now)}
-                <li>
-                  <button class="row" onclick={() => goTo('timers')}>
-                    <Icon name={timer.firedAt > 0 ? 'bell-ring' : 'timer'} size={16} />
-                    <span class="row-text">
-                      <strong class="truncate">{timer.label || t('timers.timer')}</strong>
-                    </span>
-                    <span class="clock">{formatClock(remaining)}</span>
-                  </button>
-                </li>
-              {/each}
-            </ul>
-          {/if}
-          <div class="presets">
-            {#each timers.presets.slice(0, 6) as preset (preset.id)}
-              <button
-                class="preset"
-                style={preset.color ? `--preset: ${preset.color}` : ''}
-                title={preset.label}
-                onclick={() => void timers.startPreset(preset)}
-              >
-                {formatLength(preset.seconds)}
-              </button>
-            {/each}
-          </div>
-        </section>
-      {:else if widget === 'recent'}
-        <section class="widget widget--wide" in:rise={{ delay }}>
-          <h2>{t('home.recent')}</h2>
-          {#if recent.length === 0}
-            <p class="faint">{t('home.noNotes')}</p>
-          {:else}
-            <div class="recent">
-              {#each recent as note (note.id)}
-                <button class="card" onclick={() => open(note)}>
-                  <span class="card-title truncate">{derivedTitle(note)}</span>
-                  <span class="card-snippet">{preview(note.body, 90) || t('list.emptyNote')}</span>
-                  <span class="card-time faint">{relativeTime(note.updatedAt, Date.now(), t)}</span>
-                </button>
-              {/each}
+        {:else if widget === 'activity'}
+          <Card title={t('home.activity.title')} icon="activity" index={i}>
+            <div class="activity">
+              <ActivityHeatmap {rows} {today} />
+              <div class="weekly">
+                <h3 class="eyebrow">{t('home.activity.weekly')}</h3>
+                <WeeklyBars weeks={weekly} unit="home.activity.words" />
+              </div>
             </div>
-          {/if}
-        </section>
-      {:else if widget === 'pinned'}
-        {#if pinned.length > 0}
-          <section class="widget" in:rise={{ delay }}>
-            <h2>{t('home.pinned')}</h2>
+          </Card>
+        {:else if widget === 'calendar'}
+          <Card title={t('home.calendar.title')} icon="calendar-days" tone="var(--ok)" index={i}>
+            <MiniCalendar {today} marked={dailyDays} onopen={(day) => void openDay(day)} />
+          </Card>
+        {:else if widget === 'focus'}
+          <Card
+            title={t('home.focus.title')}
+            icon="timer"
+            tone="var(--danger)"
+            index={i}
+            testid="home-timers"
+          >
+            {#snippet action()}
+              <button class="link" onclick={() => goTo('timers')}>{t('home.seeAll')}</button>
+            {/snippet}
+            <QuickStart {now} />
+          </Card>
+        {:else if widget === 'habits'}
+          <Card title={t('nav.habits')} icon="target" tone="var(--ok)" index={i} testid="home-habits">
+            {#snippet action()}
+              <button class="link" onclick={() => goTo('habits')}>{t('home.seeAll')}</button>
+            {/snippet}
+            <HabitsWidget />
+          </Card>
+        {:else if widget === 'recent'}
+          <Card title={t('home.recent')} icon="history" index={i}>
+            {#snippet action()}
+              <button class="link" onclick={() => goTo('notes')}>{t('home.seeAll')}</button>
+            {/snippet}
+            {#if recent.length === 0}
+              <div class="nothing">
+                <p class="faint">{t('home.noNotes')}</p>
+                <button class="btn btn--primary btn--pill" onclick={onnewnote}>
+                  <Icon name="plus" size={14} />{t('list.newNote')}
+                </button>
+              </div>
+            {:else}
+              <div class="recent">
+                {#each recent as note, n (note.id)}
+                  {@const folder = notes.folders.find((f) => f.id === note.folderId)}
+                  <button
+                    class="note-card"
+                    style="--i: {n}; --fc: {folder?.color ?? 'var(--border-strong)'}"
+                    onclick={() => open(note)}
+                  >
+                    <span class="note-title truncate">{derivedTitle(note)}</span>
+                    <span class="note-snippet">{preview(note.body, 90) || t('list.emptyNote')}</span>
+                    <span class="note-meta">
+                      {#if folder}<span class="folder truncate">{folder.name}</span>{/if}
+                      <span class="faint">{relativeTime(note.updatedAt, Date.now(), t)}</span>
+                    </span>
+                  </button>
+                {/each}
+              </div>
+            {/if}
+          </Card>
+        {:else if widget === 'pinned'}
+          <Card title={t('home.pinned')} icon="pin" index={i}>
             <ul class="rows">
               {#each pinned as note (note.id)}
                 <li>
                   <button class="row" onclick={() => open(note)}>
-                    <Icon name="pin" size={14} />
+                    <Icon name="file-text" size={14} />
                     <span class="row-text"><span class="truncate">{derivedTitle(note)}</span></span>
                   </button>
                 </li>
               {/each}
             </ul>
-          </section>
-        {/if}
-      {:else if widget === 'topics'}
-        {#if tags.length > 0 || folders.length > 0}
-          <section class="widget widget--wide activity" in:rise={{ delay }}>
-            <div class="panel">
-              <h2>{t('home.topics.tags')}</h2>
-              {#if tags.length > 0}
-                <TopicBars items={tags} describe={(count) => t('home.topics.notes', { count })} />
+          </Card>
+        {:else if widget === 'topics'}
+          <Card title={t('home.topics.title')} icon="tag" index={i}>
+            <div class="topics">
+              <div>
+                <h3 class="eyebrow">{t('home.topics.tags')}</h3>
+                {#if tags.length > 0}
+                  <TopicBars items={tags} describe={(count) => t('home.topics.notes', { count })} />
+                {:else}
+                  <p class="faint small">{t('home.topics.noTags')}</p>
+                {/if}
+              </div>
+              <div>
+                <h3 class="eyebrow">{t('home.topics.folders')}</h3>
+                {#if folders.length > 0}
+                  <TopicBars items={folders} describe={(count) => t('home.topics.notes', { count })} />
+                {:else}
+                  <p class="faint small">{t('home.topics.noFolders')}</p>
+                {/if}
+              </div>
+            </div>
+          </Card>
+        {:else if widget === 'vault'}
+          <Card title={t('nav.vault')} icon="shield" tone="var(--accent)" index={i} testid="home-vault">
+            <div class="vault">
+              <span class="vault-icon" class:open={vaultStatus.unlocked}>
+                <Icon name={vaultStatus.unlocked ? 'lock-open' : 'lock-keyhole'} size={18} />
+              </span>
+              <span class="row-text">
+                <strong>
+                  {#if !vaultExists}{t('home.vault.notSet')}{:else if vaultStatus.unlocked}{t(
+                      'home.vault.open',
+                    )}{:else}{t('home.vault.locked')}{/if}
+                </strong>
+                {#if vaultExists}<span class="faint small"
+                    >{t('home.vault.entries', { count: vaultCount })}</span
+                  >{/if}
+              </span>
+              {#if vaultStatus.unlocked}
+                <button class="btn btn--pill" onclick={lockVault}>{t('vault.lock')}</button>
               {:else}
-                <p class="faint small">{t('home.topics.noTags')}</p>
+                <button class="btn btn--pill" onclick={() => goTo('vault')}>
+                  {vaultExists ? t('vault.unlock') : t('home.vault.setUp')}
+                </button>
               {/if}
             </div>
-            <div class="panel">
-              <h2>{t('home.topics.folders')}</h2>
-              {#if folders.length > 0}
-                <TopicBars items={folders} describe={(count) => t('home.topics.notes', { count })} />
-              {:else}
-                <p class="faint small">{t('home.topics.noFolders')}</p>
-              {/if}
-            </div>
-          </section>
+          </Card>
         {/if}
-      {:else if widget === 'vault'}
-        <section class="widget" in:rise={{ delay }} data-testid="home-vault">
-          <h2>{t('nav.vault')}</h2>
-          <div class="vault">
-            <span class="vault-icon" class:open={vaultStatus.unlocked}>
-              <Icon name={vaultStatus.unlocked ? 'lock-open' : 'lock-keyhole'} size={18} />
-            </span>
-            <span class="row-text">
-              <strong>
-                {#if !vaultExists}{t('home.vault.notSet')}{:else if vaultStatus.unlocked}{t(
-                    'home.vault.open',
-                  )}{:else}{t('home.vault.locked')}{/if}
-              </strong>
-              {#if vaultExists}<span class="faint small"
-                  >{t('home.vault.entries', { count: vaultCount })}</span
-                >{/if}
-            </span>
-            {#if vaultStatus.unlocked}
-              <button class="btn" onclick={lockVault}>{t('vault.lock')}</button>
-            {:else}
-              <button class="btn" onclick={() => goTo('vault')}>
-                {vaultExists ? t('vault.unlock') : t('home.vault.setUp')}
-              </button>
-            {/if}
-          </div>
-        </section>
-      {/if}
+      </div>
     {/each}
   </div>
 </div>
@@ -477,9 +512,9 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-5);
-    max-width: 68rem;
+    max-width: 72rem;
     margin: 0 auto;
-    padding: var(--space-6) var(--space-5);
+    padding: var(--space-6) var(--space-5) var(--space-6);
   }
 
   .hero {
@@ -489,130 +524,138 @@
     gap: var(--space-3);
   }
 
+  .hero-text {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    min-width: 0;
+  }
+
   .date {
-    color: var(--text-faint);
-    font-size: var(--text-md);
     text-transform: capitalize;
   }
 
   h1 {
-    font-size: var(--text-3xl);
-    font-weight: 700;
-    letter-spacing: -0.01em;
+    font-size: 36px;
+    font-weight: 740;
+    letter-spacing: -0.025em;
+    line-height: 1.1;
   }
 
-  h2 {
-    font-size: var(--text-sm);
-    font-weight: 650;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
+  .summary {
     color: var(--text-dim);
-    margin-bottom: var(--space-3);
+    font-size: var(--text-lg);
   }
 
   .actions {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: var(--space-3);
+    display: flex;
+    gap: var(--space-2);
+    flex-wrap: wrap;
   }
 
   .action {
-    display: flex;
+    position: relative;
+    display: inline-flex;
     align-items: center;
-    gap: var(--space-3);
-    padding: var(--space-3) var(--space-4);
+    gap: var(--space-2);
+    height: 38px;
+    padding: 0 var(--space-4);
+    overflow: hidden;
     border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-full);
     background: var(--surface);
     color: var(--text);
+    font-weight: 550;
     cursor: pointer;
-    text-align: start;
     transition:
-      transform var(--dur-2) var(--ease-out),
+      transform var(--dur-1) var(--ease-out),
       border-color var(--dur-2),
       background var(--dur-2);
   }
 
   .action :global(svg) {
-    color: var(--accent);
+    color: var(--text-dim);
   }
 
   .action:hover {
-    transform: translateY(-2px);
     border-color: var(--border-strong);
     background: var(--surface-2);
   }
 
-  .widgets {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
-    gap: var(--space-4);
-    align-items: start;
+  .action:active {
+    transform: scale(0.96);
   }
 
-  .widget {
+  .action--primary {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: var(--accent-contrast);
+  }
+
+  .action--primary :global(svg) {
+    color: inherit;
+  }
+
+  .action--primary:hover {
+    border-color: var(--accent-hover);
+    background: var(--accent-hover);
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: var(--space-4);
+    align-items: stretch;
+  }
+
+  .cell {
+    grid-column: span var(--span);
+    display: flex;
+    flex-direction: column;
     min-width: 0;
   }
 
-  .widget--wide {
-    grid-column: 1 / -1;
-  }
-
-  .panel,
-  .widget:not(.widget--wide),
-  .tile {
-    padding: var(--space-4);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    background: var(--surface);
+  .cell > :global(*) {
+    flex: 1;
   }
 
   .tiles {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: var(--space-3);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--space-4);
   }
 
-  .tile {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-
-  .tile-label {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-    color: var(--text-dim);
-    font-size: var(--text-md);
-  }
-
-  .tile-label :global(svg) {
-    color: var(--accent);
-  }
-
-  .tile-value {
-    font-size: var(--text-3xl);
-    font-weight: 650;
-    line-height: 1.2;
-  }
-
-  .tile-note {
-    display: flex;
-    align-items: center;
-    gap: 2px;
+  .link {
+    padding: 2px var(--space-2);
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: none;
     color: var(--text-faint);
     font-size: var(--text-sm);
+    cursor: pointer;
   }
 
-  .tile-note.up {
-    color: var(--ok);
+  .link:hover {
+    background: var(--surface-2);
+    color: var(--text);
   }
 
   .activity {
     display: grid;
     grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
-    gap: var(--space-4);
+    gap: var(--space-5);
+    align-items: start;
+  }
+
+  .weekly h3,
+  .topics h3 {
+    margin-bottom: var(--space-2);
+  }
+
+  .topics {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-5);
   }
 
   .alerts {
@@ -626,23 +669,34 @@
     display: flex;
     align-items: center;
     gap: var(--space-3);
-    padding: var(--space-3) var(--space-4);
-    border: 1px solid var(--border);
-    border-inline-start: 3px solid var(--accent);
+    padding: var(--space-2) var(--space-3);
     border-radius: var(--radius);
-    background: var(--surface);
+    background: var(--accent-soft);
+  }
+
+  .alert > :global(svg) {
+    flex: none;
+    color: var(--accent);
   }
 
   .alert--warn {
-    border-inline-start-color: var(--warn);
+    background: var(--warn-soft);
+  }
+
+  .alert--warn > :global(svg) {
+    color: var(--warn);
   }
 
   .alert--danger {
-    border-inline-start-color: var(--danger);
+    background: var(--danger-soft);
+  }
+
+  .alert--danger > :global(svg) {
+    color: var(--danger);
   }
 
   .alert--ok {
-    border-inline-start-color: var(--ok);
+    background: var(--ok-soft);
   }
 
   .alert-text {
@@ -679,7 +733,7 @@
 
   .row > :global(svg) {
     flex-shrink: 0;
-    color: var(--accent);
+    color: var(--text-faint);
   }
 
   .row-text {
@@ -693,35 +747,6 @@
     font-size: var(--text-sm);
   }
 
-  .clock {
-    font-variant-numeric: tabular-nums;
-    font-weight: 600;
-  }
-
-  .presets {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: var(--space-2);
-    margin-top: var(--space-2);
-  }
-
-  .preset {
-    padding: var(--space-2);
-    border: 1px solid var(--border);
-    border-inline-start: 3px solid var(--preset, var(--accent));
-    border-radius: var(--radius);
-    background: var(--surface-2);
-    color: var(--text);
-    font-weight: 600;
-    font-variant-numeric: tabular-nums;
-    cursor: pointer;
-  }
-
-  .preset:hover {
-    border-color: var(--border-strong);
-    border-inline-start-color: var(--preset, var(--accent));
-  }
-
   .vault {
     display: flex;
     align-items: center;
@@ -731,9 +756,9 @@
   .vault-icon {
     display: grid;
     place-items: center;
-    width: 38px;
-    height: 38px;
-    border-radius: var(--radius);
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
     background: var(--surface-3);
     color: var(--text-dim);
   }
@@ -743,39 +768,56 @@
     color: var(--warn);
   }
 
-  .recent {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  .nothing {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
     gap: var(--space-3);
   }
 
-  .card {
+  .recent {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: var(--space-3);
+  }
+
+  .note-card {
     display: flex;
     flex-direction: column;
     gap: var(--space-1);
-    min-height: 110px;
-    padding: var(--space-3) var(--space-4);
+    min-height: 118px;
+    padding: var(--space-3);
     border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    background: var(--surface);
+    border-top: 3px solid var(--fc);
+    border-radius: var(--radius);
+    background: var(--bg-2);
     color: var(--text);
     text-align: start;
     cursor: pointer;
+    animation: enter-rise 420ms var(--ease-out) both;
+    animation-delay: calc(var(--i) * 40ms + 150ms);
     transition:
       transform var(--dur-2) var(--ease-out),
-      border-color var(--dur-2);
+      border-color var(--dur-2),
+      box-shadow var(--dur-2);
   }
 
-  .card:hover {
+  .note-card:hover {
     transform: translateY(-2px);
-    border-color: var(--accent);
+    border-color: var(--border-strong);
+    border-top-color: var(--fc);
+    box-shadow: var(--shadow-2);
   }
 
-  .card-title {
-    font-weight: 600;
+  .note-card:active {
+    transform: scale(0.98);
   }
 
-  .card-snippet {
+  .note-title {
+    font-weight: 620;
+  }
+
+  .note-snippet {
     flex: 1;
     color: var(--text-dim);
     font-size: var(--text-md);
@@ -786,8 +828,22 @@
     overflow: hidden;
   }
 
-  .card-time {
+  .note-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
     font-size: var(--text-sm);
+  }
+
+  .folder {
+    color: var(--text-dim);
+  }
+
+  @media (max-width: 1000px) {
+    .tiles {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
   }
 
   @media (max-width: 860px) {
@@ -799,8 +855,27 @@
       font-size: var(--text-2xl);
     }
 
-    .activity {
+    .cell {
+      grid-column: 1 / -1;
+    }
+
+    .activity,
+    .topics {
       grid-template-columns: 1fr;
+    }
+
+    /* The text gets the full width; the buttons move under it. */
+    .alert {
+      flex-wrap: wrap;
+      align-items: flex-start;
+    }
+
+    .alert-text {
+      flex-basis: calc(100% - 64px);
+    }
+
+    .alert > :global(.btn--primary) {
+      margin-inline-start: 28px;
     }
   }
 </style>

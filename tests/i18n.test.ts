@@ -175,6 +175,8 @@ describe('catalogues', () => {
           'settings.daily.formatTokens',
           'icons.emoji',
           'timers.quickPlaceholder',
+          // Numbers and a unit abbreviation.
+          'pomodoro.lengths',
           // The French word is spelled the same.
           'settings.sections.notifications',
           'settings.about.version',

@@ -20,13 +20,14 @@
     <Logo size={26} />
   </button>
 
-  <div class="items">
+  <div class="items" data-tour="nav">
     {#each SECTIONS as entry (entry.id)}
       {@const count = alerts.countFor(entry.id)}
       <button
         class="item"
         class:item--active={ui.section === entry.id}
         data-testid="nav-{entry.id}"
+        data-tour="nav-{entry.id}"
         aria-label={t(entry.label)}
         aria-current={ui.section === entry.id ? 'page' : undefined}
         title="{t(entry.label)} ({formatShortcut(entry.shortcut)})"
@@ -44,6 +45,7 @@
 
   <button
     class="item"
+    data-tour="search"
     aria-label={t('nav.search')}
     title="{t('nav.search')} ({formatShortcut('Mod+K')})"
     onclick={onsearch}
@@ -55,6 +57,7 @@
     class="item"
     class:item--active={ui.section === 'settings'}
     data-testid="open-settings"
+    data-tour="settings"
     aria-label={t('sidebar.settings')}
     title="{t('sidebar.settings')} ({formatShortcut('Mod+,')})"
     onclick={() => openSettings()}

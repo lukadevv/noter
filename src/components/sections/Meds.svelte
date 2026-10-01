@@ -1,6 +1,7 @@
 <script lang="ts">
   import Icon from '../Icon.svelte'
   import EmptyState from '../ui/EmptyState.svelte'
+  import PageHeader from '../ui/PageHeader.svelte'
   import Dialog from '../ui/Dialog.svelte'
   import MedCard from '../meds/MedCard.svelte'
   import MedDialog from '../meds/MedDialog.svelte'
@@ -40,21 +41,20 @@
     at.setHours(h ?? 0, m ?? 0, 0, 0)
     // A time later than now means yesterday evening, not tonight.
     if (at.getTime() > Date.now()) at.setDate(at.getDate() - 1)
-    await meds.take(takingAt.id, at.getTime())
+    const med = takingAt
     takingAt = null
+    await meds.requestTake(med.id, at.getTime())
   }
 </script>
 
 <div class="page" data-testid="meds">
-  <header class="top" in:rise>
-    <div>
-      <h1>{t('nav.meds')}</h1>
-      <p class="faint">{t('meds.about')}</p>
-    </div>
-    <button class="btn btn--primary" data-testid="add-med" onclick={() => (editing = 'new')}>
-      <Icon name="plus" size={14} />{t('meds.add')}
-    </button>
-  </header>
+  <PageHeader title={t('nav.meds')} subtitle={t('meds.about')}>
+    {#snippet actions()}
+      <button class="btn btn--primary btn--pill" data-testid="add-med" onclick={() => (editing = 'new')}>
+        <Icon name="plus" size={14} />{t('meds.add')}
+      </button>
+    {/snippet}
+  </PageHeader>
 
   {#if meds.loaded && meds.meds.length === 0}
     <EmptyState icon="pill" title={t('meds.empty')} body={t('meds.emptyBody')}>
@@ -64,19 +64,23 @@
     </EmptyState>
   {:else}
     <div class="list">
-      {#each meds.meds as med (med.id)}
-        <div animate:flip={{ duration: flipDuration() }} in:rise>
+      {#each meds.meds as med, i (med.id)}
+        <div class="enter" style="--i: {i}" animate:flip={{ duration: flipDuration() }}>
           <MedCard {med} onedit={(m) => (editing = m)} ontakeat={openTakeAt} />
         </div>
       {/each}
     </div>
 
     {#if today.length > 0}
-      <section class="block">
-        <h2>{t('meds.today')}</h2>
-        <ul class="log">
+      <section class="block enter" style="--i: 3">
+        <h2 class="title-sm">{t('meds.today')}</h2>
+        <ul class="log surface">
           {#each today as dose (dose.id)}
-            <li class="entry" class:entry--skipped={dose.status === 'skipped'}>
+            <li class="entry" class:entry--skipped={dose.status === 'skipped'} in:rise>
+              <span
+                class="dot"
+                style="--c: {meds.meds.find((m) => m.id === dose.medId)?.color ?? 'var(--accent)'}"
+              ></span>
               <span class="time"
                 >{new Date(dose.takenAt).toLocaleTimeString([], {
                   hour: '2-digit',
@@ -135,26 +139,15 @@
     padding: var(--space-6) var(--space-5);
   }
 
-  .top {
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: var(--space-4);
-    flex-wrap: wrap;
-  }
-
-  h1 {
-    font-size: var(--text-3xl);
-    font-weight: 700;
-  }
-
   h2 {
     margin-bottom: var(--space-3);
-    font-size: var(--text-sm);
-    font-weight: 650;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--text-dim);
+  }
+
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--c);
   }
 
   .list {
@@ -167,9 +160,6 @@
     list-style: none;
     display: flex;
     flex-direction: column;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    background: var(--surface);
     overflow: hidden;
   }
 
@@ -213,10 +203,6 @@
   @media (max-width: 860px) {
     .page {
       padding: var(--space-5) var(--space-4);
-    }
-
-    h1 {
-      font-size: var(--text-2xl);
     }
   }
 </style>

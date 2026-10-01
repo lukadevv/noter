@@ -126,6 +126,42 @@ export function lowStock(med: Pick<Med, 'stock' | 'perDose' | 'intervalHours'>):
   return left !== null && left < perDay(med) * 3
 }
 
+export interface DoseWarning {
+  /** When the next dose was actually due, measured from the last one taken. */
+  nextDue: number
+  /** How early this dose would be, in ms. */
+  early: number
+  /** Doses already taken in the interval before `at`. */
+  recent: number
+  /** Doses taken on the calendar day of `at`, before this one. */
+  today: number
+  /** Doses expected in a day at this interval. */
+  perDay: number
+}
+
+/**
+ * Whether logging a dose at `at` looks like a mistake or a double dose: it is
+ * earlier than the "coming up" window before the next one is due. Returns the
+ * facts to show in a confirmation, or null when the dose is on schedule.
+ */
+export function doseCheck(med: Med, doses: Dose[], at: number): DoseWarning | null {
+  const interval = med.intervalHours * HOUR
+  const taken = doses.filter((d) => d.medId === med.id && d.status === 'taken' && d.takenAt <= at)
+  if (taken.length === 0) return null
+  const last = taken.reduce((a, b) => (b.takenAt > a.takenAt ? b : a))
+  const nextDue = last.takenAt + interval
+  const early = nextDue - at
+  if (early <= med.leadMinutes * 60_000) return null
+  const dayStart = startOfDay(at)
+  return {
+    nextDue,
+    early,
+    recent: taken.filter((d) => d.takenAt > at - interval).length,
+    today: taken.filter((d) => d.takenAt >= dayStart).length,
+    perDay: perDay(med),
+  }
+}
+
 /** "5 h 12 min", "12 min", "2 d 3 h" — for "next in …" and "overdue by …". */
 export function formatSpan(ms: number): string {
   const minutes = Math.max(1, Math.round(Math.abs(ms) / 60_000))
