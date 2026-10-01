@@ -39,6 +39,33 @@ describe('placeMenu', () => {
     const at = placeMenu({ x: 700, y: 550, width: 30, height: 20 }, { width: 200, height: 150 }, viewport)
     expect(at).toEqual({ x: 530, y: 400 })
   })
+
+  it('opens a submenu beside its row, on the other side when there is no room', () => {
+    const row = { left: 400, right: 600 }
+    expect(placeMenu({ x: 600, y: 100 }, { width: 150, height: 100 }, viewport, 8, row)).toEqual({
+      x: 600,
+      y: 100,
+    })
+    // 600 + 250 overflows: the submenu ends where the row starts instead of covering it.
+    expect(placeMenu({ x: 600, y: 100 }, { width: 250, height: 100 }, viewport, 8, row)).toEqual({
+      x: 150,
+      y: 100,
+    })
+    expect(
+      placeMenu({ x: 600, y: 100 }, { width: 150, height: 100 }, viewport, 8, { ...row, rtl: true }),
+    ).toEqual({
+      x: 250,
+      y: 100,
+    })
+  })
+
+  it('slides a tall submenu up instead of flipping it above the row', () => {
+    const at = placeMenu({ x: 600, y: 500 }, { width: 150, height: 300 }, viewport, 8, {
+      left: 400,
+      right: 600,
+    })
+    expect(at).toEqual({ x: 600, y: 292 })
+  })
 })
 
 describe('formatShortcut', () => {

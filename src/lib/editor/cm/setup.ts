@@ -19,12 +19,15 @@ import { imageInput, inlineImages, type PasteHandlers } from './images'
 import { linkCompletions, wikiLinkHighlight, wikiLinkClicks, type CompletionSources } from './wikilinks'
 import { completions } from './completion'
 import { slashCompletions } from './slash'
+import { insertAtCursor, type InsertOptions } from './insert'
+import { editorContextMenu } from './context-menu'
 import { codeLanguages } from './code-languages'
 import { livePreview } from './live/preview'
 import { contentBlocks } from './blocks/fences.svelte'
 import { blockHandle, blockKeymap } from './blocks/handle'
 import { lockCompartment, lockExtension, lockGuard } from './lock'
 import { minimalChange } from './diff'
+import type { BlockKind } from '$lib/md/blocks'
 
 export interface EditorOptions {
   /** The note shown first, so the editor starts on it rather than swapping to it. */
@@ -82,9 +85,11 @@ export class NoteEditor {
    * caught up with the latest keystroke); only a different value is news.
    */
   #incoming = ''
+  #insertOptions: InsertOptions
 
   constructor(parent: HTMLElement, options: EditorOptions) {
     this.#showLineNumbers = options.lineNumbers ?? false
+    this.#insertOptions = { pickImages: options.pickImages }
     this.#extensions = [
       history(),
       drawSelection(),
@@ -130,9 +135,10 @@ export class NoteEditor {
     this.#extensions.push(
       completions([
         ...(options.completion ? [linkCompletions(options.completion)] : []),
-        slashCompletions({ pickImages: options.pickImages }),
+        slashCompletions(this.#insertOptions),
       ]),
     )
+    this.#extensions.push(editorContextMenu(this.#insertOptions))
     if (options.onBlocked) this.#extensions.push(lockGuard(options.onBlocked))
     if (options.onLink) this.#extensions.push(wikiLinkClicks(options.onLink))
 
@@ -220,6 +226,11 @@ export class NoteEditor {
   /** Forgets a note's cached state, e.g. after it was deleted. */
   forget(noteId: string): void {
     this.#cache.delete(noteId)
+  }
+
+  /** Inserts a block at the cursor, for the insert bar. */
+  insert(kind: BlockKind): Promise<void> {
+    return insertAtCursor(this.view, kind, this.#insertOptions)
   }
 
   focus(): void {

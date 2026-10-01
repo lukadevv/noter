@@ -38,20 +38,34 @@ export function typeahead(items: (NavItem & { label: string })[], current: numbe
 /**
  * Places a menu of `size` near `anchor` inside a viewport, flipping above or to
  * the other side when it would overflow, and clamping as a last resort.
+ *
+ * A submenu passes `beside`, the horizontal extent of the row that opened it:
+ * it then opens past that row's far edge (the near one in RTL), flips to the
+ * other side of the row when it does not fit, and slides up rather than
+ * flipping above, so it never covers the menu it came from.
  */
 export function placeMenu(
   anchor: { x: number; y: number; width?: number; height?: number },
   size: { width: number; height: number },
   viewport: { width: number; height: number },
   margin = 8,
+  beside?: { left: number; right: number; rtl?: boolean },
 ): { x: number; y: number } {
   const aw = anchor.width ?? 0
   const ah = anchor.height ?? 0
   let x = anchor.x
   let y = anchor.y + ah
-  if (x + size.width > viewport.width - margin) x = anchor.x + aw - size.width
-  if (y + size.height > viewport.height - margin && anchor.y - size.height >= margin) {
-    y = anchor.y - size.height
+  if (beside) {
+    const after = beside.right
+    const before = beside.left - size.width
+    const fitsAfter = after + size.width <= viewport.width - margin
+    const fitsBefore = before >= margin
+    x = beside.rtl ? (fitsBefore || !fitsAfter ? before : after) : fitsAfter || !fitsBefore ? after : before
+  } else {
+    if (x + size.width > viewport.width - margin) x = anchor.x + aw - size.width
+    if (y + size.height > viewport.height - margin && anchor.y - size.height >= margin) {
+      y = anchor.y - size.height
+    }
   }
   x = Math.max(margin, Math.min(x, viewport.width - size.width - margin))
   y = Math.max(margin, Math.min(y, viewport.height - size.height - margin))

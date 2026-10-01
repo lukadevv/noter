@@ -2,6 +2,7 @@
   import { onDestroy, untrack } from 'svelte'
   import { t } from '$lib/i18n/index.svelte'
   import type { NoteEditor } from '$lib/editor/cm/setup'
+  import InsertBar from './InsertBar.svelte'
 
   interface Props {
     /** The note on screen. Changing it swaps states inside the same editor. */
@@ -11,6 +12,8 @@
     locked?: boolean
     placeholder?: string
     lineNumbers?: boolean
+    /** Shows the row of block buttons under the text. */
+    insertBar?: boolean
     onchange: (body: string) => void
     onflush: () => void
     /** The user tried to type into a locked note. */
@@ -32,6 +35,7 @@
     locked = false,
     placeholder = undefined,
     lineNumbers = false,
+    insertBar = false,
     onchange,
     onflush,
     onblocked,
@@ -102,14 +106,25 @@
   })
 </script>
 
-<div class="editor" data-locked={locked || undefined} bind:this={host}></div>
+<div class="frame">
+  <div class="editor" data-locked={locked || undefined} bind:this={host}></div>
+  {#if editor && insertBar && !locked}
+    <InsertBar oninsert={(kind) => void editor?.insert(kind)} />
+  {/if}
+</div>
 {#if !editor}
   <div class="loading faint">{t('note.loadingEditor')}</div>
 {/if}
 
 <style>
-  .editor {
+  .frame {
+    display: flex;
+    flex-direction: column;
     height: 100%;
+  }
+
+  .editor {
+    flex: 1;
     min-height: 0;
     overflow: hidden;
   }

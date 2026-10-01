@@ -304,6 +304,7 @@
           body={text}
           locked={editLocked}
           lineNumbers={theme.settings.showLineNumbers}
+          insertBar={theme.settings.showInsertBar}
           onchange={(body) => notes.editBody(current.id, body, content?.title ?? current.title)}
           onflush={() => notes.flushPending()}
           onblocked={refused}

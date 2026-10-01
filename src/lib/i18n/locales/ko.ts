@@ -234,6 +234,7 @@ const ko: Messages = {
     cornerRoundness: '모서리 둥글기',
     reduceMotion: '동작 줄이기',
     lineNumbers: '편집기에 줄 번호 표시',
+    insertBar: '편집기 아래에 삽입 막대 표시',
     daily: {
       title: '일일 노트',
       about:
@@ -646,6 +647,16 @@ const ko: Messages = {
     meds: '복약',
     vault: '보관함',
     habits: '습관',
+    short: {
+      home: '홈',
+      notes: '노트',
+      timers: '타이머',
+      habits: '습관',
+      meds: '복약',
+      vault: '보관함',
+      search: '검색',
+      settings: '설정',
+    },
   },
 
   home: {
@@ -780,6 +791,11 @@ const ko: Messages = {
     divider: '구분선',
     date: '오늘 날짜',
     menu: '블록 작업',
+    insert: '삽입',
+    insertBar: '블록 삽입',
+    cut: '잘라내기',
+    copy: '복사',
+    paste: '붙여넣기',
     turnInto: '다음으로 변환',
     duplicate: '복제',
     moveUp: '위로 이동',

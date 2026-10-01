@@ -94,6 +94,8 @@ export interface AppSettings {
   /** Animations: follow the OS, or force full, reduced (fades only) or off. */
   motion: MotionSetting
   showLineNumbers: boolean
+  /** The row of block buttons under the editor, for people who do not use `/`. */
+  showInsertBar: boolean
   dailyNotes: DailyNoteSettings
   lastFolderId: string | null
   lastNoteId: string | null
@@ -122,6 +124,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   radiusScale: 1,
   motion: 'system',
   showLineNumbers: false,
+  showInsertBar: true,
   dailyNotes: {
     homeAlert: true,
     folderId: '',

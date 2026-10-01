@@ -239,6 +239,7 @@ export const en = {
     cornerRoundness: 'Corner roundness',
     reduceMotion: 'Reduce motion',
     lineNumbers: 'Show line numbers in the editor',
+    insertBar: 'Show the insert bar under the editor',
 
     daily: {
       title: 'Daily notes',
@@ -651,6 +652,17 @@ export const en = {
     habits: 'Habits',
     meds: 'Medication',
     vault: 'Vault',
+    /** Labels under the navigation icons, where there is room for about nine letters. */
+    short: {
+      home: 'Home',
+      notes: 'Notes',
+      timers: 'Timers',
+      habits: 'Habits',
+      meds: 'Medication',
+      vault: 'Vault',
+      search: 'Search',
+      settings: 'Settings',
+    },
   },
   home: {
     greeting: {
@@ -756,6 +768,11 @@ export const en = {
     divider: 'Divider',
     date: 'Today’s date',
     menu: 'Block actions',
+    insert: 'Insert',
+    insertBar: 'Insert a block',
+    cut: 'Cut',
+    copy: 'Copy',
+    paste: 'Paste',
     turnInto: 'Turn into',
     duplicate: 'Duplicate',
     moveUp: 'Move up',

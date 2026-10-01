@@ -74,7 +74,7 @@
             onclick={() => openSettings(section.id)}
           >
             <Icon name={section.icon} size={16} />
-            <span class="truncate">{t(section.label)}</span>
+            <span class="label">{t(section.label)}</span>
             {#if ui.narrow}<Icon name="chevron-right" size={14} class="flip chev" />{/if}
           </button>
         {:else}
@@ -167,8 +167,8 @@
     display: flex;
     align-items: center;
     gap: var(--space-2);
-    height: 34px;
-    padding: 0 var(--space-2);
+    min-height: 34px;
+    padding: 6px var(--space-2);
     border: 0;
     border-radius: var(--radius);
     background: none;
@@ -176,6 +176,16 @@
     text-align: start;
     cursor: pointer;
     transition: background var(--dur-1);
+  }
+
+  .entry :global(svg) {
+    flex-shrink: 0;
+  }
+
+  /* Long names wrap instead of losing their ending ("Timers and sou…"). */
+  .label {
+    min-width: 0;
+    line-height: 1.25;
   }
 
   .entry:hover {
@@ -229,7 +239,7 @@
     }
 
     .entry {
-      height: 46px;
+      min-height: 46px;
       font-size: var(--text-lg);
     }
 

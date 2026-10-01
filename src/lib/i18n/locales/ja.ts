@@ -234,6 +234,7 @@ const ja: Messages = {
     cornerRoundness: '角の丸み',
     reduceMotion: 'アニメーションを減らす',
     lineNumbers: 'エディタに行番号を表示',
+    insertBar: 'エディタの下に挿入バーを表示',
     daily: {
       title: 'デイリーノート',
       about:
@@ -650,6 +651,16 @@ const ja: Messages = {
     meds: '服薬',
     vault: '金庫',
     habits: '習慣',
+    short: {
+      home: 'ホーム',
+      notes: 'ノート',
+      timers: 'タイマー',
+      habits: '習慣',
+      meds: '服薬',
+      vault: '金庫',
+      search: '検索',
+      settings: '設定',
+    },
   },
 
   home: {
@@ -784,6 +795,11 @@ const ja: Messages = {
     divider: '区切り線',
     date: '今日の日付',
     menu: 'ブロックの操作',
+    insert: '挿入',
+    insertBar: 'ブロックを挿入',
+    cut: '切り取り',
+    copy: 'コピー',
+    paste: '貼り付け',
     turnInto: '変換',
     duplicate: '複製',
     moveUp: '上へ移動',

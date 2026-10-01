@@ -16,10 +16,11 @@
       data-testid="nav-{entry.id}"
       aria-current={ui.section === entry.id ? 'page' : undefined}
       data-tour="nav-{entry.id}"
+      title={t(entry.label)}
       onclick={() => goTo(entry.id)}
     >
       <span class="pill"><Icon name={entry.icon} size={20} /></span>
-      <span class="label">{t(entry.label)}</span>
+      <span class="label">{t(entry.short)}</span>
       {#if count > 0}<span class="badge">{count}</span>{/if}
     </button>
   {/each}
