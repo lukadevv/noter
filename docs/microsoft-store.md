@@ -147,8 +147,9 @@ detects the MSIX install and the app leaves updating to the Store.
 - **"This package's manifest (Package/Properties/DisplayName) uses a display
   name that you have not reserved":** the name in the package is not one reserved
   for this product. Set `MSIX_DISPLAY_NAME` to the reserved name exactly as
-  _Product identity_ shows it (the default is `Noter X`) and rebuild. The other errors on the Packages page (no
-  package, device family) disappear once a valid package is accepted.
+  _Product identity_ shows it (the default is `Noter X`) and rebuild. The other
+  errors on the Packages page (no package, device family) disappear once a valid
+  package is accepted.
 - **"A package with this version already exists" (or a lower one):** bump
   `version` in `package.json` and rebuild.
 - **The MSIX workflow fails at "Check the Partner Center identity":** the
