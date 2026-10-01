@@ -11,6 +11,7 @@ import * as notify from '$lib/platform/notify'
 import { addDays, dayKey } from '$lib/utils/dates'
 import { countsByDay, isDone, isDueToday, reminderAt } from './schedule'
 import { t } from '$lib/i18n/index.svelte'
+import { uiSound } from '$lib/audio/ui-sounds'
 
 /** How far back checks are kept in memory: enough for the heatmap and streaks. */
 const HISTORY_DAYS = 400
@@ -125,6 +126,8 @@ class HabitsStore {
     const count = this.countOn(habitId, day)
     const target = Math.max(1, habit.target)
     const next = count >= target ? (target === 1 ? 0 : count) : count + 1
+    // Before the write, so it still belongs to the click that asked for it.
+    if (next >= target && count < target) uiSound.play('complete')
     await this.#setCount(habitId, day, next)
     return next >= target
   }

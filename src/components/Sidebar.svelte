@@ -2,12 +2,17 @@
   import Icon from './Icon.svelte'
   import Logo from './Logo.svelte'
   import FolderRow from './FolderRow.svelte'
+  import NoteTreeRow from './NoteTreeRow.svelte'
+  import { untrack } from 'svelte'
+  import { sortForList } from '$lib/db/repo/notes'
+  import type { FolderNode } from '$lib/db/repo/folders'
+  import type { Note } from '$lib/db/schema'
   import type { DropPosition } from '$lib/ui-types'
   import { notes } from '$lib/stores/notes.svelte'
   import { ui } from '$lib/stores/ui.svelte'
   import { ROOT } from '$lib/db/schema'
-  import { moveFolder, neighboursFor } from '$lib/db/repo/folders'
-  import { nudge, smartFolderMenuItems, tagMenuItems } from '$lib/menus/folder'
+  import { neighboursFor } from '$lib/db/repo/folders'
+  import { nudge, smartFolderMenuItems, tagMenuItems, treeMenuItems } from '$lib/menus/folder'
   import { contextmenu } from '$lib/ui/contextmenu'
   import { t } from '$lib/i18n/index.svelte'
   import Kbd from './ui/Kbd.svelte'
@@ -28,12 +33,112 @@
 
   function selectFolder(id: string | null) {
     notes.setScope({ kind: 'folder', id })
+    if (id && showNotes) setNotesOpen(id, true)
     if (ui.narrow) ui.showPane('list')
   }
 
+  // --- Notes in the tree ---------------------------------------------------
+
+  let showNotes = $derived(theme.settings.showNotesInTree)
+  let notesOpen = $derived(new Set(theme.settings.treeNotesOpen))
+
+  /** Notes per folder, in the same order as the list pane. Root-level notes live under "All notes". */
+  let notesByFolder = $derived.by(() => {
+    // Built whole on each recomputation and never mutated afterwards.
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity
+    const byFolder = new Map<string, Note[]>()
+    if (!showNotes) return byFolder
+    for (const note of notes.notes) {
+      if (!note.folderId) continue
+      const list = byFolder.get(note.folderId)
+      if (list) list.push(note)
+      else byFolder.set(note.folderId, [note])
+    }
+    for (const [id, list] of byFolder) byFolder.set(id, sortForList(list))
+    return byFolder
+  })
+
+  type TreeRow = { kind: 'folder'; node: FolderNode } | { kind: 'note'; note: Note; depth: number }
+
+  /** Folders in tree order, each followed by its notes when they are unfolded. */
+  let rows = $derived.by(() => {
+    const out: TreeRow[] = []
+    const walk = (list: FolderNode[]) => {
+      for (const node of list) {
+        out.push({ kind: 'folder', node })
+        if (!node.collapsed) walk(node.children)
+        if (notesOpen.has(node.id)) {
+          for (const note of notesByFolder.get(node.id) ?? []) {
+            out.push({ kind: 'note', note, depth: node.depth + 1 })
+          }
+        }
+      }
+    }
+    walk(notes.tree)
+    return out
+  })
+
+  const hasNotes = (id: string) => (notesByFolder.get(id)?.length ?? 0) > 0
+
+  function setNotesOpen(id: string, open: boolean) {
+    const current = theme.settings.treeNotesOpen
+    if (current.includes(id) === open) return
+    theme.update({ treeNotesOpen: open ? [...current, id] : current.filter((x) => x !== id) })
+  }
+
+  /**
+   * The twisty unfolds everything under a folder - subfolders and notes - or
+   * folds it all back. The two are remembered apart, so a folder that already
+   * shows its subfolders opens its notes first.
+   */
+  function toggleFolder(id: string) {
+    const node = notes.folders.find((f) => f.id === id)
+    if (!node) return
+    const children = notes.folders.some((f) => f.parentId === id)
+    const notesHere = hasNotes(id)
+    const open = notesOpen.has(id)
+    const unfolded = (!children || !node.collapsed) && (!notesHere || open)
+    if (unfolded) {
+      if (children && !node.collapsed) void notes.toggleCollapsed(id)
+      setNotesOpen(id, false)
+    } else {
+      if (children && node.collapsed) void notes.toggleCollapsed(id)
+      if (notesHere) setNotesOpen(id, true)
+    }
+  }
+
+  function openNote(note: Note) {
+    if (!(scope.kind === 'folder' && scope.id === note.folderId)) {
+      notes.setScope({ kind: 'folder', id: note.folderId })
+    }
+    notes.select(note.id)
+    if (ui.narrow) ui.showPane('note')
+  }
+
+  // Opening a note from anywhere (palette, link, list) unfolds the way to it.
+  // Only when the selection changes, so folding a folder back is not undone.
+  let revealed = ''
+  $effect(() => {
+    const id = notes.selectedNoteId
+    if (!showNotes || !id || id === revealed) return
+    const note = notes.notes.find((n) => n.id === id)
+    if (!note?.folderId) return
+    revealed = id
+    untrack(() => {
+      setNotesOpen(note.folderId, true)
+      let parent = notes.folders.find((f) => f.id === note.folderId)?.parentId
+      while (parent) {
+        const folder = notes.folders.find((f) => f.id === parent)
+        if (!folder) break
+        if (folder.collapsed) void notes.toggleCollapsed(folder.id)
+        parent = folder.parentId
+      }
+    })
+  })
+
   async function handleFolderDrop(draggedId: string, targetId: string, position: DropPosition) {
     if (position === 'inside') {
-      const ok = await moveFolder(draggedId, targetId, null, null)
+      const ok = await notes.moveFolder(draggedId, targetId, null, null)
       if (!ok) ui.toast(t('toast.cannotNestInSelf'), 'warn')
       return
     }
@@ -41,7 +146,7 @@
     const neighbours = neighboursFor(notes.folders, draggedId, targetId, position)
     if (!neighbours) return
 
-    const ok = await moveFolder(draggedId, neighbours.parentId, neighbours.before, neighbours.after)
+    const ok = await notes.moveFolder(draggedId, neighbours.parentId, neighbours.before, neighbours.after)
     if (!ok) ui.toast(t('toast.cannotNestInSelf'), 'warn')
   }
 
@@ -71,7 +176,7 @@
     const noteId = event.dataTransfer?.getData('application/x-noter-note')
     const folderId = event.dataTransfer?.getData('application/x-noter-folder')
     if (noteId) await notes.move(noteId, ROOT)
-    else if (folderId) await moveFolder(folderId, ROOT, null, null)
+    else if (folderId) await notes.moveFolder(folderId, ROOT, null, null)
   }
 </script>
 
@@ -153,21 +258,35 @@
     tabindex="-1"
     ondragover={onRootDragOver}
     ondrop={onRootDrop}
+    use:contextmenu={() => treeMenuItems()}
   >
-    {#each notes.visibleFolders as node (node.id)}
-      <FolderRow
-        {node}
-        active={scope.kind === 'folder' && scope.id === node.id}
-        count={notes.counts.get(node.id) ?? 0}
-        dropTarget={hover.id === node.id ? hover.position : null}
-        onselect={selectFolder}
-        ontoggle={(id) => void notes.toggleCollapsed(id)}
-        onrename={(id, name) => void notes.renameFolder(id, name)}
-        ondropfolder={(a, b, p) => void handleFolderDrop(a, b, p)}
-        ondropnote={(n, f) => void handleNoteDrop(n, f)}
-        ondraghover={(id, position) => (hover = { id, position })}
-        onnudge={(id, direction) => void nudge(id, direction)}
-      />
+    {#each rows as row (row.kind === 'folder' ? row.node.id : `note:${row.note.id}`)}
+      {#if row.kind === 'folder'}
+        {@const node = row.node}
+        <FolderRow
+          {node}
+          active={scope.kind === 'folder' && scope.id === node.id}
+          count={notes.counts.get(node.id) ?? 0}
+          expanded={(node.children.length > 0 && !node.collapsed) ||
+            (hasNotes(node.id) && notesOpen.has(node.id))}
+          foldable={node.children.length > 0 || hasNotes(node.id)}
+          dropTarget={hover.id === node.id ? hover.position : null}
+          onselect={selectFolder}
+          ontoggle={toggleFolder}
+          onrename={(id, name) => void notes.renameFolder(id, name)}
+          ondropfolder={(a, b, p) => void handleFolderDrop(a, b, p)}
+          ondropnote={(n, f) => void handleNoteDrop(n, f)}
+          ondraghover={(id, position) => (hover = { id, position })}
+          onnudge={(id, direction) => void nudge(id, direction)}
+        />
+      {:else}
+        <NoteTreeRow
+          note={row.note}
+          depth={row.depth}
+          active={notes.selectedNoteId === row.note.id}
+          onselect={openNote}
+        />
+      {/if}
     {/each}
 
     {#if notes.folders.length === 0 && !notes.loading}

@@ -14,6 +14,7 @@
   import { theme } from '$lib/stores/theme.svelte'
   import { SECTIONS } from '$lib/sections'
   import { ui } from '$lib/stores/ui.svelte'
+  import { initUiSounds, uiSound } from '$lib/audio/ui-sounds'
   import {
     ALL_NOTES,
     currentRoute,
@@ -31,7 +32,7 @@
   import { lightbox } from '$lib/stores/lightbox.svelte'
   import { todayKey } from '$lib/db/repo/daily'
   import { t } from '$lib/i18n/index.svelte'
-  import { applyTokens, clearTokens } from '$lib/theme/apply'
+  import { ACCENT_KEYS, applyTokens, clearTokens } from '$lib/theme/apply'
   import { deriveAccentTokens } from '$lib/theme/tokens'
   import { hexToOklch } from '$lib/theme/oklch'
   import { FolderLockedError } from '$lib/crypto/keyring.svelte'
@@ -43,11 +44,15 @@
   let sharedPayload = $state<string | null>(null)
   /** Set while applying a route, so the reverse sync does not fight it. */
   let applyingRoute = false
+  /** The first route is the app opening, not the user moving, so it stays silent. */
+  let routed = false
 
   function applyRoute(route: Route) {
     applyingRoute = true
     if (route.kind !== 'share') sharedPayload = null
     const section = sectionOf(route)
+    // A click on the nav already made its sound; this covers shortcuts and links.
+    if (section && routed && section !== ui.section) uiSound.play('tab')
     if (section) ui.section = section
     switch (route.kind) {
       case 'notes':
@@ -86,6 +91,7 @@
         break
     }
     applyingRoute = false
+    routed = true
   }
 
   // First run: Home offers the tour rather than forcing it on anyone.
@@ -110,6 +116,7 @@
     const stopLive = notes.start()
     const stopViewport = ui.watchViewport()
     const stopRoute = onRouteChange(applyRoute)
+    const stopSounds = initUiSounds(() => theme.settings.sounds)
 
     // Opening the app with no address shows the start section the user chose.
     // Settings are loaded first so that choice is known before the first route.
@@ -146,6 +153,7 @@
       stopLive()
       stopViewport()
       stopRoute()
+      stopSounds()
     }
   })
 
@@ -232,14 +240,13 @@
   })
 
   /**
-   * A folder with its own accent tints the interface while you are inside it.
-   * Only the accent family is overridden, so surfaces and text still come from
+   * A folder with its own accent tints the interface while you are inside it,
+   * which means in Notes: the other sections keep the theme's accent, even
+   * though the folder is still the active one when you leave. Only the accent family is overridden, so surfaces and text still come from
    * the active theme and contrast stays predictable.
    */
-  const ACCENT_KEYS = ['accent', 'accent-hover', 'accent-active', 'accent-soft', 'accent-contrast']
-
   $effect(() => {
-    const color = notes.activeFolder?.color ?? null
+    const color = ui.section === 'notes' ? (notes.activeFolder?.color ?? null) : null
     const root = document.documentElement
     if (!color) {
       clearTokens(ACCENT_KEYS, root)

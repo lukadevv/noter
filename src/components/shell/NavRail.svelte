@@ -7,6 +7,8 @@
   import { alerts } from '$lib/stores/alerts.svelte'
   import { formatShortcut } from '$lib/ui/keys'
   import { t } from '$lib/i18n/index.svelte'
+  import { theme } from '$lib/stores/theme.svelte'
+  import { accentStyle } from '$lib/theme/apply'
 
   interface Props {
     onsearch: () => void
@@ -15,7 +17,7 @@
   let { onsearch }: Props = $props()
 </script>
 
-<nav class="rail" aria-label={t('nav.main')}>
+<nav class="rail" aria-label={t('nav.main')} style={accentStyle(theme.tokens)}>
   <button class="brand" aria-label={t('nav.home')} onclick={() => goTo('home')}>
     <Logo size={26} />
   </button>
@@ -27,6 +29,7 @@
         class="item"
         class:item--active={ui.section === entry.id}
         data-testid="nav-{entry.id}"
+        data-ui-sound="tab"
         data-tour="nav-{entry.id}"
         aria-label={t(entry.label)}
         aria-current={ui.section === entry.id ? 'page' : undefined}

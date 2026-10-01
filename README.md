@@ -14,10 +14,19 @@
 
 [**Open the web app**](https://noter.lukadevv.com) ·
 [**Download**](https://github.com/lukadevv/noter/releases/latest) ·
+[**Microsoft Store**](https://apps.microsoft.com/detail/9PF8H2B2F2F7) ·
 [Privacy](https://noter.lukadevv.com/privacy.html) ·
 [Report a bug](https://github.com/lukadevv/noter/issues)
 
 <img src="docs/screenshots/en/home.png" alt="Noter's Home: today's doses and habits, a calendar and writing statistics" width="900" />
+
+</div>
+
+## Watch the trailer
+
+<div align="center">
+
+[![Noter trailer on YouTube](https://img.youtube.com/vi/jNwhvYXrwmw/maxresdefault.jpg)](https://youtu.be/jNwhvYXrwmw)
 
 </div>
 
@@ -100,13 +109,13 @@ Arabic, and a welcome tour you can replay any time.
 
 ## Download
 
-| Platform    | Get it                                                                                                 | Updates                                    |
-| ----------- | ------------------------------------------------------------------------------------------------------ | ------------------------------------------ |
-| **Web**     | [noter.lukadevv.com](https://noter.lukadevv.com) - install it from the browser as an app               | Automatic, with a prompt before reloading  |
-| **Windows** | Microsoft Store, or `.exe` / `.msi` from [Releases](https://github.com/lukadevv/noter/releases/latest) | Store: by the Store · installer: in-app    |
-| **macOS**   | `.dmg` (Apple silicon and Intel)                                                                       | In-app                                     |
-| **Linux**   | `.AppImage`, `.deb` or `.rpm`                                                                          | AppImage: in-app · `.deb`/`.rpm`: notified |
-| **Android** | `.apk` from [Releases](https://github.com/lukadevv/noter/releases/latest)                              | Notified, with a link to the new `.apk`    |
+| Platform    | Get it                                                                                                                                                   | Updates                                    |
+| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ |
+| **Web**     | [noter.lukadevv.com](https://noter.lukadevv.com) - install it from the browser as an app                                                                 | Automatic, with a prompt before reloading  |
+| **Windows** | [Microsoft Store](https://apps.microsoft.com/detail/9PF8H2B2F2F7), or `.exe` / `.msi` from [Releases](https://github.com/lukadevv/noter/releases/latest) | Store: by the Store · installer: in-app    |
+| **macOS**   | `.dmg` (Apple silicon and Intel)                                                                                                                         | In-app                                     |
+| **Linux**   | `.AppImage`, `.deb` or `.rpm`                                                                                                                            | AppImage: in-app · `.deb`/`.rpm`: notified |
+| **Android** | `.apk` from [Releases](https://github.com/lukadevv/noter/releases/latest)                                                                                | Notified, with a link to the new `.apk`    |
 
 How each build finds out about new versions is described in
 [docs/updates.md](docs/updates.md).

@@ -168,6 +168,7 @@
         <button
           class="item"
           data-testid="menu-item"
+          data-ui-sound={item.danger ? 'delete' : item.submenu ? 'none' : 'secondary'}
           class:item--danger={item.danger}
           class:item--active={panel.active === i}
           role="menuitem"

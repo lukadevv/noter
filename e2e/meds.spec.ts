@@ -54,6 +54,34 @@ test.describe('medication', () => {
     await expect(page.locator('.entry')).toHaveCount(2)
   })
 
+  test('logs a dose taken on an earlier day, and refuses a future one', async ({ page }) => {
+    await addMed(page, 'Ibuprofen')
+    await page.getByTestId('med-card').click({ button: 'right' })
+    await page.getByRole('menuitem', { name: 'Taken at…' }).click()
+    const dialog = page.getByRole('dialog', { name: 'Taken at…' })
+
+    // Tomorrow has not happened: nothing to log.
+    const tomorrow = await page.evaluate(() => {
+      const d = new Date(Date.now() + 86_400_000)
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+    })
+    await dialog.getByLabel('Day').fill(tomorrow)
+    await expect(dialog.getByRole('alert')).toBeVisible()
+    await expect(dialog.getByRole('button', { name: 'Taken', exact: true })).toBeDisabled()
+
+    const yesterday = await page.evaluate(() => {
+      const d = new Date(Date.now() - 86_400_000)
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+    })
+    await dialog.getByLabel('Day').fill(yesterday)
+    await dialog.getByLabel('Time').fill('17:00')
+    await dialog.getByRole('button', { name: 'Taken', exact: true }).click()
+    await expect(dialog).toBeHidden()
+    await expect(page.getByTestId('toast')).toContainText('dose logged')
+    // It belongs to yesterday, so it is not in today's log.
+    await expect(page.locator('.entry')).toHaveCount(0)
+  })
+
   test('shows the next dose coming up and then due on Home', async ({ page }) => {
     await addMed(page, 'Antibiotic', '1 tablet')
     await page.getByTestId('take-dose').click()

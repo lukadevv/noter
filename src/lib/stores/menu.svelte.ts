@@ -1,3 +1,4 @@
+import { uiSound } from '$lib/audio/ui-sounds'
 import type { MenuItem } from '$lib/ui-types'
 
 export interface MenuAnchor {
@@ -39,6 +40,7 @@ class MenuStore {
           })()
         : at
     const active = document.activeElement
+    uiSound.play('menu')
     this.current = {
       items,
       anchor,

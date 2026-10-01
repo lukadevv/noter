@@ -21,7 +21,6 @@
   import { timers } from '$lib/timers/store.svelte'
   import { habits } from '$lib/habits/store.svelte'
   import { vaultStatus } from '$lib/secrets/status.svelte'
-  import { isScheduled } from '$lib/habits/schedule'
   import { packRows } from '$lib/home/layout'
   import type { HomeWidget } from '$lib/db/repo/settings'
   import { activitySince } from '$lib/db/repo/activity'
@@ -176,9 +175,7 @@
       return state === 'due' || state === 'overdue'
     }).length
     if (dosesDue) parts.push(t('home.summary.doses', { count: dosesDue }))
-    const habitsLeft = habits.active.filter(
-      (h) => isScheduled(h, habits.today) && !habits.isDoneOn(h),
-    ).length
+    const habitsLeft = habits.dueToday.length
     if (habitsLeft) parts.push(t('home.summary.habits', { count: habitsLeft }))
     if (timers.running.length) parts.push(t('home.summary.timers', { count: timers.running.length }))
     return parts.length ? parts.join(' · ') : t('home.summary.clear')
@@ -512,7 +509,7 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-5);
-    max-width: 72rem;
+    max-width: var(--page-max);
     margin: 0 auto;
     padding: var(--space-6) var(--space-5) var(--space-6);
   }

@@ -44,6 +44,41 @@ fn install_kind() -> &'static str {
     }
 }
 
+/// Shows a toast for the Microsoft Store (MSIX) build.
+///
+/// tauri-plugin-notification tags toasts with the bundle identifier, but a
+/// packaged app only owns the AppUserModelID `<PackageFamilyName>!<AppId>`, and
+/// Windows silently drops toasts sent under any other id. The family name is
+/// read from the install folder, `WindowsApps\<Name>_<version>_<arch>__<publisherId>`.
+#[tauri::command]
+fn store_notify(title: String, body: String) -> Result<(), String> {
+    #[cfg(target_os = "windows")]
+    {
+        let exe = std::env::current_exe().map_err(|error| error.to_string())?;
+        let folder = exe
+            .parent()
+            .and_then(|dir| dir.file_name())
+            .map(|name| name.to_string_lossy().into_owned())
+            .unwrap_or_default();
+        let mut parts = folder.split('_');
+        let (name, publisher) = (parts.next(), parts.last());
+        let (Some(name), Some(publisher)) = (name, publisher) else {
+            return Err("Not running from an MSIX install folder.".into());
+        };
+        let aumid = format!("{name}_{publisher}!Noter");
+        tauri_winrt_notification::Toast::new(&aumid)
+            .title(&title)
+            .text1(&body)
+            .show()
+            .map_err(|error| error.to_string())
+    }
+    #[cfg(not(target_os = "windows"))]
+    {
+        let _ = (title, body);
+        Err("Only available on Windows.".into())
+    }
+}
+
 /// Opens a release page in the system browser, for installs the app cannot
 /// update itself (Linux .deb/.rpm). Only this project's GitHub pages are
 /// accepted, so the webview cannot be used to launch arbitrary programs.
@@ -88,7 +123,7 @@ pub fn run() {
         .plugin(tauri_plugin_process::init());
 
     builder
-        .invoke_handler(tauri::generate_handler![write_export, install_kind, open_release_page])
+        .invoke_handler(tauri::generate_handler![write_export, install_kind, open_release_page, store_notify])
         .run(tauri::generate_context!())
         .expect("Noter failed to start");
 }

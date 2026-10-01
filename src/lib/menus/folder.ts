@@ -22,7 +22,9 @@ export async function nudge(id: string, direction: -1 | 1): Promise<void> {
 export function folderMenuItems(id: string, options: { onrename?: () => void } = {}): MenuItem[] {
   const folder = notes.folders.find((f) => f.id === id)
   if (!folder) return []
-  const locked = folder.encrypted === 1 && !keyring.isUnlocked(id)
+  // A folder inside an encrypted one is protected by it, and locks with it.
+  const protectedFolder = keyring.isProtected(id)
+  const locked = protectedFolder && !keyring.isUnlocked(id)
 
   return [
     {
@@ -52,11 +54,11 @@ export function folderMenuItems(id: string, options: { onrename?: () => void } =
     },
     {
       id: 'encryption',
-      label: t(folder.encrypted ? 'sidebar.encryption' : 'sidebar.encryptFolder'),
+      label: t(protectedFolder ? 'sidebar.encryption' : 'sidebar.encryptFolder'),
       icon: 'lock',
       run: () => dialogs.open('folderLock', id),
     },
-    ...(folder.encrypted && !locked
+    ...(protectedFolder && !locked
       ? [{ id: 'lock-now', label: t('lock.lockNow'), icon: 'lock', run: () => keyring.lock(id) }]
       : []),
     // Reordering by menu as well as by drag: dragging is unavailable on touch
@@ -100,6 +102,18 @@ export function folderMenuItems(id: string, options: { onrename?: () => void } =
           'info',
         )
       },
+    },
+  ]
+}
+
+/** Right-click on the empty part of the folder tree, where no row owns the menu. */
+export function treeMenuItems(): MenuItem[] {
+  return [
+    {
+      id: 'new-folder',
+      label: t('sidebar.newFolder'),
+      icon: 'folder-plus',
+      run: () => void notes.newFolder(),
     },
   ]
 }

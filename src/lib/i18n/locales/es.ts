@@ -234,6 +234,7 @@ const es: Messages = {
     cornerRoundness: 'Redondeo de esquinas',
     reduceMotion: 'Reducir el movimiento',
     lineNumbers: 'Mostrar números de línea en el editor',
+    notesInTree: 'Mostrar las notas en el árbol de carpetas',
     insertBar: 'Mostrar la barra para insertar bajo el editor',
     daily: {
       title: 'Notas diarias',
@@ -324,6 +325,7 @@ const es: Messages = {
       notifications: 'Notificaciones',
       vault: 'Bóveda',
       home: 'Inicio',
+      sounds: 'Sonidos de la interfaz',
     },
     search: 'Buscar ajustes',
     noResults: 'Ningún ajuste coincide.',
@@ -391,6 +393,31 @@ const es: Messages = {
       blocked:
         'Las notificaciones están bloqueadas. Permitilas en los ajustes del navegador o del sistema.',
       allow: 'Permitir notificaciones',
+    },
+    sounds: {
+      title: 'Sonidos de la interfaz',
+      about:
+        'Sonidos cortos que responden a lo que haces. Las alarmas se configuran en Temporizadores y sonidos.',
+      enable: 'Reproducir sonidos de la interfaz',
+      enableHint: 'Al cambiar de pestaña, pulsar botones, crear o borrar.',
+      volume: 'Volumen · {percent}%',
+      choose: 'Qué sonidos',
+      chooseHint: 'Desactiva los que no te gusten.',
+      preview: 'Probar: {name}',
+      names: {
+        tab: 'Cambiar de pestaña',
+        note: 'Abrir una nota',
+        primary: 'Botones principales',
+        secondary: 'Otros botones',
+        switchOn: 'Interruptor activado',
+        switchOff: 'Interruptor desactivado',
+        create: 'Crear algo',
+        complete: 'Completar algo',
+        delete: 'Borrar',
+        error: 'Errores y avisos',
+        menu: 'Abrir un menú',
+        dialog: 'Abrir y cerrar diálogos',
+      },
     },
     vault: {
       security: 'Bloqueo',
@@ -519,6 +546,8 @@ const es: Messages = {
     lockNow: 'Bloquear ahora',
     removeEncryption: 'Quitar el cifrado',
     openToUnlock: 'Abrí una nota de adentro para desbloquearla.',
+    inherited: 'Esta carpeta está protegida por “{name}”: se desbloquea y se bloquea junto con ella.',
+    subfoldersHint: 'Las subcarpetas también quedan cubiertas: usan la misma frase de contraseña.',
     about:
       'Cifrar una carpeta reescribe cada nota de adentro como texto cifrado. Los títulos, los cuerpos y las etiquetas quedan ilegibles sin la frase de contraseña.',
     minLength: 'Al menos 8 caracteres.',
@@ -950,6 +979,10 @@ const es: Messages = {
     skipped: 'salteada',
     undo: 'Deshacer',
     undoLast: 'Deshacer la última toma',
+    deleteDose: 'Borrar esta toma',
+    takenDay: 'Día',
+    takenTime: 'Hora',
+    takenFuture: 'Esa hora todavía no pasó.',
     pause: 'Pausar recordatorios',
     resume: 'Reanudar recordatorios',
     actions: 'Acciones del medicamento',
@@ -1148,6 +1181,7 @@ const es: Messages = {
     total: 'Total',
     best: 'la más rápida',
     worst: 'la más lenta',
+    deleteLap: 'Borrar vuelta {n}',
   },
 
   habits: {

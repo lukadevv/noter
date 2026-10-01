@@ -56,7 +56,9 @@ signs it. An unsigned MSIX cannot be installed by double-clicking it.
 
 The version comes from `package.json` (`1.0.0` becomes `1.0.0.0`). Every upload
 must have a higher version than the last package the Store accepted, so bump
-`version` in `package.json` before building an update.
+`version` in `package.json` before building an update. The fourth part is always
+`0`: MSIX requires four parts and the Store reserves the last one, so Windows
+shows "1.1.0.0" under "Installed version" and that cannot be shortened.
 
 ## 4. Complete the submission
 

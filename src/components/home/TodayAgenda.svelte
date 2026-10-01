@@ -5,7 +5,7 @@
   import { meds } from '$lib/meds/store.svelte'
   import { habits } from '$lib/habits/store.svelte'
   import { timers } from '$lib/timers/store.svelte'
-  import { isScheduled } from '$lib/habits/schedule'
+  import { isExpectedOn } from '$lib/habits/schedule'
   import { formatSpan, startOfDay, DAY } from '$lib/meds/schedule'
   import { formatClock } from '$lib/timers/duration'
   import { PHASE_COLOR } from '$lib/timers/pomodoro'
@@ -44,7 +44,8 @@
       list.push({ kind: 'med', key: `m${med.id}`, rank, id: med.id })
     }
     for (const habit of habits.active) {
-      if (!isScheduled(habit, habits.today)) continue
+      if (!isExpectedOn(habit, habits.counts.get(habit.id) ?? new Map(), habits.today, habits.today))
+        continue
       const done = habits.isDoneOn(habit)
       list.push({ kind: 'habit', key: `h${habit.id}`, rank: done ? 8 : 2, id: habit.id, done })
     }

@@ -66,6 +66,13 @@ export const SETTINGS_SECTIONS: SettingsSectionEntry[] = [
     load: () => import('./TimerSettings.svelte'),
   },
   {
+    id: 'sounds',
+    icon: 'volume-2',
+    label: 'settings.sections.sounds',
+    keywords: ['settings.sounds.enable', 'settings.sounds.choose'],
+    load: () => import('./SoundSettings.svelte'),
+  },
+  {
     id: 'vault',
     icon: 'shield',
     label: 'settings.sections.vault',

@@ -12,6 +12,7 @@ import { confirm } from '$lib/stores/confirm.svelte'
 import { ui } from '$lib/stores/ui.svelte'
 import { doseCheck, dosesLeft, formatSpan, lowStock, statusOf, DAY, type MedStatus } from './schedule'
 import { t } from '$lib/i18n/index.svelte'
+import { uiSound } from '$lib/audio/ui-sounds'
 
 /** How far back dose history is kept in memory (the database keeps everything). */
 const HISTORY_DAYS = 45
@@ -195,6 +196,7 @@ class MedsStore {
       })
       if (!ok) return false
     }
+    uiSound.play('complete')
     const dose = await this.take(medId, at)
     ui.toast(t('meds.logged', { name: med.name }), 'ok', {
       label: t('meds.undo'),

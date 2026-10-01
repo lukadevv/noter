@@ -1,3 +1,4 @@
+import { uiSound } from '$lib/audio/ui-sounds'
 import { shortId } from '$lib/utils/uuid'
 import type { Section, TimerTab } from '../../routes/router'
 
@@ -46,6 +47,8 @@ class UiStore {
     // The same message twice in a row (a double click, a retried save) is one toast.
     const duplicate = this.toasts.find((t) => t.message === message && t.tone === tone)
     if (duplicate) this.dismiss(duplicate.id)
+
+    if (tone === 'warn' || tone === 'danger') uiSound.play('error')
 
     const toast: Toast = { id: shortId(), message, tone, action }
     // Never more than three: a burst of messages should not bury the page.

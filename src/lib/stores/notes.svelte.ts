@@ -17,16 +17,20 @@ import { bumpActivity, countWords } from '$lib/db/repo/activity'
 import { buildBacklinks, extractTags, linkKey, renameWikiLinks, type BacklinkEntry } from '$lib/md/links'
 import { searchIndex } from '$lib/search/index'
 import {
+  finishNoteMove,
   FolderLockedError,
   keyring,
-  recryptForFolder,
+  moveFolderWithNotes,
+  planNoteMove,
   revealInFolder,
   revealNote,
   sealNote,
 } from '$lib/crypto/keyring.svelte'
+import { hidden, isPending } from '$lib/crypto/lock-root'
 import { buildContext, matches } from '$lib/search/evaluate'
 import { parseQuery, textTerms } from '$lib/search/query'
 import { ui } from '$lib/stores/ui.svelte'
+import { uiSound } from '$lib/audio/ui-sounds'
 
 export type ListScope =
   | { kind: 'folder'; id: string | null }
@@ -56,10 +60,15 @@ export function expandTemplate(body: string, title: string, at: Date): string {
 class NotesStore {
   folders = $state<Folder[]>([])
   smartFolders = $state<SmartFolder[]>([])
+  /** What the notes are shown as: those still waiting for their folder's key look locked. */
   notes = $state<Note[]>([])
   trashed = $state<Note[]>([])
   archived = $state<Note[]>([])
   loading = $state(true)
+
+  /** The notes as stored. Read through `notes`, `trashed` and `archived`, which hide what is not yet sealed. */
+  #stored = $state.raw<{ live: Note[]; trashed: Note[]; archived: Note[] } | null>(null)
+  #indexed = false
 
   scope = $state<ListScope>({ kind: 'folder', id: null })
   selectedNoteId = $state<string | null>(null)
@@ -175,29 +184,64 @@ class NotesStore {
     this.#subs.push(
       liveQuery(() => foldersRepo.allFolders()).subscribe((folders) => {
         this.folders = folders
+        keyring.sync(folders)
       }),
       liveQuery(() => smartRepo.allSmartFolders()).subscribe((smart) => {
         this.smartFolders = smart
       }),
-      liveQuery(() => notesRepo.listAll()).subscribe((notes) => {
-        const first = this.loading
-        this.notes = notes
-        this.loading = false
-        // The first load builds the index in idle slices; later changes are
-        // reconciled incrementally, which is far cheaper than a rebuild.
-        if (first) searchIndex.rebuild(notes)
-        else if (searchIndex.ready) searchIndex.sync(notes)
+      liveQuery(() => notesRepo.listAll()).subscribe((live) => {
+        this.#stored = {
+          live,
+          trashed: this.#stored?.trashed ?? [],
+          archived: this.#stored?.archived ?? [],
+        }
       }),
-      liveQuery(() => notesRepo.listTrashed()).subscribe((notes) => {
-        this.trashed = notes
+      liveQuery(() => notesRepo.listTrashed()).subscribe((trashed) => {
+        this.#stored = { live: this.#stored?.live ?? [], trashed, archived: this.#stored?.archived ?? [] }
       }),
-      liveQuery(() => notesRepo.listArchived()).subscribe((notes) => {
-        this.archived = notes
+      liveQuery(() => notesRepo.listArchived()).subscribe((archived) => {
+        this.#stored = { live: this.#stored?.live ?? [], trashed: this.#stored?.trashed ?? [], archived }
       }),
     )
+
+    // A note inside an encrypted folder that is still stored in the clear (it
+    // predates the subfolder inheriting the lock) is shown as locked, and sealed
+    // as soon as its folder is unlocked. Both follow the notes, the folders and
+    // which folders are unlocked, so the effect reads all three.
+    const stopView = $effect.root(() => {
+      $effect(() => {
+        const stored = this.#stored
+        if (!stored) return
+        const roots = keyring.roots
+        const show = (list: Note[]) =>
+          list.map((n) => (isPending(n, roots) && !keyring.isUnlocked(n.folderId) ? hidden(n) : n))
+        const live = show(stored.live)
+        this.notes = live
+        this.trashed = show(stored.trashed)
+        this.archived = show(stored.archived)
+        this.loading = false
+
+        // The first load builds the index in idle slices; later changes are
+        // reconciled incrementally, which is far cheaper than a rebuild.
+        if (!this.#indexed) {
+          this.#indexed = true
+          searchIndex.rebuild(live)
+        } else if (searchIndex.ready) searchIndex.sync(live)
+
+        for (const root of new Set(
+          stored.live
+            .filter((n) => isPending(n, roots) && keyring.isUnlocked(n.folderId))
+            .map((n) => roots.get(n.folderId)!),
+        )) {
+          void keyring.sealPending(root)
+        }
+      })
+    })
+
     return () => {
       for (const sub of this.#subs) sub.unsubscribe()
       this.#subs = []
+      stopView()
     }
   }
 
@@ -279,13 +323,15 @@ class NotesStore {
    */
   async create(input: notesRepo.NewNoteInput = {}): Promise<Note> {
     const folderId = input.folderId ?? ROOT
-    const folder = folderId ? this.folders.find((f) => f.id === folderId) : undefined
+    // A subfolder is guarded by the encrypted folder above it, so the folder
+    // list is read fresh: one made a moment ago may not have reached the store.
+    await keyring.refresh()
     let note: Note
-    if (folder?.encrypted !== 1) {
+    if (!keyring.isProtected(folderId)) {
       note = await notesRepo.createNote(input)
     } else {
       const sealed = await sealNote(folderId, input.title ?? '', input.body ?? '')
-      if (!sealed) throw new FolderLockedError(folderId)
+      if (!sealed) throw new FolderLockedError(keyring.rootOf(folderId) ?? folderId)
       note = await notesRepo.createNote({ ...input, ...sealed, tags: [], encrypted: 1 })
     }
     if (!input.system) void bumpActivity({ created: 1 })
@@ -293,6 +339,7 @@ class NotesStore {
   }
 
   async newNote(): Promise<Note> {
+    uiSound.play('create')
     const folderId = this.scope.kind === 'folder' ? (this.scope.id ?? ROOT) : ROOT
     const note = await this.create({ folderId })
     this.select(note.id)
@@ -307,8 +354,25 @@ class NotesStore {
     await this.flushPending()
     const note = await notesRepo.getNote(id)
     if (!note) return
-    const patch = (await recryptForFolder(note, folderId)) ?? {}
-    await notesRepo.moveNote(id, folderId, before, after, patch)
+    const plan = await planNoteMove(note, folderId)
+    await notesRepo.moveNote(id, folderId, before, after, plan?.patch ?? {})
+    await finishNoteMove(plan)
+  }
+
+  /**
+   * Moves a folder with its subfolders and notes. Into an encrypted folder the
+   * notes are sealed with its key; out of one they are opened - either way the
+   * folder involved must be unlocked, or this throws `FolderLockedError`.
+   * Returns false when the folder would end up inside itself.
+   */
+  async moveFolder(
+    id: string,
+    parentId: string,
+    before: string | null,
+    after: string | null,
+  ): Promise<boolean> {
+    await this.flushPending()
+    return moveFolderWithNotes(id, parentId, before, after)
   }
 
   /**
@@ -357,7 +421,7 @@ class NotesStore {
             this.#pendingBody.set(id, patch)
             continue
           }
-          await notesRepo.updateNote(id, { ...sealed, tags: [] })
+          await notesRepo.updateNote(id, { ...sealed, tags: [], encrypted: 1 })
         } else {
           await notesRepo.updateNote(id, {
             title: patch.title,
@@ -371,7 +435,9 @@ class NotesStore {
 
   editBody(id: string, body: string, title: string): void {
     const note = this.notes.find((n) => n.id === id)
-    const encrypted = note?.encrypted === 1
+    // A note still in the clear inside an unlocked encrypted folder is written
+    // back sealed too, never as plaintext.
+    const encrypted = note?.encrypted === 1 || (note ? keyring.isProtected(note.folderId) : false)
     // `tags` is a denormalised copy of the `#tags` in the text, kept only so
     // IndexedDB can index them. The markdown stays the source of truth. A
     // locked note contributes no tags at all, so nothing leaks through them.
@@ -420,6 +486,7 @@ class NotesStore {
   }
 
   async trash(id: string): Promise<void> {
+    uiSound.play('delete')
     await notesRepo.trashNote(id)
     if (this.selectedNoteId === id) this.selectedNoteId = null
   }
@@ -429,6 +496,7 @@ class NotesStore {
   }
 
   async deleteForever(id: string): Promise<void> {
+    uiSound.play('delete')
     await notesRepo.deleteNoteForever(id)
     if (this.selectedNoteId === id) this.selectedNoteId = null
   }
@@ -580,6 +648,7 @@ class NotesStore {
   }
 
   async newFolder(parentId: string = ROOT): Promise<Folder> {
+    uiSound.play('create')
     return foldersRepo.createFolder({ name: 'New folder', parentId })
   }
 
@@ -594,6 +663,7 @@ class NotesStore {
   }
 
   async deleteFolder(id: string): Promise<void> {
+    uiSound.play('delete')
     await foldersRepo.deleteFolder(id)
     if (this.scope.kind === 'folder' && this.scope.id === id) {
       this.scope = { kind: 'folder', id: null }

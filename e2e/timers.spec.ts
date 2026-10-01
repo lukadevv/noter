@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test'
+import { expect, test, type Page } from '@playwright/test'
 import { APP_READY } from './helpers'
 
 test.describe('timers', () => {
@@ -91,16 +91,46 @@ test.describe('timers', () => {
     await expect(page.getByText('25 min').first()).toBeVisible()
   })
 
+  // Real time keeps passing on an installed clock, which makes exact readings flaky.
+  const freeze = (page: Page) => page.clock.pauseAt(new Date(Date.now() + 60_000))
+
   test('keeps stopwatch laps', async ({ page }) => {
     await page.goto('/#/timers/stopwatch')
+    await freeze(page)
     await page.getByTestId('stopwatch-toggle').click()
     await page.clock.fastForward('00:10')
-    await page.getByTestId('stopwatch-secondary').click()
+    await page.getByTestId('stopwatch-lap').click()
     await page.clock.fastForward('00:05')
-    await page.getByTestId('stopwatch-secondary').click()
+    await page.getByTestId('stopwatch-lap').click()
     await expect(page.getByTestId('stopwatch-laps').locator('li')).toHaveCount(2)
     await page.getByTestId('stopwatch-toggle').click()
     await expect(page.getByTestId('stopwatch-time')).toHaveText('00:15')
+  })
+
+  test('deletes a lap pressed by accident', async ({ page }) => {
+    await page.goto('/#/timers/stopwatch')
+    await freeze(page)
+    await page.getByTestId('stopwatch-toggle').click()
+    await page.clock.fastForward('00:10')
+    await page.getByTestId('stopwatch-lap').click()
+    await page.getByTestId('stopwatch-lap').click()
+    const rows = page.getByTestId('stopwatch-laps').locator('li')
+    await expect(rows).toHaveCount(2)
+    await rows.first().hover()
+    await rows.first().getByTestId('stopwatch-lap-delete').click()
+    await expect(rows).toHaveCount(1)
+  })
+
+  test('keeps the time display the same width while it runs', async ({ page }) => {
+    await page.goto('/#/timers/stopwatch')
+    await freeze(page)
+    await page.getByTestId('stopwatch-toggle').click()
+    const display = page.getByTestId('stopwatch').locator('.display')
+    const first = (await display.boundingBox())!.width
+    for (const step of [110, 180, 3780]) {
+      await page.clock.fastForward(step)
+      expect((await display.boundingBox())!.width).toBeCloseTo(first, 0)
+    }
   })
 
   test('lets you hear a sound before choosing it', async ({ page }) => {

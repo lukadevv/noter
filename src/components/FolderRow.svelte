@@ -5,12 +5,17 @@
   import { t } from '$lib/i18n/index.svelte'
   import { contextmenu } from '$lib/ui/contextmenu'
   import { menu } from '$lib/stores/menu.svelte'
+  import { keyring } from '$lib/crypto/keyring.svelte'
   import { folderMenuItems } from '$lib/menus/folder'
 
   interface Props {
     node: FolderNode
     active: boolean
     count: number
+    /** Something is unfolded under this folder: subfolders, or its notes in the tree. */
+    expanded: boolean
+    /** Whether there is anything to unfold, subfolders or notes. */
+    foldable: boolean
     dropTarget: DropPosition | null
     onselect: (id: string) => void
     ontoggle: (id: string) => void
@@ -25,6 +30,8 @@
     node,
     active,
     count,
+    expanded,
+    foldable,
     dropTarget,
     onselect,
     ontoggle,
@@ -167,7 +174,7 @@
   role="treeitem"
   tabindex="-1"
   aria-selected={active}
-  aria-expanded={node.children.length > 0 ? !node.collapsed : undefined}
+  aria-expanded={foldable ? expanded : undefined}
   ondragstart={onDragStart}
   ondragover={onDragOver}
   ondragleave={onDragLeave}
@@ -178,14 +185,14 @@
 >
   <button
     class="twisty"
-    class:twisty--hidden={node.children.length === 0}
-    aria-label={t(node.collapsed ? 'sidebar.expandFolder' : 'sidebar.collapseFolder')}
+    class:twisty--hidden={!foldable}
+    aria-label={t(expanded ? 'sidebar.collapseFolder' : 'sidebar.expandFolder')}
     onclick={(e) => {
       e.stopPropagation()
       ontoggle(node.id)
     }}
   >
-    <Icon name="chevron-right" size={13} class={node.collapsed ? '' : 'rotated'} />
+    <Icon name="chevron-right" size={13} class={expanded ? 'rotated' : ''} />
   </button>
 
   <button
@@ -208,7 +215,7 @@
       />
     {:else}
       <span class="name truncate">{node.name}</span>
-      {#if node.encrypted}
+      {#if node.encrypted || keyring.isProtected(node.id)}
         <span class="lock" title={t('sidebar.encryptedFolder')}><Icon name="lock" size={11} /></span>
       {/if}
     {/if}

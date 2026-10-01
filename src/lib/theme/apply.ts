@@ -30,6 +30,20 @@ export function applyTokens(tokens: Tokens, target: HTMLElement = document.docum
   }
 }
 
+/** The tokens a folder's accent colour overrides. */
+export const ACCENT_KEYS = ['accent', 'accent-hover', 'accent-active', 'accent-soft', 'accent-contrast']
+
+/**
+ * An inline style that puts the theme's own accent back inside an element, so a
+ * folder's tint stops at it. Used by the navigation, which always shows the
+ * app's colour.
+ */
+export function accentStyle(tokens: Tokens): string {
+  return ACCENT_KEYS.filter((key) => tokens[key])
+    .map((key) => `--${key}: ${tokens[key]}`)
+    .join('; ')
+}
+
 /** Removes previously applied token overrides (used when leaving a tinted folder). */
 export function clearTokens(keys: string[], target: HTMLElement): void {
   for (const key of keys) target.style.removeProperty(`--${key}`)

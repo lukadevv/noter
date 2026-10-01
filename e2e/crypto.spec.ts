@@ -1,5 +1,13 @@
 import { expect, test, type Locator, type Page } from '@playwright/test'
-import { createFolder, createNoteWith, folderMenu, openApp } from './helpers'
+import {
+  createFolder,
+  createNote,
+  createNoteWith,
+  folderMenu,
+  noteBodies,
+  openApp,
+  typeMarkdown,
+} from './helpers'
 
 const PASSPHRASE = 'a decent folder passphrase'
 
@@ -39,6 +47,106 @@ test.describe('folder encryption', () => {
     await page.getByRole('button', { name: 'Unlock' }).click()
 
     await expect(page.locator('.cm-content')).toContainText('The contents of the note.')
+  })
+
+  test('encrypts the notes of a subfolder along with its parent', async ({ page }) => {
+    const parent = await createFolder(page, 'Private')
+    await folderMenu(page, parent, 'New subfolder')
+    const rows = page.getByRole('tree').getByTestId('folder-row')
+    await expect(rows).toHaveCount(2)
+    await rows.nth(1).getByTestId('folder-label').click()
+    await createNoteWith(page, 'Nested secret\nCHILD-CANARY lives in the subfolder.')
+
+    await encryptFolder(page, parent)
+
+    // The subfolder has no passphrase of its own, yet its note is ciphertext too.
+    expect((await noteBodies(page)).join('\n')).not.toContain('CHILD-CANARY')
+    await expect(rows.nth(1).locator('.lock')).toBeVisible()
+
+    await page.reload()
+    await page.getByTestId('view-all').click()
+    await expect(page.getByTestId('note-item').first()).toContainText('Locked note')
+    await page.getByTestId('note-item').first().click()
+    await page.getByLabel('Folder passphrase').fill(PASSPHRASE)
+    await page.getByRole('button', { name: 'Unlock' }).click()
+    await expect(page.locator('.cm-content')).toContainText('CHILD-CANARY')
+  })
+
+  test('hides a note left in the clear in a subfolder until the parent is unlocked, then seals it', async ({
+    page,
+  }) => {
+    const parent = await createFolder(page, 'Private')
+    await folderMenu(page, parent, 'New subfolder')
+    const rows = page.getByRole('tree').getByTestId('folder-row')
+    await expect(rows).toHaveCount(2)
+    await rows.nth(1).getByTestId('folder-label').click()
+    await createNoteWith(page, 'Nested secret\nsome text')
+    await encryptFolder(page, parent)
+
+    // What a subfolder made before it inherited the lock looks like: a plaintext
+    // note next to the sealed ones.
+    await page.evaluate(async () => {
+      const open = indexedDB.open('noter')
+      const database = await new Promise<IDBDatabase>((resolve) => {
+        open.onsuccess = () => resolve(open.result)
+      })
+      const store = () => database.transaction('notes', 'readwrite').objectStore('notes')
+      const rows = await new Promise<Record<string, unknown>[]>((resolve) => {
+        const request = store().getAll()
+        request.onsuccess = () => resolve(request.result as Record<string, unknown>[])
+      })
+      const legacy = {
+        ...rows[0],
+        id: 'legacy-note',
+        encrypted: 0,
+        title: 'LEGACY-TITLE',
+        body: 'LEGACY-BODY',
+      }
+      await new Promise<void>((resolve) => {
+        const request = store().put(legacy)
+        request.onsuccess = () => resolve()
+      })
+      database.close()
+    })
+
+    await page.reload()
+    await page.getByTestId('view-all').click()
+    await expect(page.getByTestId('note-item')).toHaveCount(2)
+    await expect(page.getByTestId('note-item').filter({ hasText: 'Locked note' })).toHaveCount(2)
+    await expect(page.getByText('LEGACY-TITLE')).toHaveCount(0)
+
+    await page.keyboard.press('Control+k')
+    await page.getByTestId('palette-input').fill('LEGACY')
+    await expect(page.getByTestId('palette-row').filter({ hasText: 'LEGACY' })).toHaveCount(0)
+    await page.keyboard.press('Escape')
+
+    // Unlocking seals it.
+    await page.getByTestId('note-item').first().click()
+    await page.getByLabel('Folder passphrase').fill(PASSPHRASE)
+    await page.getByRole('button', { name: 'Unlock' }).click()
+    await expect.poll(async () => (await noteBodies(page)).join('\n')).not.toContain('LEGACY-BODY')
+  })
+
+  test('encrypts a note made in a new subfolder of an unlocked encrypted folder', async ({ page }) => {
+    const parent = await createFolder(page, 'Private')
+    await createNoteWith(page, 'Parent note\nsome text')
+    await encryptFolder(page, parent)
+
+    await folderMenu(page, parent, 'New subfolder')
+    const rows = page.getByRole('tree').getByTestId('folder-row')
+    await expect(rows).toHaveCount(2)
+    await rows.nth(1).getByTestId('folder-label').click()
+    // The list shows "Locked note" for it, so there is no title to wait for.
+    await createNote(page)
+    await typeMarkdown(page, 'Fresh child\nFRESH-CANARY must never be stored.')
+
+    await expect
+      .poll(async () => {
+        const bodies = await noteBodies(page)
+        return bodies.length === 2 && bodies.every((body) => body.startsWith('noter:enc:v1:'))
+      })
+      .toBe(true)
+    expect((await noteBodies(page)).join('\n')).not.toContain('FRESH-CANARY')
   })
 
   test('rejects the wrong passphrase', async ({ page }) => {

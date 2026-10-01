@@ -1,5 +1,13 @@
 import { expect, test } from '@playwright/test'
-import { APP_READY, createFolder, createNoteWith, openApp } from './helpers'
+import {
+  APP_READY,
+  closeSettings,
+  createFolder,
+  createNoteWith,
+  folderMenu,
+  openApp,
+  openSettingsSection,
+} from './helpers'
 
 test.describe('app shell', () => {
   test('opens on Home and moves between sections from the rail', async ({ page }) => {
@@ -46,6 +54,81 @@ test.describe('app shell', () => {
     await page.keyboard.press('ArrowDown')
     await page.keyboard.press('Escape')
     await expect(page.getByRole('menu')).toBeHidden()
+  })
+
+  test('offers a new folder from a right-click on the empty tree area', async ({ page }) => {
+    await openApp(page)
+    const tree = page.getByRole('tree')
+    const box = (await tree.boundingBox())!
+    await page.mouse.click(box.x + box.width / 2, box.y + box.height - 8, { button: 'right' })
+    await expect(page.getByRole('menuitem', { name: 'New folder' })).toBeVisible()
+    await page.getByRole('menuitem', { name: 'New folder' }).click()
+    await expect(page.getByTestId('folder-row').first()).toBeVisible()
+  })
+
+  test('lists the notes of a folder under it in the tree and opens them from there', async ({ page }) => {
+    await openApp(page)
+    const row = await createFolder(page, 'Projects')
+    await createNoteWith(page, 'Ideas list\nfirst idea')
+
+    // Opening a note unfolds the way to it.
+    const treeNote = page.getByTestId('tree-note')
+    await expect(treeNote).toHaveCount(1)
+    await expect(treeNote).toContainText('Ideas list')
+
+    // Fold the folder, and the note goes with it.
+    await row.getByLabel('Collapse folder').click()
+    await expect(treeNote).toHaveCount(0)
+    await row.getByLabel('Expand folder').click()
+    await expect(treeNote).toHaveCount(1)
+
+    // From another view, a click in the tree opens the note in its folder.
+    await page.getByTestId('view-all').click()
+    await treeNote.click()
+    await expect(page.locator('.cm-content')).toContainText('first idea')
+    await expect(row).toHaveClass(/row--active/)
+  })
+
+  test("keeps a folder's accent colour inside Notes only", async ({ page }) => {
+    await openApp(page)
+    const row = await createFolder(page, 'Green')
+    await folderMenu(page, row, 'Appearance')
+    await page
+      .getByRole('button', { name: /^Accent #/ })
+      .nth(3)
+      .click()
+    await page.getByRole('button', { name: 'Apply' }).click()
+    await row.getByTestId('folder-label').click()
+
+    const accent = () => page.evaluate(() => document.documentElement.style.getPropertyValue('--accent'))
+    await expect.poll(accent).not.toBe('')
+    const tinted = await accent()
+
+    // The tint stops at the navigation, which always shows the app's own colour.
+    const navAccent = () =>
+      page.evaluate(() =>
+        getComputedStyle(document.querySelector('nav.rail')!).getPropertyValue('--accent').trim(),
+      )
+    expect(await navAccent()).not.toBe(tinted)
+
+    // Leaving Notes puts the theme's own accent back.
+    await page.getByTestId('nav-vault').click()
+    await expect.poll(accent).toBe('')
+    await page.getByTestId('nav-notes').click()
+    await row.getByTestId('folder-label').click()
+    await expect.poll(accent).toBe(tinted)
+  })
+
+  test('can leave the notes out of the folder tree', async ({ page }) => {
+    await openApp(page)
+    await createFolder(page, 'Projects')
+    await createNoteWith(page, 'Ideas list\nfirst idea')
+    await expect(page.getByTestId('tree-note')).toHaveCount(1)
+
+    await openSettingsSection(page, 'appearance')
+    await page.getByTestId('notes-in-tree').uncheck()
+    await closeSettings(page)
+    await expect(page.getByTestId('tree-note')).toHaveCount(0)
   })
 
   test('moves a note to a folder from the note submenu', async ({ page }) => {

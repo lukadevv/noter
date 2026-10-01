@@ -62,6 +62,8 @@
   --font-size: 14px;
   --editor-font-size: 15px;
   --line-height: 1.55;
+  /* Every section's content column, so switching tabs never changes the width. */
+  --page-max: 64rem;
 
   --row-height: calc(30px * var(--density));
 
