@@ -13,7 +13,9 @@ async function addMed(page: Page, name: string, dose = '400 mg') {
 
 test.describe('medication', () => {
   test.beforeEach(async ({ page }) => {
-    await page.clock.install()
+    // Pinned to the morning: tests fast-forward up to 12 h, which would cross
+    // midnight (and empty "today") if the suite ran late in the evening.
+    await page.clock.install({ time: new Date(2026, 5, 15, 8, 0) })
     await page.goto('/#/meds')
     await page.waitForSelector(APP_READY)
     await expect(page.getByTestId('meds')).toBeVisible()
