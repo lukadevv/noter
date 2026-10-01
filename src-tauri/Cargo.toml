@@ -1,6 +1,6 @@
 [package]
 name = "noter"
-version = "1.1.0"
+version = "1.1.1"
 description = "A local-first note-taking app"
 authors = ["lukadevv"]
 edition = "2021"
@@ -28,6 +28,9 @@ serde_json = "1"
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
 tauri-plugin-updater = "2"
 tauri-plugin-process = "2"
+
+[target.'cfg(windows)'.dependencies]
+tauri-winrt-notification = "0.8"
 
 [profile.release]
 codegen-units = 1

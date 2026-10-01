@@ -64,6 +64,12 @@ export async function notify(reminder: Reminder): Promise<void> {
   try {
     if ((await permission()) !== 'granted') return
     if (isTauri()) {
+      // The Store build needs its own package id on the toast, see store_notify.
+      const { invoke } = await import('@tauri-apps/api/core')
+      if ((await invoke<string>('install_kind')) === 'store') {
+        await invoke('store_notify', { title: reminder.title, body: reminder.body })
+        return
+      }
       const { sendNotification } = await import('@tauri-apps/plugin-notification')
       sendNotification({ title: reminder.title, body: reminder.body })
       return
