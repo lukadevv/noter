@@ -333,7 +333,7 @@ export interface Habit {
 
 /** Progress on one habit on one day. */
 export interface HabitCheck {
-  /** `${habitId}:${day}` — one row per habit and day. */
+  /** `${habitId}:${day}` - one row per habit and day. */
   id: string
   habitId: string
   /** Local day key, YYYY-MM-DD. */

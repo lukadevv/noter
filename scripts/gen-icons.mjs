@@ -7,9 +7,9 @@
  *
  * Two families come out of this:
  *
- *  - **Transparent, rounded** — the logo as drawn. Favicons and the PWA's
+ *  - **Transparent, rounded** - the logo as drawn. Favicons and the PWA's
  *    `purpose: any` icons, which sit on backgrounds we do not control.
- *  - **Full-bleed square** — the gradient to the edges with the glyph inset.
+ *  - **Full-bleed square** - the gradient to the edges with the glyph inset.
  *    Android crops maskable icons to its own shape and iOS applies its own
  *    rounding, so an icon with rounded corners of its own gets clipped twice.
  *

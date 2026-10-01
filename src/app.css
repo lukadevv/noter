@@ -2,7 +2,7 @@
  * Global stylesheet: design tokens, reset and shared primitives.
  *
  * Every colour, radius and spacing value in the app resolves through a custom
- * property declared here. Components must never hardcode a colour — that is the
+ * property declared here. Components must never hardcode a colour - that is the
  * single rule that keeps runtime theming and per-folder accents working.
  *
  * The values below are only a fallback for the first paint; the real theme is
@@ -812,7 +812,7 @@ a:hover {
 }
 
 /*
- * Numbers that read as a unit — "0 / 12", "+3 −1", "1 / 5" — are sequences of
+ * Numbers that read as a unit - "0 / 12", "+3 −1", "1 / 5" - are sequences of
  * digits separated by neutral characters, which the bidi algorithm reorders in
  * a right-to-left paragraph: "0 / 12" comes out as "12 / 0". Isolating them and
  * forcing left-to-right keeps the pair in the order it was written, which is

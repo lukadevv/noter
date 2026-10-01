@@ -3,7 +3,7 @@ import type { CapacitorConfig } from '@capacitor/cli'
 /**
  * The Android shell.
  *
- * `webDir` is the same `dist/` the website is deployed from — the Android build
+ * `webDir` is the same `dist/` the website is deployed from - the Android build
  * is that folder loaded from local storage rather than the network, which is
  * why the app works offline without the service worker being involved.
  */

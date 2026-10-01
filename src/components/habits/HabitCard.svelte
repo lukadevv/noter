@@ -196,7 +196,7 @@
         </div>
         <div>
           <dt>{t('habits.last30')}</dt>
-          <dd>{rate === null ? '—' : `${Math.round(rate * 100)}%`}</dd>
+          <dd>{rate === null ? '-' : `${Math.round(rate * 100)}%`}</dd>
         </div>
       </dl>
     </div>

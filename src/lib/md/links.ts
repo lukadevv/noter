@@ -9,7 +9,7 @@ import { maskCode } from './fences'
 
 /**
  * Blanks out code so its contents are never scanned. Offsets are preserved, so
- * a match found in the masked text points at the same place in the original —
+ * a match found in the masked text points at the same place in the original -
  * which is what keeps backlink excerpts aligned.
  */
 function stripCode(body: string): string {

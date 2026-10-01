@@ -11,9 +11,9 @@
  *  - code    → an unfenced body is fenced, with the note's language
  *  - checklist and doc bodies are already plain markdown
  *
- * Pure and idempotent, because it runs from several places — the database
+ * Pure and idempotent, because it runs from several places - the database
  * upgrade, revealing an encrypted note, importing an old backup, opening an old
- * share link — and some notes pass through more than one of them.
+ * share link - and some notes pass through more than one of them.
  */
 import { findFences, wrapFence } from './fences'
 import type { ViewMode } from '$lib/db/schema'

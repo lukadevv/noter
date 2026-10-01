@@ -17,7 +17,7 @@ import { CONTENT_FENCES } from '$lib/md/fences'
  * Heading hashes, emphasis stars, inline-code backticks, link targets and quote
  * markers are hidden unless the cursor is on that line (block markup) or inside
  * that span (inline markup), so the note looks finished while every character
- * stays one keystroke away. `[[wiki links]]` keep their brackets on purpose —
+ * stays one keystroke away. `[[wiki links]]` keep their brackets on purpose -
  * they are part of how links are typed and searched for.
  */
 

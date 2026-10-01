@@ -40,7 +40,7 @@ const fr: Messages = {
     savedSearchName: 'Nom de cette recherche',
     deleteSavedSearch: 'Supprimer la recherche enregistrée',
     noFolders:
-      'Pas encore de dossier. Créez-en un pour regrouper des notes — ou continuez simplement dans Toutes les notes.',
+      'Pas encore de dossier. Créez-en un pour regrouper des notes - ou continuez simplement dans Toutes les notes.',
     folderActions: 'Actions du dossier',
     expandFolder: 'Déplier le dossier',
     collapseFolder: 'Replier le dossier',
@@ -109,7 +109,7 @@ const fr: Messages = {
     },
     lockEditing: 'Verrouiller la modification',
     unlockEditing: 'Déverrouiller la modification',
-    lockedHint: 'Verrouillée — touchez le cadenas pour modifier',
+    lockedHint: 'Verrouillée - touchez le cadenas pour modifier',
     lockedToast: 'Note verrouillée : elle ne peut plus être modifiée par erreur.',
     unlockedToast: 'Note déverrouillée pour modification.',
   },
@@ -238,7 +238,7 @@ const fr: Messages = {
     daily: {
       title: 'Notes quotidiennes',
       about:
-        "Une note par jour, créée seulement quand vous l'ouvrez. Si vous laissez la note du jour vide, elle est supprimée — rien ne s'accumule tant que vous n'y écrivez pas.",
+        "Une note par jour, créée seulement quand vous l'ouvrez. Si vous laissez la note du jour vide, elle est supprimée - rien ne s'accumule tant que vous n'y écrivez pas.",
       folder: 'Dossier',
       noFolder: 'Aucun dossier',
       titleFormat: 'Format du titre · aperçu : {preview}',
@@ -268,7 +268,7 @@ const fr: Messages = {
     backup: {
       title: 'Sauvegarde et transfert',
       about:
-        'Une sauvegarde .noter contient tout — notes, dossiers, images, thèmes et réglages — dans un seul fichier, pour passer d’un ordinateur à l’autre. L’archive Markdown est un zip de fichiers .md lisibles dans n’importe quel éditeur.',
+        'Une sauvegarde .noter contient tout - notes, dossiers, images, thèmes et réglages - dans un seul fichier, pour passer d’un ordinateur à l’autre. L’archive Markdown est un zip de fichiers .md lisibles dans n’importe quel éditeur.',
       stale: 'Votre dernière sauvegarde date de {count} jours.',
       passphrase: 'Chiffrer avec une phrase secrète (facultatif)',
       passphrasePlaceholder: 'Laissez vide pour un fichier non chiffré',
@@ -310,7 +310,7 @@ const fr: Messages = {
       lastBackup: 'Dernière sauvegarde : {date}.',
       never: 'Aucune sauvegarde écrite pour l’instant.',
       unsupported:
-        'Ce navigateur ne peut pas écrire directement dans un dossier (seuls Chrome et Edge le permettent). Exportez une sauvegarde .noter ci-dessus et gardez le fichier en lieu sûr — un rappel s’affiche ici quand elle a plus de deux semaines.',
+        'Ce navigateur ne peut pas écrire directement dans un dossier (seuls Chrome et Edge le permettent). Exportez une sauvegarde .noter ci-dessus et gardez le fichier en lieu sûr - un rappel s’affiche ici quand elle a plus de deux semaines.',
     },
     sections: {
       general: 'Général',
@@ -377,7 +377,7 @@ const fr: Messages = {
     notifications: {
       enable: 'Afficher les notifications',
       enableHint: 'Quand un minuteur sonne ou qu’une prise est due.',
-      web: 'Dans un navigateur, les rappels s’affichent tant que Noter est ouvert, même en arrière-plan. Une fois l’onglet fermé, rien ne peut sonner — installez l’appli sur votre téléphone pour des rappels fiables.',
+      web: 'Dans un navigateur, les rappels s’affichent tant que Noter est ouvert, même en arrière-plan. Une fois l’onglet fermé, rien ne peut sonner - installez l’appli sur votre téléphone pour des rappels fiables.',
       desktop: 'Sur ordinateur, les rappels sonnent tant que Noter tourne, même fenêtre réduite.',
       android:
         'Sur Android, les rappels sont confiés au système : ils arrivent même quand Noter est fermé.',
@@ -538,7 +538,7 @@ const fr: Messages = {
     comparedWith: 'Comparé au texte actuel',
     titleChange: 'Titre :',
     selectVersion: 'Choisissez une version pour voir ce qui a changé.',
-    restoreNote: 'Restaurer ne perd pas le texte actuel — un instantané est pris avant.',
+    restoreNote: 'Restaurer ne perd pas le texte actuel - un instantané est pris avant.',
     restoreVersion: 'Restaurer cette version',
   },
 
@@ -553,7 +553,7 @@ const fr: Messages = {
       other: 'Cette note contient {count} images, que le destinataire ne verra pas.',
     },
     characters: '{count} caractères',
-    tooLong: 'Plus long que {max} — certaines applications le tronqueront.',
+    tooLong: 'Plus long que {max} - certaines applications le tronqueront.',
     warning: 'Quiconque a le lien peut lire cette note. Traitez-le comme la note elle-même.',
     copyLink: 'Copier le lien',
     sharedNote: 'Note partagée',
@@ -640,7 +640,7 @@ const fr: Messages = {
     downloadFailed: 'Impossible de télécharger l’image ({reason}) ; un lien est créé à la place.',
     folderLocked: 'Déverrouillez d’abord le dossier.',
     backupNeedsPassphrase:
-      'La sauvegarde chiffrée a besoin de sa phrase secrète — lancez-la depuis les Réglages.',
+      'La sauvegarde chiffrée a besoin de sa phrase secrète - lancez-la depuis les Réglages.',
     secretsSkipped:
       'Les entrées de coffre de cette sauvegarde appartiennent à un autre coffre et n’ont pas été importées.',
   },
@@ -840,7 +840,7 @@ const fr: Messages = {
     },
     timer: 'Minuteur',
     ringingTitle: '⏰ {label}',
-    ringingBody: 'C’est l’heure — {length} se sont écoulées.',
+    ringingBody: 'C’est l’heure - {length} se sont écoulées.',
     stop: 'Arrêter',
     stopAndRepeat: 'Arrêter et relancer',
     silence: 'Silence',
@@ -1167,7 +1167,7 @@ const fr: Messages = {
     remind: 'Me rappeler si ce n’est pas fait à',
     done: 'Fait',
     notDone: 'pas fait',
-    doneNamed: '{name} : fait — touchez pour annuler',
+    doneNamed: '{name} : fait - touchez pour annuler',
     checkNamed: 'Marquer {name} comme fait',
     undoOne: 'Un de moins',
     archive: 'Archiver',

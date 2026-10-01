@@ -119,7 +119,7 @@
     })
     applyRoute(currentRoute())
     void requestPersistence()
-    // Timers ring from any section, so their engine starts with the app — but
+    // Timers ring from any section, so their engine starts with the app - but
     // at idle, after the first paint, and from its own chunk.
     const idle = window.requestIdleCallback ?? ((fn: () => void) => setTimeout(fn, 800))
     idle(() => {
@@ -152,7 +152,7 @@
   /**
    * Runs a scheduled disk backup on startup if one is due. Browsers give a web
    * app no background scheduler, so "daily" means "the first time you open it
-   * on a new day" — which is the honest thing to promise.
+   * on a new day" - which is the honest thing to promise.
    */
   async function maybeRunScheduledBackup() {
     // Imported dynamically: the backup layer pulls in the zip and vault codecs,

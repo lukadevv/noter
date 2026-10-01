@@ -23,7 +23,7 @@
   )
 
   function nameOf(medId: string): string {
-    return meds.meds.find((m) => m.id === medId)?.name ?? '—'
+    return meds.meds.find((m) => m.id === medId)?.name ?? '-'
   }
 
   function openTakeAt(med: Med) {

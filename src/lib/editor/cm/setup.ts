@@ -58,7 +58,7 @@ const CACHE_SIZE = 20
  * One CodeMirror instance for the whole app, switching between notes.
  *
  * Each note keeps its own `EditorState` in a small cache, so moving to another
- * note and back restores the cursor, scroll position and undo history — and,
+ * note and back restores the cursor, scroll position and undo history - and,
  * just as important, undo in one note can never paste text from another, which
  * is what replacing the document in a single shared state would do.
  *

@@ -17,7 +17,7 @@ export type Messages = typeof en
  * English is bundled and every other catalogue is a dynamic import, so the
  * initial payload carries one language rather than ten. Until a catalogue
  * arrives, and for any key a translation happens to miss, lookups fall through
- * to English — a label in the wrong language is bad, a blank one is worse.
+ * to English - a label in the wrong language is bad, a blank one is worse.
  */
 
 /** Values interpolated into `{placeholders}`. `count` also selects a plural form. */

@@ -119,7 +119,7 @@
   }
 
   /* On a pointer device the checkbox appears on hover, keeping the default list
-     clean. On touch there is no hover, so it is always there — otherwise
+     clean. On touch there is no hover, so it is always there - otherwise
      multi-select would be unreachable on a phone. */
   .mark {
     display: flex;

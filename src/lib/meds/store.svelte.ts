@@ -164,7 +164,7 @@ class MedsStore {
   // --- Doses ----------------------------------------------------------------
 
   /**
-   * The "Taken" button. Logs the dose — unless it comes well before the next
+   * The "Taken" button. Logs the dose - unless it comes well before the next
    * one is due, in which case it says so and asks first: a second tap, a
    * double dose or the wrong row are all easy to do and worth a pause. Then
    * a toast offers to undo. Resolves to whether a dose was logged.

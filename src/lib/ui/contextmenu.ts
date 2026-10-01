@@ -6,7 +6,7 @@ const MOVE_TOLERANCE = 10
 
 /**
  * Opens the app's context menu on right-click, on a touch long-press and on
- * Shift+F10 / the Menu key — the three ways people ask for "more options".
+ * Shift+F10 / the Menu key - the three ways people ask for "more options".
  *
  *   <div use:contextmenu={() => folderMenuItems(folder)}>
  *

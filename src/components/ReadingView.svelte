@@ -13,7 +13,7 @@
     /** Called when a `[[wiki link]]` is followed. */
     onlink?: (target: string) => void
     /**
-     * Set when the images this note references are known not to be available —
+     * Set when the images this note references are known not to be available -
      * a shared link carries text only. Their placeholders then read as expected
      * rather than as an error.
      */

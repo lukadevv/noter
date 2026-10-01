@@ -12,7 +12,7 @@ import { referencedAssetIds } from '$lib/db/repo/assets'
  */
 
 // Characters no common filesystem accepts in a name, including the ASCII
-// control range — written as escapes rather than as literal bytes.
+// control range - written as escapes rather than as literal bytes.
 // eslint-disable-next-line no-control-regex
 const UNSAFE = /[\\/:*?"<>|\u0000-\u001f]/g
 

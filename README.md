@@ -4,7 +4,7 @@
 
 # Noter
 
-**Your notes, timers, habits, medication and passwords — in one app that never leaves your device.**
+**Your notes, timers, habits, medication and passwords - in one app that never leaves your device.**
 
 [![Release](https://img.shields.io/github/v/release/lukadevv/noter?style=flat-square&color=8b8ce8)](https://github.com/lukadevv/noter/releases/latest)
 [![CI](https://img.shields.io/github/actions/workflow/status/lukadevv/noter/ci.yml?branch=main&style=flat-square&label=CI)](https://github.com/lukadevv/noter/actions/workflows/ci.yml)
@@ -25,8 +25,8 @@
 
 - **Local-first.** Everything lives in IndexedDB on your device. No account, no
   server, no tracking. It works offline, and a backup is one file you own.
-- **One place for the day.** Home gathers what matters today — doses due,
-  habits to tick, timers running, notes you were writing — and lets you act on
+- **One place for the day.** Home gathers what matters today - doses due,
+  habits to tick, timers running, notes you were writing - and lets you act on
   them right there.
 - **Everywhere, one codebase.** The website _is_ the app; the Windows, macOS,
   Linux and Android builds wrap that same code, so they never drift apart.
@@ -55,11 +55,11 @@ per-folder encryption and share-as-a-link without a server.
 
 Three tools in one place:
 
-- **Alarms** — one-tap countdowns you colour and reorder, with synthesised sounds
+- **Alarms** - one-tap countdowns you colour and reorder, with synthesised sounds
   you can **preview before choosing** (or design yourself)
-- **Pomodoro** — focus and breaks with a long break every few rounds, optional
+- **Pomodoro** - focus and breaks with a long break every few rounds, optional
   auto-start, and your focus minutes charted
-- **Stopwatch** — hundredths, laps with the fastest and slowest marked, and it
+- **Stopwatch** - hundredths, laps with the fastest and slowest marked, and it
   keeps running if you close the app
 
 </td>
@@ -67,7 +67,7 @@ Three tools in one place:
 
 ### 🎯 Habits
 
-Every day, on some weekdays, or _n_ times a week — with counted targets for
+Every day, on some weekdays, or _n_ times a week - with counted targets for
 things like glasses of water. Tap to tick, watch the streak, open the 17-week
 history, and get a reminder at the time you pick if it is not done yet.
 
@@ -75,7 +75,7 @@ history, and get a reminder at the time you pick if it is not done yet.
 
 "Every 12 hours" timed from the dose you actually took, a heads-up before the
 next one, adherence and stock. Logging a dose **earlier than scheduled asks
-first** and shows what was already taken — so a double tap is not a double dose.
+first** and shows what was already taken - so a double tap is not a double dose.
 
 ### 🔐 Vault
 
@@ -102,7 +102,7 @@ Arabic, and a welcome tour you can replay any time.
 
 | Platform    | Get it                                                                                                 | Updates                                    |
 | ----------- | ------------------------------------------------------------------------------------------------------ | ------------------------------------------ |
-| **Web**     | [noter.lukadevv.com](https://noter.lukadevv.com) — install it from the browser as an app               | Automatic, with a prompt before reloading  |
+| **Web**     | [noter.lukadevv.com](https://noter.lukadevv.com) - install it from the browser as an app               | Automatic, with a prompt before reloading  |
 | **Windows** | Microsoft Store, or `.exe` / `.msi` from [Releases](https://github.com/lukadevv/noter/releases/latest) | Store: by the Store · installer: in-app    |
 | **macOS**   | `.dmg` (Apple silicon and Intel)                                                                       | In-app                                     |
 | **Linux**   | `.AppImage`, `.deb` or `.rpm`                                                                          | AppImage: in-app · `.deb`/`.rpm`: notified |
@@ -113,9 +113,9 @@ How each build finds out about new versions is described in
 
 ## Keeping your data
 
-- **Portable `.noter` file** — the whole workspace in one file, optionally
+- **Portable `.noter` file** - the whole workspace in one file, optionally
   encrypted, to move between devices
-- **Markdown archive** — a zip of readable `.md` files plus images
+- **Markdown archive** - a zip of readable `.md` files plus images
 - **Automatic backups** to a folder on disk (Chrome and Edge)
 - **Per-note history** with a line diff and restore
 
@@ -248,7 +248,7 @@ Two conventions keep the suite honest:
 
 - **Wait on state, never on time.** `settleAutosave` reads IndexedDB directly
   rather than trusting the note list, because the list updates optimistically
-  while the write is on a 400 ms debounce — waiting on the DOM alone races it.
+  while the write is on a 400 ms debounce - waiting on the DOM alone races it.
 - **Assert on effects, not on appearances.** The encryption spec greps the object
   store for a canary string; the lazy-loading spec watches network requests; the
   backup spec restores into a brand-new browser context with an empty origin.
@@ -258,7 +258,7 @@ when iterating (the offline spec skips itself there, since there is no service
 worker).
 
 **Linting and formatting** are split: ESLint covers what a type checker does not
-see — unsafe patterns, dead code, accessibility in markup — while Prettier owns
+see - unsafe patterns, dead code, accessibility in markup - while Prettier owns
 formatting entirely. `pnpm verify` runs everything CI runs except the browser
 suite.
 
@@ -302,7 +302,7 @@ VITE_SITE_URL=https://your-domain.example pnpm build
 ```
 
 Without it the Open Graph tags fall back to relative paths, which most scrapers
-ignore — previews simply do not appear, rather than pointing somewhere wrong.
+ignore - previews simply do not appear, rather than pointing somewhere wrong.
 
 ## Search engines
 
@@ -323,7 +323,7 @@ setting, not a URL, so advertising per-language addresses would promise pages
 that do not exist.
 
 **Google Search Console.** Either set `VITE_GOOGLE_SITE_VERIFICATION` to the
-token from the HTML-tag method — the tag is only emitted when it has a value —
+token from the HTML-tag method - the tag is only emitted when it has a value -
 or drop Google's verification HTML file into `public/`, from where it ships at
 the site root. Submit `https://your-domain/sitemap.xml` once verified.
 
@@ -342,7 +342,7 @@ lazily loaded chunks and prints both.
 
 ## Deploying
 
-`pnpm build` produces `dist/`, which is plain static files — any static host will
+`pnpm build` produces `dist/`, which is plain static files - any static host will
 do. The app uses hash routing, so no rewrite rules are needed.
 
 `public/_headers` carries the response headers that a `<meta>` tag cannot set:
@@ -365,7 +365,7 @@ Configure these in the repository's **Settings → Secrets and variables → Act
 | Variable | `CLOUDFLARE_PROJECT_NAME` | The Pages project name, e.g. `noter`                 |
 | Variable | `SITE_URL`                | The deployed origin, e.g. `https://noter.pages.dev`  |
 
-`SITE_URL` only affects link previews. Everything else works without it — see
+`SITE_URL` only affects link previews. Everything else works without it - see
 `.env.example`, which documents every variable the build reads.
 
 Create the Pages project once (dashboard → Workers & Pages → Create → Pages →
@@ -376,7 +376,7 @@ needs to build the project itself.
 
 The website is the whole app, so the desktop and Android builds are that same
 `dist/` folder loaded from local storage instead of over the network, inside a
-system webview. There is no second implementation to keep in step — only a shell
+system webview. There is no second implementation to keep in step - only a shell
 around the one that already exists.
 
 | Target                | Shell                  | Output                                           |
@@ -393,7 +393,7 @@ PWA installed from Safari is the native build.
 Three things, all in `src/lib/platform/`:
 
 - **Saving files.** A webview has no download manager behind an `<a download>`
-  link — clicking one does nothing at all. Exports go through a save dialog on
+  link - clicking one does nothing at all. Exports go through a save dialog on
   the desktop and the share sheet on Android, which is what lets a file reach
   Downloads or Drive from a sandboxed app without asking for storage permissions.
 - **The service worker** is not registered. The shell already carries the whole
@@ -419,7 +419,7 @@ pnpm desktop:dev      # hot reload, Vite behind a native window
 pnpm desktop:build    # installers in src-tauri/target/release/bundle/
 ```
 
-The Android shell needs JDK 21 and the Android SDK — installing Android Studio
+The Android shell needs JDK 21 and the Android SDK - installing Android Studio
 gets both:
 
 ```bash
@@ -460,7 +460,7 @@ for it and skips itself, with a notice in the log, when it is not configured.
 ### Publishing to the Microsoft Store by hand
 
 Automatic submissions need a Microsoft Entra ID (Azure AD) app linked to Partner
-Center. Without one, the Store update is a manual upload — and it still takes a
+Center. Without one, the Store update is a manual upload - and it still takes a
 single workflow run:
 
 1. **Bump and tag** as above. Only the **Release** workflow is needed: with the
@@ -508,7 +508,7 @@ ships its desktop builds.
 The desktop builds are not code-signed. Windows shows a SmartScreen warning
 until the download builds reputation, and macOS asks for the app to be opened
 from its right-click menu the first time. Signing them means an Apple Developer
-membership and a Windows certificate — a running yearly cost, not a code change,
+membership and a Windows certificate - a running yearly cost, not a code change,
 and the release notes say plainly what to expect until then. (The update key in
 [docs/updates.md](docs/updates.md) is a different, free thing: it only proves an
 update came from this project.)

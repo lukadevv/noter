@@ -4,8 +4,8 @@ import { isCapacitor, isTauri } from './native'
  * Handing a generated file to the user, on every shell the app ships in.
  *
  * In a browser tab an anchor with a `download` attribute is all it takes. The
- * native shells have no download manager behind that attribute — clicking such
- * a link in a system webview does nothing at all — so each one needs its own
+ * native shells have no download manager behind that attribute - clicking such
+ * a link in a system webview does nothing at all - so each one needs its own
  * route out: a save dialog on the desktop, and the share sheet on Android,
  * which is what lets the file reach Downloads, Drive or a chat from a sandboxed
  * app without asking for storage permissions.

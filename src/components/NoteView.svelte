@@ -30,7 +30,7 @@
 
   /**
    * Plaintext of the open note. For an ordinary note this is just its body,
-   * derived synchronously so it can never lag behind the note it belongs to —
+   * derived synchronously so it can never lag behind the note it belongs to -
    * the editor must never see one note's id paired with another note's text.
    * For a note in a locked folder it is the decrypted text, which only exists
    * in memory while the folder is unlocked, tagged with the note it came from.

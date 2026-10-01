@@ -3,8 +3,8 @@ import type { Messages } from '../index.svelte'
 /**
  * Arabic, right-to-left.
  *
- * `Intl.PluralRules` reports six categories for Arabic — zero, one, two, few,
- * many and other — and counted messages supply the ones that actually differ.
+ * `Intl.PluralRules` reports six categories for Arabic - zero, one, two, few,
+ * many and other - and counted messages supply the ones that actually differ.
  * `other` is the fallback the lookup uses when a category is absent.
  */
 const ar: Messages = {
@@ -47,7 +47,7 @@ const ar: Messages = {
     savedSearchName: 'اسم لهذا البحث',
     deleteSavedSearch: 'حذف البحث المحفوظ',
     noFolders:
-      'لا توجد مجلدات بعد. أنشئ واحداً لتجميع الملاحظات المرتبطة — أو واصل الكتابة في «كل الملاحظات».',
+      'لا توجد مجلدات بعد. أنشئ واحداً لتجميع الملاحظات المرتبطة - أو واصل الكتابة في «كل الملاحظات».',
     folderActions: 'إجراءات المجلد',
     expandFolder: 'توسيع المجلد',
     collapseFolder: 'طي المجلد',
@@ -116,7 +116,7 @@ const ar: Messages = {
     },
     lockEditing: 'قفل التحرير',
     unlockEditing: 'إلغاء قفل التحرير',
-    lockedHint: 'مقفلة — اضغط القفل للتحرير',
+    lockedHint: 'مقفلة - اضغط القفل للتحرير',
     lockedToast: 'قُفلت الملاحظة، فلن تتغير عن طريق الخطأ.',
     unlockedToast: 'أُلغي قفل الملاحظة للتحرير.',
   },
@@ -248,7 +248,7 @@ const ar: Messages = {
     daily: {
       title: 'الملاحظات اليومية',
       about:
-        'ملاحظة لكل يوم، تُنشأ فقط عند فتحها. إن تركت ملاحظة اليوم فارغة فستُحذف من جديد — لا يتراكم شيء ما لم تكتب فيها.',
+        'ملاحظة لكل يوم، تُنشأ فقط عند فتحها. إن تركت ملاحظة اليوم فارغة فستُحذف من جديد - لا يتراكم شيء ما لم تكتب فيها.',
       folder: 'المجلد',
       noFolder: 'بلا مجلد',
       titleFormat: 'صيغة العنوان · معاينة: {preview}',
@@ -280,7 +280,7 @@ const ar: Messages = {
     backup: {
       title: 'النسخ الاحتياطي والنقل',
       about:
-        'نسخة ‎.noter‎ تحفظ كل شيء — الملاحظات والمجلدات والصور والسمات والإعدادات — في ملف واحد للنقل بين الأجهزة. أرشيف Markdown ملف zip لملفات ‎.md‎ مقروءة يفتحها أي محرر.',
+        'نسخة ‎.noter‎ تحفظ كل شيء - الملاحظات والمجلدات والصور والسمات والإعدادات - في ملف واحد للنقل بين الأجهزة. أرشيف Markdown ملف zip لملفات ‎.md‎ مقروءة يفتحها أي محرر.',
       stale: 'آخر نسخة احتياطية لك كانت قبل {count} يوم.',
       passphrase: 'التشفير بعبارة مرور (اختياري)',
       passphrasePlaceholder: 'اتركها فارغة للحصول على ملف غير مشفَّر',
@@ -321,7 +321,7 @@ const ar: Messages = {
       lastBackup: 'آخر نسخة احتياطية: {date}.',
       never: 'لم تُكتب أي نسخة احتياطية بعد.',
       unsupported:
-        'لا يستطيع هذا المتصفح الكتابة في مجلد مباشرة (يدعمه Chrome وEdge فقط). صدّر نسخة ‎.noter‎ أعلاه واحفظ الملف في مكان آمن — سيظهر تذكير هنا عندما يمر على النسخة أكثر من أسبوعين.',
+        'لا يستطيع هذا المتصفح الكتابة في مجلد مباشرة (يدعمه Chrome وEdge فقط). صدّر نسخة ‎.noter‎ أعلاه واحفظ الملف في مكان آمن - سيظهر تذكير هنا عندما يمر على النسخة أكثر من أسبوعين.',
     },
     sections: {
       general: 'عام',
@@ -387,7 +387,7 @@ const ar: Messages = {
     notifications: {
       enable: 'إظهار الإشعارات',
       enableHint: 'عندما يرنّ مؤقت أو يحين موعد جرعة.',
-      web: 'في المتصفح تظهر التذكيرات ما دام Noter مفتوحًا، حتى في علامة تبويب في الخلفية. بعد إغلاق التبويب لا يمكن أن يرنّ شيء — ثبّت التطبيق على هاتفك لتذكيرات تصل دائمًا.',
+      web: 'في المتصفح تظهر التذكيرات ما دام Noter مفتوحًا، حتى في علامة تبويب في الخلفية. بعد إغلاق التبويب لا يمكن أن يرنّ شيء - ثبّت التطبيق على هاتفك لتذكيرات تصل دائمًا.',
       desktop: 'على الحاسوب ترن التذكيرات ما دام Noter يعمل، حتى لو كانت النافذة مصغّرة.',
       android: 'على Android تُسلَّم التذكيرات إلى النظام، فتصل حتى لو كان Noter مغلقًا.',
       denied: 'لم يُسمح بالإشعارات.',
@@ -553,7 +553,7 @@ const ar: Messages = {
     comparedWith: 'مقارنةً بالنص الحالي',
     titleChange: 'العنوان:',
     selectVersion: 'اختر نسخة لترى ما الذي تغيّر.',
-    restoreNote: 'الاستعادة لا تفقد النص الحالي — تُلتقط له لقطة أولاً.',
+    restoreNote: 'الاستعادة لا تفقد النص الحالي - تُلتقط له لقطة أولاً.',
     restoreVersion: 'استعادة هذه النسخة',
   },
 
@@ -571,7 +571,7 @@ const ar: Messages = {
       other: 'تحتوي هذه الملاحظة على {count} صورة لن يراها المستلم.',
     },
     characters: '{count} حرف',
-    tooLong: 'أطول من {max} — بعض التطبيقات ستقتطعه.',
+    tooLong: 'أطول من {max} - بعض التطبيقات ستقتطعه.',
     warning: 'كل من يملك الرابط يستطيع قراءة هذه الملاحظة. عامله كما تعامل الملاحظة نفسها.',
     copyLink: 'نسخ الرابط',
     sharedNote: 'ملاحظة مشتركة',
@@ -675,7 +675,7 @@ const ar: Messages = {
     onlyHttp: 'يمكن تنزيل روابط http(s) فقط.',
     downloadFailed: 'تعذّر تنزيل الصورة ({reason})؛ سيُوضع رابط إليها بدلاً من ذلك.',
     folderLocked: 'افتح قفل المجلد أولًا.',
-    backupNeedsPassphrase: 'النسخة المشفّرة تحتاج إلى عبارة المرور — شغّلها من الإعدادات.',
+    backupNeedsPassphrase: 'النسخة المشفّرة تحتاج إلى عبارة المرور - شغّلها من الإعدادات.',
     secretsSkipped: 'إدخالات الخزنة في هذه النسخة تخص خزنة أخرى ولم تُستورد.',
   },
 
@@ -938,7 +938,7 @@ const ar: Messages = {
     },
     timer: 'مؤقت',
     ringingTitle: '⏰ {label}',
-    ringingBody: 'انتهى الوقت — مرّت {length}.',
+    ringingBody: 'انتهى الوقت - مرّت {length}.',
     stop: 'إيقاف',
     stopAndRepeat: 'إيقاف والبدء من جديد',
     silence: 'كتم',
@@ -1294,7 +1294,7 @@ const ar: Messages = {
     remind: 'ذكّرني إن لم تُنجز بحلول',
     done: 'تم',
     notDone: 'لم تُنجز',
-    doneNamed: '{name}: تم — المس للتراجع',
+    doneNamed: '{name}: تم - المس للتراجع',
     checkNamed: 'تعليم {name} كمنجزة',
     undoOne: 'واحدة أقل',
     archive: 'أرشفة',

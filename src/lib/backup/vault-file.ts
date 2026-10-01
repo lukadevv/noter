@@ -20,7 +20,7 @@ import { loadSettings, saveSettings, type AppSettings } from '$lib/db/repo/setti
  * before asking for one.
  *
  * The body is a JSON manifest followed by the raw image bytes, concatenated with
- * length prefixes — never base64, which would inflate every screenshot by a
+ * length prefixes - never base64, which would inflate every screenshot by a
  * third. That buffer is deflated and then, when a passphrase is given, encrypted
  * with AES-GCM. GCM authenticates as well as encrypts, so a truncated or
  * tampered file fails to open instead of importing corrupt data.

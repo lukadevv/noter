@@ -54,7 +54,7 @@ export const en = {
     saveSearch: 'Save this search',
     savedSearchName: 'Name this saved search',
     deleteSavedSearch: 'Delete saved search',
-    noFolders: 'No folders yet. Create one to group related notes — or just keep writing in All notes.',
+    noFolders: 'No folders yet. Create one to group related notes - or just keep writing in All notes.',
     folderActions: 'Folder actions',
     expandFolder: 'Expand folder',
     collapseFolder: 'Collapse folder',
@@ -123,7 +123,7 @@ export const en = {
     },
     lockEditing: 'Lock editing',
     unlockEditing: 'Unlock editing',
-    lockedHint: 'Locked — tap the padlock to edit',
+    lockedHint: 'Locked - tap the padlock to edit',
     lockedToast: 'Note locked, so it can’t be changed by accident.',
     unlockedToast: 'Note unlocked for editing.',
   },
@@ -243,7 +243,7 @@ export const en = {
     daily: {
       title: 'Daily notes',
       about:
-        'A note per day, created only when you open it. If you leave today’s note empty, it is removed again — nothing accumulates unless you write in it.',
+        'A note per day, created only when you open it. If you leave today’s note empty, it is removed again - nothing accumulates unless you write in it.',
       folder: 'Folder',
       noFolder: 'No folder',
       titleFormat: 'Title format · preview: {preview}',
@@ -274,7 +274,7 @@ export const en = {
     backup: {
       title: 'Backup and transfer',
       about:
-        'A .noter backup holds everything — notes, folders, images, themes and settings — in one file, for moving between computers. The Markdown archive is a zip of readable .md files that opens in any editor.',
+        'A .noter backup holds everything - notes, folders, images, themes and settings - in one file, for moving between computers. The Markdown archive is a zip of readable .md files that opens in any editor.',
       stale: 'Your last backup was {count} days ago.',
       passphrase: 'Encrypt with a passphrase (optional)',
       passphrasePlaceholder: 'Leave empty for an unencrypted file',
@@ -311,7 +311,7 @@ export const en = {
       lastBackup: 'Last backup {date}.',
       never: 'No backup written yet.',
       unsupported:
-        'This browser cannot write to a folder directly (only Chrome and Edge implement it). Export a .noter backup above and save the file somewhere safe — a reminder appears here once a backup is more than two weeks old.',
+        'This browser cannot write to a folder directly (only Chrome and Edge implement it). Export a .noter backup above and save the file somewhere safe - a reminder appears here once a backup is more than two weeks old.',
     },
     sections: {
       general: 'General',
@@ -377,7 +377,7 @@ export const en = {
     notifications: {
       enable: 'Show notifications',
       enableHint: 'When a timer rings or a dose is due.',
-      web: 'In a browser, reminders appear while Noter is open, even in a background tab. Nothing can ring once the tab is closed — install the app on your phone for reminders that always arrive.',
+      web: 'In a browser, reminders appear while Noter is open, even in a background tab. Nothing can ring once the tab is closed - install the app on your phone for reminders that always arrive.',
       desktop: 'On the desktop, reminders ring while Noter is running, even when the window is minimised.',
       android: 'On Android, reminders are handed to the system, so they arrive even when Noter is closed.',
       denied: 'Notifications were not allowed.',
@@ -525,7 +525,7 @@ export const en = {
     comparedWith: 'Compared with the current text',
     titleChange: 'Title:',
     selectVersion: 'Select a version to see what changed.',
-    restoreNote: 'Restoring does not lose the current text — it is snapshotted first.',
+    restoreNote: 'Restoring does not lose the current text - it is snapshotted first.',
     restoreVersion: 'Restore this version',
   },
 
@@ -540,7 +540,7 @@ export const en = {
       other: 'This note has {count} images, which the recipient will not see.',
     }),
     characters: '{count} characters',
-    tooLong: 'Longer than {max} — some apps will truncate it.',
+    tooLong: 'Longer than {max} - some apps will truncate it.',
     warning: 'Anyone with the link can read this note. Treat it like the note itself.',
     copyLink: 'Copy link',
     sharedNote: 'Shared note',
@@ -626,7 +626,7 @@ export const en = {
     onlyHttp: 'Only http(s) URLs can be fetched.',
     downloadFailed: 'Could not download the image ({reason}); linking to it instead.',
     folderLocked: 'Unlock the folder first.',
-    backupNeedsPassphrase: 'The encrypted backup needs its passphrase — run it from Settings.',
+    backupNeedsPassphrase: 'The encrypted backup needs its passphrase - run it from Settings.',
     secretsSkipped: 'Vault entries in this backup belong to another vault and were not imported.',
   },
 
@@ -776,7 +776,7 @@ export const en = {
     },
     timer: 'Timer',
     ringingTitle: '⏰ {label}',
-    ringingBody: 'Time’s up — {length} have passed.',
+    ringingBody: 'Time’s up - {length} have passed.',
     stop: 'Stop',
     stopAndRepeat: 'Stop and start again',
     silence: 'Silence',
@@ -879,7 +879,7 @@ export const en = {
     remind: 'Remind me if it is not done by',
     done: 'Done',
     notDone: 'not done',
-    doneNamed: '{name}: done — tap to undo',
+    doneNamed: '{name}: done - tap to undo',
     checkNamed: 'Mark {name} as done',
     undoOne: 'One less',
     archive: 'Archive',

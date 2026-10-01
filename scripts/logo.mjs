@@ -9,7 +9,7 @@ export const BRAND_TOP = '#a29fff'
 export const BRAND_BOTTOM = '#5550da'
 export const CURSOR = '#ffc857'
 
-/** A superellipse (n = 5) path filling a `size` box — softer than a rounded rect. */
+/** A superellipse (n = 5) path filling a `size` box - softer than a rounded rect. */
 export function squirclePath(size, inset = 0) {
   const r = size / 2 - inset
   const c = size / 2

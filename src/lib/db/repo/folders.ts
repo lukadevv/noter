@@ -131,7 +131,7 @@ export function isAncestor(folders: Folder[], maybeAncestor: string, id: string)
  *
  * Dropping a folder into its own subtree would orphan the branch, so that move
  * is rejected. With no neighbours given the folder goes to the end of its new
- * parent — computed from the actual siblings, because a fixed step would collide
+ * parent - computed from the actual siblings, because a fixed step would collide
  * with whatever is already there.
  */
 export async function moveFolder(

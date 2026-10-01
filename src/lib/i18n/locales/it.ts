@@ -40,7 +40,7 @@ const it: Messages = {
     savedSearchName: 'Nome per questa ricerca',
     deleteSavedSearch: 'Elimina ricerca salvata',
     noFolders:
-      'Ancora nessuna cartella. Creane una per raggruppare le note — oppure continua a scrivere in Tutte le note.',
+      'Ancora nessuna cartella. Creane una per raggruppare le note - oppure continua a scrivere in Tutte le note.',
     folderActions: 'Azioni della cartella',
     expandFolder: 'Espandi cartella',
     collapseFolder: 'Comprimi cartella',
@@ -268,7 +268,7 @@ const it: Messages = {
     backup: {
       title: 'Backup e trasferimento',
       about:
-        'Un backup .noter contiene tutto — note, cartelle, immagini, temi e impostazioni — in un solo file, per spostarsi tra computer. L’archivio Markdown è uno zip di file .md leggibili in qualsiasi editor.',
+        'Un backup .noter contiene tutto - note, cartelle, immagini, temi e impostazioni - in un solo file, per spostarsi tra computer. L’archivio Markdown è uno zip di file .md leggibili in qualsiasi editor.',
       stale: 'Il tuo ultimo backup risale a {count} giorni fa.',
       passphrase: 'Cifra con una passphrase (facoltativo)',
       passphrasePlaceholder: 'Lascia vuoto per un file non cifrato',
@@ -1158,7 +1158,7 @@ const it: Messages = {
     remind: 'Ricordamelo se non è fatto entro le',
     done: 'Fatto',
     notDone: 'non fatto',
-    doneNamed: '{name}: fatto — tocca per annullare',
+    doneNamed: '{name}: fatto - tocca per annullare',
     checkNamed: 'Segna {name} come fatto',
     undoOne: 'Uno in meno',
     archive: 'Archivia',

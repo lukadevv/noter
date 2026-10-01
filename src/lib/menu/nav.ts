@@ -2,7 +2,7 @@
  * Keyboard movement inside a menu, kept pure so it can be unit-tested.
  *
  * Disabled items are skipped, movement wraps at both ends, and Home/End jump to
- * the first and last enabled item — the WAI-ARIA menu pattern.
+ * the first and last enabled item - the WAI-ARIA menu pattern.
  */
 export interface NavItem {
   disabled?: boolean

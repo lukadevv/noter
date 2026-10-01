@@ -8,7 +8,7 @@ import { referencedAssetIds } from '$lib/db/repo/assets'
  * Sharing a note without a server.
  *
  * The note is compressed into the URL fragment. Fragments are never sent to a
- * server — not even to the host serving the app — so a shared link travels only
+ * server - not even to the host serving the app - so a shared link travels only
  * through whatever channel the sender chose, and there is nothing on our side to
  * store, expire or leak.
  *

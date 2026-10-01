@@ -40,7 +40,7 @@ const de: Messages = {
     savedSearchName: 'Name für diese Suche',
     deleteSavedSearch: 'Gespeicherte Suche löschen',
     noFolders:
-      'Noch keine Ordner. Lege einen an, um Notizen zu gruppieren — oder schreib einfach in Alle Notizen weiter.',
+      'Noch keine Ordner. Lege einen an, um Notizen zu gruppieren - oder schreib einfach in Alle Notizen weiter.',
     folderActions: 'Ordneraktionen',
     expandFolder: 'Ordner ausklappen',
     collapseFolder: 'Ordner einklappen',
@@ -238,7 +238,7 @@ const de: Messages = {
     daily: {
       title: 'Tagesnotizen',
       about:
-        'Eine Notiz pro Tag, die erst entsteht, wenn du sie öffnest. Lässt du die heutige leer, wird sie wieder entfernt — es sammelt sich nichts an, solange du nicht hineinschreibst.',
+        'Eine Notiz pro Tag, die erst entsteht, wenn du sie öffnest. Lässt du die heutige leer, wird sie wieder entfernt - es sammelt sich nichts an, solange du nicht hineinschreibst.',
       folder: 'Ordner',
       noFolder: 'Kein Ordner',
       titleFormat: 'Titelformat · Vorschau: {preview}',
@@ -273,7 +273,7 @@ const de: Messages = {
       passphrase: 'Mit Passphrase verschlüsseln (optional)',
       passphrasePlaceholder: 'Leer lassen für eine unverschlüsselte Datei',
       passphraseHint:
-        'Mit einer Passphrase wird die Datei mit AES-GCM verschlüsselt. Ohne sie bleibt sie binär und komprimiert — das ist Verschleierung, keine Sicherheit.',
+        'Mit einer Passphrase wird die Datei mit AES-GCM verschlüsselt. Ohne sie bleibt sie binär und komprimiert - das ist Verschleierung, keine Sicherheit.',
       exportVault: '.noter-Sicherung exportieren',
       preparing: 'Wird vorbereitet…',
       importVault: '.noter-Sicherung importieren…',
@@ -538,7 +538,7 @@ const de: Messages = {
     titleChange: 'Titel:',
     selectVersion: 'Wähle eine Fassung, um zu sehen, was sich geändert hat.',
     restoreNote:
-      'Wiederherstellen verliert den aktuellen Text nicht — davor wird eine Momentaufnahme angelegt.',
+      'Wiederherstellen verliert den aktuellen Text nicht - davor wird eine Momentaufnahme angelegt.',
     restoreVersion: 'Diese Fassung wiederherstellen',
   },
 
@@ -553,7 +553,7 @@ const de: Messages = {
       other: 'Diese Notiz enthält {count} Bilder, die die Empfängerin oder der Empfänger nicht sieht.',
     },
     characters: '{count} Zeichen',
-    tooLong: 'Länger als {max} — manche Apps kürzen ihn.',
+    tooLong: 'Länger als {max} - manche Apps kürzen ihn.',
     warning: 'Wer den Link hat, kann diese Notiz lesen. Behandle ihn wie die Notiz selbst.',
     copyLink: 'Link kopieren',
     sharedNote: 'Geteilte Notiz',
@@ -561,7 +561,7 @@ const de: Messages = {
     saveToNotes: 'In meinen Notizen speichern',
     unreadable: 'Dieser Link ließ sich nicht lesen',
     unreadableBody:
-      'Vielleicht wurde er beim Kopieren abgeschnitten. Geteilte Notizen stecken vollständig im Link — ein einziges fehlendes Zeichen macht ihn unbrauchbar.',
+      'Vielleicht wurde er beim Kopieren abgeschnitten. Geteilte Notizen stecken vollständig im Link - ein einziges fehlendes Zeichen macht ihn unbrauchbar.',
   },
 
   toast: {
@@ -1165,7 +1165,7 @@ const de: Messages = {
     remind: 'Erinnern, wenn nicht erledigt bis',
     done: 'Erledigt',
     notDone: 'nicht erledigt',
-    doneNamed: '{name}: erledigt — tippen zum Rückgängigmachen',
+    doneNamed: '{name}: erledigt - tippen zum Rückgängigmachen',
     checkNamed: '{name} als erledigt markieren',
     undoOne: 'Eins weniger',
     archive: 'Archivieren',

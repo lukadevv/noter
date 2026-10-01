@@ -25,7 +25,7 @@ const GLYPHS: Record<BlockKind, string> = {
   gallery: '▣',
   image: '◩',
   table: '⊞',
-  divider: '—',
+  divider: '-',
   date: '◷',
 }
 

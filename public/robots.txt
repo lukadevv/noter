@@ -1,7 +1,7 @@
 # Noter is a single page; there is nothing else to crawl.
 #
 # Notes live in the visitor's own browser and are never on the server, so there
-# is no user content here for a crawler to reach — only the app shell.
+# is no user content here for a crawler to reach - only the app shell.
 
 User-agent: *
 Allow: /

@@ -1,7 +1,7 @@
 /**
  * The one scheduler for everything that rings: timers now, medication doses
- * next. Features register a source — a function returning what is due and
- * when — and poke the engine whenever their data changes.
+ * next. Features register a source - a function returning what is due and
+ * when - and poke the engine whenever their data changes.
  *
  * A single timeout to the earliest item, capped at a minute so a sleeping
  * laptop or a throttled background tab catches up soon after it wakes, plus a

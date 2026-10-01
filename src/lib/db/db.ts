@@ -107,7 +107,7 @@ export class NoterDB extends Dexie {
       doses: 'id, medId, takenAt, [medId+takenAt]',
     })
 
-    // v5: the vault — encrypted secrets and the wrapped key that opens them.
+    // v5: the vault - encrypted secrets and the wrapped key that opens them.
     this.version(5).stores({
       secretItems: 'id, order',
       secretsMeta: 'id',
