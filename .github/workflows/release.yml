@@ -203,6 +203,7 @@ jobs:
           MSIX_IDENTITY_NAME: ${{ vars.MSIX_IDENTITY_NAME }}
           MSIX_PUBLISHER: ${{ vars.MSIX_PUBLISHER }}
           MSIX_PUBLISHER_DISPLAY_NAME: ${{ vars.MSIX_PUBLISHER_DISPLAY_NAME }}
+          MSIX_DISPLAY_NAME: ${{ vars.MSIX_DISPLAY_NAME }}
         run: ./scripts/build-msix.ps1
 
       - name: Upload MSIX to the release
@@ -243,8 +244,13 @@ jobs:
           distribution: temurin
           java-version: 21
 
+      # The action's default package list still includes the legacy `tools`
+      # package, which the SDK repository no longer serves, so sdkmanager fails.
+      # Gradle downloads the platform and build-tools it needs by itself.
       - uses: android-actions/setup-android@v3
         if: steps.signing.outputs.configured == 'true'
+        with:
+          packages: platform-tools
 
       - uses: pnpm/action-setup@v4
         if: steps.signing.outputs.configured == 'true'
