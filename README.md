@@ -17,7 +17,7 @@
 [Privacy](https://noter.lukadevv.com/privacy.html) ·
 [Report a bug](https://github.com/lukadevv/noter/issues)
 
-<img src="docs/screenshots/home.png" alt="Noter's Home: today's doses and habits, a calendar and writing statistics" width="900" />
+<img src="docs/screenshots/en/home.png" alt="Noter's Home: today's doses and habits, a calendar and writing statistics" width="900" />
 
 </div>
 
@@ -94,8 +94,8 @@ Arabic, and a welcome tour you can replay any time.
 </table>
 
 <p align="center">
-  <img src="docs/screenshots/pomodoro.png" alt="The Pomodoro timer" width="49%" />
-  <img src="docs/screenshots/habits.png" alt="Habits with streaks and a weekly view" width="49%" />
+  <img src="docs/screenshots/en/pomodoro.png" alt="The Pomodoro timer" width="49%" />
+  <img src="docs/screenshots/en/habits.png" alt="Habits with streaks and a weekly view" width="49%" />
 </p>
 
 ## Download
@@ -157,6 +157,7 @@ yarn would build something that does not match CI.
 | `pnpm test:e2e`              | End-to-end tests (Playwright)                                     |
 | `pnpm test:e2e:ui`           | Playwright's interactive runner                                   |
 | `pnpm test:all`              | Unit tests, then end-to-end                                       |
+| `pnpm screenshots`           | Retake the screenshots in every language (`docs/screenshots/`)    |
 | `node scripts/gen-icons.mjs` | Regenerate every icon and the social card from `scripts/logo.mjs` |
 | `pnpm desktop:dev`           | Run the app in the desktop shell, with hot reload                 |
 | `pnpm desktop:build`         | Build the desktop installers for the current platform             |
@@ -256,6 +257,13 @@ Two conventions keep the suite honest:
 `E2E_DEV=1 pnpm test:e2e` runs against the dev server instead, which is faster
 when iterating (the offline spec skips itself there, since there is no service
 worker).
+
+**Screenshots** are generated, not taken by hand. `pnpm screenshots` fills a
+fresh browser with demo content (`e2e/screenshots/demo-data.ts`), pins the clock
+to a Wednesday evening and photographs Home, Medication, Habits and the Pomodoro
+in each language, into `docs/screenshots/<locale>/`. Add `--grep es` to retake a
+single language. It is a separate Playwright config, so `pnpm test:e2e` never
+runs it.
 
 **Linting and formatting** are split: ESLint covers what a type checker does not
 see - unsafe patterns, dead code, accessibility in markup - while Prettier owns
