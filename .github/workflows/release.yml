@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Existing tag to build (e.g. v0.2.0)'
+        description: 'Existing tag to build (e.g. v1.1.0; the leading v is optional)'
         required: true
 
 permissions:
@@ -24,15 +24,31 @@ jobs:
       version: ${{ steps.check.outputs.version }}
       release_id: ${{ steps.draft.outputs.release_id }}
     steps:
+      # A manual run names its tag by hand, and "1.1.0" for "v1.1.0" is the
+      # easy slip. Normalise it, and say plainly when the tag does not exist
+      # yet, instead of letting checkout fail with a bare git exit code.
+      - id: resolve
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          INPUT_TAG: ${{ github.event.inputs.tag || github.ref_name }}
+        run: |
+          tag="$(printf '%s' "$INPUT_TAG" | tr -d '[:space:]')"
+          case "$tag" in v*) ;; *) tag="v$tag" ;; esac
+          if ! gh api "repos/${{ github.repository }}/git/ref/tags/$tag" --silent 2>/dev/null; then
+            echo "::error::Tag $tag does not exist. Bump the version in package.json, commit, then push the tag: git tag $tag && git push origin $tag"
+            exit 1
+          fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.inputs.tag || github.ref }}
+          ref: refs/tags/${{ steps.resolve.outputs.tag }}
 
       # Catches the mistake that would otherwise ship an installer whose own
       # version disagrees with the tag people downloaded it from.
       - id: check
         run: |
-          tag="${{ github.event.inputs.tag || github.ref_name }}"
+          tag="${{ steps.resolve.outputs.tag }}"
           version="$(node -p "require('./package.json').version")"
           if [ "$tag" != "v$version" ]; then
             echo "::error::Tag $tag does not match package.json version $version."
