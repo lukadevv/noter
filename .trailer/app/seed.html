@@ -1,0 +1,12 @@
+<!doctype html>
+<!--
+  A blank page on the app's origin that loads the seed module without booting
+  the app, so nothing in the app can write over the demo data while it is
+  being put in place.
+-->
+<meta charset="utf-8" />
+<title>Trailer seed</title>
+<script type="module">
+  import { seed } from './seed.ts'
+  window.__seed = seed
+</script>

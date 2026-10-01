@@ -1,0 +1,18 @@
+<!doctype html>
+<!--
+  Title cards. Served by the Vite dev server and recorded by the same frame
+  recorder as the app scenes, so cards and app share one timeline, one frame
+  rate and one look. `window.__card(name, copy)` draws a card; every motion is
+  a CSS animation, which the recorder steps frame by frame.
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Trailer card</title>
+    <link rel="stylesheet" href="./card.css" />
+  </head>
+  <body>
+    <main id="stage"></main>
+    <script type="module" src="./card.ts"></script>
+  </body>
+</html>

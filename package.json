@@ -30,6 +30,7 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:all": "vitest run && playwright test",
+    "trailer": "node .trailer/run.mjs",
     "verify": "pnpm lint && pnpm format:check && pnpm check && pnpm test"
   },
   "devDependencies": {

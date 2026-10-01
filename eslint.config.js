@@ -71,7 +71,7 @@ export default ts.config(
 
   {
     // Node scripts, not browser code.
-    files: ['scripts/**/*.mjs', '*.config.{js,ts}', 'e2e/**/*.ts', 'tests/**/*.ts'],
+    files: ['scripts/**/*.mjs', '.trailer/**/*.mjs', '*.config.{js,ts}', 'e2e/**/*.ts', 'tests/**/*.ts'],
     languageOptions: { globals: { ...globals.node } },
     rules: { 'no-console': 'off' },
   },
