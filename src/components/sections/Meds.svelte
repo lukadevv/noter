@@ -7,6 +7,7 @@
   import MedDialog from '../meds/MedDialog.svelte'
   import { meds } from '$lib/meds/store.svelte'
   import { startOfDay } from '$lib/meds/schedule'
+  import { dayKey, parseDayKey } from '$lib/utils/dates'
   import type { Med } from '$lib/db/schema'
   import { flipDuration, rise } from '$lib/ui/motion.svelte'
   import { flip } from 'svelte/animate'
@@ -16,7 +17,9 @@
 
   let editing = $state<Med | null | 'new'>(null)
   let takingAt = $state<Med | null>(null)
+  let takenDay = $state('')
   let takenTime = $state('')
+  let maxDay = $state('')
 
   let today = $derived(
     meds.doses.filter((d) => d.takenAt >= startOfDay(meds.now)).sort((a, b) => b.takenAt - a.takenAt),
@@ -28,22 +31,29 @@
 
   function openTakeAt(med: Med) {
     const now = new Date()
+    takenDay = maxDay = dayKey(now)
     takenTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
     takingAt = med
   }
 
-  async function confirmTakeAt() {
-    if (!takingAt) return
+  /** The chosen day and time as a timestamp, or null when either is missing. */
+  function takenTimestamp(): number | null {
+    const day = parseDayKey(takenDay)
     const [h, m] = takenTime.split(':').map(Number)
-    // A throwaway value, not reactive state.
-    // eslint-disable-next-line svelte/prefer-svelte-reactivity
-    const at = new Date()
-    at.setHours(h ?? 0, m ?? 0, 0, 0)
-    // A time later than now means yesterday evening, not tonight.
-    if (at.getTime() > Date.now()) at.setDate(at.getDate() - 1)
+    if (!day || h === undefined || m === undefined || Number.isNaN(h) || Number.isNaN(m)) return null
+    day.setHours(h, m, 0, 0)
+    return day.getTime()
+  }
+
+  let takenAtValue = $derived(takingAt ? takenTimestamp() : null)
+  // Date.now(), not meds.now: that one only ticks every 30 seconds.
+  let inFuture = $derived(takenAtValue !== null && takenAtValue > Date.now())
+
+  async function confirmTakeAt() {
+    if (!takingAt || takenAtValue === null || inFuture) return
     const med = takingAt
     takingAt = null
-    await meds.requestTake(med.id, at.getTime())
+    await meds.requestTake(med.id, takenAtValue)
   }
 </script>
 
@@ -92,11 +102,11 @@
                 >{dose.status === 'skipped' ? t('meds.skipped') : t('meds.takenPast')}</span
               >
               <button
-                class="btn btn--ghost btn--icon"
-                aria-label={t('meds.undo')}
+                class="btn btn--ghost btn--icon btn--danger"
+                aria-label={t('meds.deleteDose')}
                 onclick={() => void meds.undo(dose.id)}
               >
-                <Icon name="restore" size={14} />
+                <Icon name="trash" size={14} />
               </button>
             </li>
           {/each}
@@ -120,10 +130,30 @@
       }}
     >
       <p class="faint">{takingAt.name}</p>
-      <input class="input" type="time" data-autofocus bind:value={takenTime} />
+      <div class="when">
+        <input
+          class="input"
+          type="date"
+          max={maxDay}
+          required
+          aria-label={t('meds.takenDay')}
+          bind:value={takenDay}
+        />
+        <input
+          class="input"
+          type="time"
+          required
+          data-autofocus
+          aria-label={t('meds.takenTime')}
+          bind:value={takenTime}
+        />
+      </div>
+      {#if inFuture}<p class="hint" role="alert">{t('meds.takenFuture')}</p>{/if}
       <div class="row">
         <button type="button" class="btn" onclick={() => (takingAt = null)}>{t('common.cancel')}</button>
-        <button type="submit" class="btn btn--primary">{t('meds.taken')}</button>
+        <button type="submit" class="btn btn--primary" disabled={takenAtValue === null || inFuture}>
+          {t('meds.taken')}
+        </button>
       </div>
     </form>
   </Dialog>
@@ -134,7 +164,7 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-5);
-    max-width: 52rem;
+    max-width: var(--page-max);
     margin: 0 auto;
     padding: var(--space-6) var(--space-5);
   }
@@ -192,6 +222,17 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-3);
+  }
+
+  .when {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    gap: var(--space-2);
+  }
+
+  .hint {
+    color: var(--warn);
+    font-size: var(--text-sm);
   }
 
   .row {

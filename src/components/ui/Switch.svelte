@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { uiSound } from '$lib/audio/ui-sounds'
+
   interface Props {
     checked: boolean
     label: string
@@ -23,7 +25,10 @@
     bind:checked
     {disabled}
     data-testid={testid}
-    onchange={(e) => onchange?.(e.currentTarget.checked)}
+    onchange={(e) => {
+      uiSound.play(e.currentTarget.checked ? 'switchOn' : 'switchOff')
+      onchange?.(e.currentTarget.checked)
+    }}
   />
   <span class="track" aria-hidden="true"><span class="thumb"></span></span>
 </label>

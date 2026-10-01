@@ -29,6 +29,8 @@
   let current = $derived(time - (stopwatch.watch.laps.at(-1) ?? 0))
   let text = $derived(formatStopwatch(time))
   let [main, fraction] = $derived(text.split('.') as [string, string])
+  /** One cell per character, so the width never depends on which digits show. */
+  const cells = (value: string) => [...value]
 
   function onKeydown(event: KeyboardEvent) {
     const target = event.target as HTMLElement
@@ -47,7 +49,12 @@
 <div class="stopwatch">
   <section class="stage surface enter" data-testid="stopwatch">
     <div class="display" class:display--running={stopwatch.running}>
-      <span class="main" data-testid="stopwatch-time">{main}</span><span class="fraction">.{fraction}</span>
+      <span class="main" data-testid="stopwatch-time"
+        >{#each cells(main) as ch, i (i)}<span class={ch === ':' ? 'sep' : 'd'}>{ch}</span>{/each}</span
+      ><span class="fraction"
+        >{#each cells(`.${fraction}`) as ch, i (i)}<span class={ch === '.' ? 'sep' : 'd'}>{ch}</span
+          >{/each}</span
+      >
     </div>
     {#if list.length > 0}
       <p class="current">{t('stopwatch.lap', { n: list.length + 1 })} · {formatStopwatch(current)}</p>
@@ -59,11 +66,11 @@
       <button
         class="round"
         disabled={!started}
-        data-testid="stopwatch-secondary"
-        onclick={() => void (stopwatch.running ? stopwatch.lap() : stopwatch.reset())}
+        data-testid="stopwatch-reset"
+        onclick={() => void stopwatch.reset()}
       >
-        <Icon name={stopwatch.running ? 'flag' : 'restore'} size={18} />
-        <span>{stopwatch.running ? t('stopwatch.lapAction') : t('stopwatch.reset')}</span>
+        <Icon name="restore" size={18} />
+        <span>{t('stopwatch.reset')}</span>
       </button>
       <button
         class="round round--main"
@@ -74,6 +81,15 @@
       >
         <Icon name={stopwatch.running ? 'pause' : 'play'} size={26} />
         <span class="sr-only">{stopwatch.running ? t('timers.pause') : t('timers.start')}</span>
+      </button>
+      <button
+        class="round"
+        disabled={!stopwatch.running}
+        data-testid="stopwatch-lap"
+        onclick={() => void stopwatch.lap()}
+      >
+        <Icon name="flag" size={18} />
+        <span>{t('stopwatch.lapAction')}</span>
       </button>
     </div>
   </section>
@@ -89,6 +105,7 @@
         <span>{t('stopwatch.laps')}</span>
         <span>{t('stopwatch.split')}</span>
         <span>{t('stopwatch.total')}</span>
+        <span></span>
       </header>
       <ol>
         {#each list as lap (lap.number)}
@@ -106,6 +123,14 @@
             </span>
             <span class="num">{formatStopwatch(lap.split)}</span>
             <span class="num faint">{formatStopwatch(lap.total)}</span>
+            <button
+              class="btn btn--ghost btn--icon btn--danger remove"
+              aria-label={t('stopwatch.deleteLap', { n: lap.number })}
+              data-testid="stopwatch-lap-delete"
+              onclick={() => void stopwatch.removeLap(lap.number)}
+            >
+              <Icon name="trash" size={14} />
+            </button>
           </li>
         {/each}
       </ol>
@@ -141,6 +166,19 @@
     color: var(--text);
   }
 
+  /* Fixed-width cells: proportional digits made the whole display shake. */
+  .d {
+    display: inline-block;
+    width: 0.62em;
+    text-align: center;
+  }
+
+  .sep {
+    display: inline-block;
+    width: 0.3em;
+    text-align: center;
+  }
+
   .main {
     font-size: clamp(48px, 11vw, 88px);
     font-weight: 750;
@@ -161,6 +199,7 @@
   .controls {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: var(--space-5);
     margin-top: var(--space-3);
   }
@@ -172,8 +211,8 @@
     align-items: center;
     justify-content: center;
     gap: 2px;
-    width: 64px;
-    height: 64px;
+    width: 56px;
+    height: 56px;
     overflow: hidden;
     border: 1px solid var(--border);
     border-radius: 50%;
@@ -231,7 +270,7 @@
   .laps-head,
   li {
     display: grid;
-    grid-template-columns: minmax(0, 1.4fr) 1fr 1fr;
+    grid-template-columns: minmax(0, 1.4fr) 1fr 1fr 2rem;
     align-items: center;
     gap: var(--space-3);
   }
@@ -275,6 +314,24 @@
 
   .worst .num:first-of-type {
     color: var(--danger);
+  }
+
+  .remove {
+    justify-self: end;
+    opacity: 0;
+    transition: opacity var(--dur-1);
+  }
+
+  li:hover .remove,
+  .remove:focus-visible {
+    opacity: 1;
+  }
+
+  /* No hover on touch: keep the button visible there. */
+  @media (hover: none) {
+    .remove {
+      opacity: 1;
+    }
   }
 
   .tag {

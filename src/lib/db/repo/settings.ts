@@ -1,5 +1,6 @@
 import { db } from '../db'
 import type { MotionSetting } from '$lib/ui/motion.svelte'
+import { DEFAULT_UI_SOUNDS, type UiSoundSettings } from '$lib/audio/ui-sounds'
 export type { Sound } from '../schema'
 
 export type Density = 'compact' | 'cozy' | 'comfortable'
@@ -96,6 +97,10 @@ export interface AppSettings {
   showLineNumbers: boolean
   /** The row of block buttons under the editor, for people who do not use `/`. */
   showInsertBar: boolean
+  /** Notes listed under their folder in the sidebar, like files in a file tree. */
+  showNotesInTree: boolean
+  /** Folders whose notes are unfolded in the sidebar tree. Kept apart from `collapsed`, which is about subfolders. */
+  treeNotesOpen: string[]
   dailyNotes: DailyNoteSettings
   lastFolderId: string | null
   lastNoteId: string | null
@@ -107,6 +112,8 @@ export interface AppSettings {
   startSection: 'home' | 'notes'
   timers: TimerSettings
   pomodoro: PomodoroSettings
+  /** The small sounds that answer clicks, tabs and the like (not the alarms). */
+  sounds: UiSoundSettings
   /** The welcome tour was finished or skipped. */
   tourDone: boolean
   updates: UpdateSettings
@@ -125,6 +132,8 @@ export const DEFAULT_SETTINGS: AppSettings = {
   motion: 'system',
   showLineNumbers: false,
   showInsertBar: true,
+  showNotesInTree: true,
+  treeNotesOpen: [],
   dailyNotes: {
     homeAlert: true,
     folderId: '',
@@ -146,6 +155,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
     autoStart: false,
     soundId: 'bell',
   },
+  sounds: { ...DEFAULT_UI_SOUNDS },
   tourDone: false,
   updates: { autoCheck: true, lastCheck: 0, skipped: '' },
   notifications: true,

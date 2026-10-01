@@ -2,6 +2,7 @@
   import Dialog from './ui/Dialog.svelte'
   import { decryptFolder, encryptFolder, keyring } from '$lib/crypto/keyring.svelte'
   import { ui } from '$lib/stores/ui.svelte'
+  import { notes } from '$lib/stores/notes.svelte'
   import type { Folder } from '$lib/db/schema'
   import { t } from '$lib/i18n/index.svelte'
 
@@ -18,7 +19,12 @@
   let busy = $state(false)
   let error = $state('')
 
-  let unlocked = $derived(keyring.unlocked.includes(folder.id))
+  let unlocked = $derived(keyring.isUnlocked(folder.id))
+  /** The encrypted folder above this one, when this folder has no passphrase of its own. */
+  let guard = $derived.by(() => {
+    const root = keyring.rootOf(folder.id)
+    return root && root !== folder.id ? (notes.folders.find((f) => f.id === root) ?? null) : null
+  })
   let canEncrypt = $derived(passphrase.length >= 8 && passphrase === confirmation && acknowledged && !busy)
 
   async function encrypt() {
@@ -52,7 +58,17 @@
 
 <Dialog label={folder.name} {onclose} size="md" flush icon="lock" testid="folder-lock">
   <div class="content">
-    {#if folder.encrypted}
+    {#if guard}
+      <p class="note">{t('lock.inherited', { name: guard.name })}</p>
+      <p class="note faint">{t('lock.idleHint')}</p>
+      <div class="row">
+        {#if unlocked}
+          <button class="btn" onclick={() => keyring.lock(folder.id)}>{t('lock.lockNow')}</button>
+        {:else}
+          <p class="faint">{t('lock.openToUnlock')}</p>
+        {/if}
+      </div>
+    {:else if folder.encrypted}
       <p class="note">
         {t('lock.isEncrypted', { state: t(unlocked ? 'lock.unlocked' : 'lock.locked') })}
       </p>
@@ -73,6 +89,7 @@
       <p class="note">
         {t('lock.about')}
       </p>
+      <p class="note faint">{t('lock.subfoldersHint')}</p>
 
       <div class="field">
         <label for="pass">{t('lock.passphrase')}</label>
@@ -84,7 +101,7 @@
           bind:value={passphrase}
         />
         {#if passphrase && passphrase.length < 8}
-          <span class="hint faint">{t('lock.minLength')}</span>
+          <span class="hint danger">{t('lock.minLength')}</span>
         {/if}
       </div>
 

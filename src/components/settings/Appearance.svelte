@@ -4,6 +4,7 @@
   import Group from './Group.svelte'
   import Field from '../ui/Field.svelte'
   import Segmented from '../ui/Segmented.svelte'
+  import Switch from '../ui/Switch.svelte'
   import { theme } from '$lib/stores/theme.svelte'
   import type { Density, FontChoice } from '$lib/db/repo/settings'
   import type { MotionSetting } from '$lib/ui/motion.svelte'
@@ -96,6 +97,13 @@
       onchange={(e) => theme.update({ radiusScale: Number(e.currentTarget.value) })}
     />
   </Field>
+
+  <Switch
+    label={t('settings.notesInTree')}
+    checked={theme.settings.showNotesInTree}
+    testid="notes-in-tree"
+    onchange={(showNotesInTree) => theme.update({ showNotesInTree })}
+  />
 </Group>
 
 <Group title={t('settings.motion')} description={t('settings.motionHint')}>

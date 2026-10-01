@@ -7,7 +7,7 @@
   import HabitCard from '../habits/HabitCard.svelte'
   import HabitDialog from '../habits/HabitDialog.svelte'
   import { habits } from '$lib/habits/store.svelte'
-  import { isDone, isScheduled } from '$lib/habits/schedule'
+  import { isDone, isExpectedOn } from '$lib/habits/schedule'
   import { confirm } from '$lib/stores/confirm.svelte'
   import { ui } from '$lib/stores/ui.svelte'
   import { flipDuration } from '$lib/ui/motion.svelte'
@@ -22,15 +22,18 @@
   let showArchived = $state(false)
 
   let archived = $derived(habits.habits.filter((h) => h.archived))
-  let todays = $derived(habits.active.filter((h) => isScheduled(h, habits.today)))
+  let todays = $derived(habits.active.filter((h) => expectedOn(h, habits.today)))
   let doneToday = $derived(todays.filter((h) => habits.isDoneOn(h)).length)
+
+  const expectedOn = (habit: Habit, day: string) =>
+    isExpectedOn(habit, habits.counts.get(habit.id) ?? new Map(), day, habits.today)
 
   /** How much of each day this week was done, across every habit on that day. */
   let week = $derived.by(() => {
     const start = weekStart(habits.today)
     return Array.from({ length: 7 }, (_, i) => {
       const day = addDays(start, i)
-      const on = habits.active.filter((h) => h.schedule.kind !== 'weekdays' || isScheduled(h, day))
+      const on = habits.active.filter((h) => expectedOn(h, day))
       const done = on.filter((h) => isDone(h, habits.countOn(h.id, day))).length
       return { day, ratio: on.length ? done / on.length : 0, future: day > habits.today }
     })
@@ -87,7 +90,9 @@
           {#each week as d (d.day)}
             <span class="wk" class:wk--today={d.day === habits.today}>
               <span class="bar"
-                ><span class="fill" style="height: {d.future ? 0 : Math.max(6, d.ratio * 100)}%"
+                ><span
+                  class="fill"
+                  style="height: {d.future || d.ratio === 0 ? 0 : Math.max(6, d.ratio * 100)}%"
                 ></span></span
               >
               <span class="wk-label"
@@ -138,7 +143,7 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-5);
-    max-width: 56rem;
+    max-width: var(--page-max);
     margin: 0 auto;
     padding: var(--space-6) var(--space-5);
   }

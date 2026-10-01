@@ -3,6 +3,7 @@ import { db } from '$lib/db/db'
 import { ROOT, type Folder, type Note } from '$lib/db/schema'
 import { derivedTitle, emptyNote } from '$lib/db/repo/notes'
 import { extractTags } from '$lib/md/links'
+import { lockRoots } from '$lib/crypto/lock-root'
 import { folderPath, noteToMarkdown, parseMarkdown, restoreImageRefs, safeFileName } from './markdown'
 import { uuid } from '$lib/utils/uuid'
 import { migrateBodyForView } from '$lib/md/migrate'
@@ -29,8 +30,10 @@ export async function exportMarkdownArchive(options: ExportOptions = {}): Promis
     db.assets.toArray(),
   ])
 
+  // Notes in an encrypted folder stay out even if one is not sealed yet.
+  const protectedFolders = lockRoots(folders)
   const notes = allNotes.filter((note) => {
-    if (note.encrypted) return false // Ciphertext in a plain-text archive helps nobody.
+    if (note.encrypted || protectedFolders.has(note.folderId)) return false // Ciphertext in a plain-text archive helps nobody.
     if (!options.includeTrashed && note.deletedAt > 0) return false
     return true
   })

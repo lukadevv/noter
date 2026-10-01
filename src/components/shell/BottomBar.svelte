@@ -5,15 +5,18 @@
   import { ui } from '$lib/stores/ui.svelte'
   import { alerts } from '$lib/stores/alerts.svelte'
   import { t } from '$lib/i18n/index.svelte'
+  import { theme } from '$lib/stores/theme.svelte'
+  import { accentStyle } from '$lib/theme/apply'
 </script>
 
-<nav class="bar" aria-label={t('nav.main')} data-tour="nav">
+<nav class="bar" aria-label={t('nav.main')} data-tour="nav" style={accentStyle(theme.tokens)}>
   {#each SECTIONS as entry (entry.id)}
     {@const count = alerts.countFor(entry.id)}
     <button
       class="item"
       class:item--active={ui.section === entry.id}
       data-testid="nav-{entry.id}"
+      data-ui-sound="tab"
       aria-current={ui.section === entry.id ? 'page' : undefined}
       data-tour="nav-{entry.id}"
       title={t(entry.label)}

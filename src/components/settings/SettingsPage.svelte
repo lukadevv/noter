@@ -70,6 +70,7 @@
             class="entry"
             class:entry--active={active?.id === section.id}
             data-testid="settings-section-{section.id}"
+            data-ui-sound="tab"
             aria-current={active?.id === section.id ? 'page' : undefined}
             onclick={() => openSettings(section.id)}
           >

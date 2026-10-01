@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { nextStep } from '$lib/timers/pomodoro'
-import { elapsed, extremes, formatStopwatch, laps } from '$lib/timers/stopwatch'
+import { elapsed, extremes, formatStopwatch, laps, withoutLap } from '$lib/timers/stopwatch'
 
 describe('pomodoro cycle', () => {
   const settings = { longEvery: 4 }
@@ -29,6 +29,13 @@ describe('stopwatch', () => {
     expect(list.map((l) => l.split)).toEqual([12_000, 8_000, 10_000])
     expect(extremes(list)).toEqual({ best: 2, worst: 3 })
     expect(extremes(list.slice(0, 1))).toBeNull()
+  })
+
+  it('drops a lap by number and folds its time into the next split', () => {
+    const marks = withoutLap([10_000, 18_000, 30_000], 2)
+    expect(marks).toEqual([10_000, 30_000])
+    expect(laps({ ...watch, laps: marks }).map((l) => l.split)).toEqual([20_000, 10_000])
+    expect(withoutLap([10_000], 5)).toEqual([10_000])
   })
 
   it('formats hundredths, and hours only when there are any', () => {

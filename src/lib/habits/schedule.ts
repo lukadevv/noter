@@ -51,6 +51,22 @@ export function isDueToday(habit: Schedulable, counts: Map<string, number>, toda
   return true
 }
 
+/**
+ * Whether `day` counts for this habit in progress summaries (the ring and the
+ * weekly bars). Fixed-day habits count on their days. Weekly habits can be done
+ * on any day, so a day only counts if the habit was done on it, or it is today
+ * and the week's goal is still open - a day without it is not a miss.
+ */
+export function isExpectedOn(
+  habit: Schedulable,
+  counts: Map<string, number>,
+  day: string,
+  today: string,
+): boolean {
+  if (habit.schedule.kind !== 'perWeek') return isScheduled(habit, day)
+  return isDone(habit, counts.get(day) ?? 0) || (day === today && isDueToday(habit, counts, today))
+}
+
 export interface Streak {
   current: number
   best: number

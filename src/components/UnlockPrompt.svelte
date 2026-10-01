@@ -14,7 +14,11 @@
   let error = $state('')
   let busy = $state(false)
 
-  let folderName = $derived(notes.folders.find((f) => f.id === folderId)?.name ?? t('sidebar.newFolder'))
+  // The folder asking for the passphrase may be a subfolder; the one that has it is above.
+  let folderName = $derived(
+    notes.folders.find((f) => f.id === (keyring.rootOf(folderId) ?? folderId))?.name ??
+      t('sidebar.newFolder'),
+  )
 
   async function unlock(event: SubmitEvent) {
     event.preventDefault()

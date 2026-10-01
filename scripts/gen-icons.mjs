@@ -140,9 +140,16 @@ if (existsSync(ANDROID_RES)) {
 
 /** Microsoft Store (MSIX) visual assets referenced by the AppxManifest. */
 write(join(MSIX, 'Square44x44Logo.png'), png(logoSvg(), 44))
-write(join(MSIX, 'Square44x44Logo.targetsize-256_altform-unplated.png'), png(logoSvg(), 256))
-write(join(MSIX, 'Square150x150Logo.png'), png(wideSvg(150, 150, 104), 150))
-write(join(MSIX, 'Wide310x150Logo.png'), png(wideSvg(310, 150, 104), 310, 150))
+// Without an `unplated` variant per size Windows draws an accent-coloured plate
+// behind the icon in the taskbar, Start list and search, which is the "blue
+// background" the plain logo gets. The light variant covers light taskbars.
+for (const size of [16, 24, 32, 48, 256]) {
+  for (const altform of ['unplated', 'lightunplated']) {
+    write(join(MSIX, `Square44x44Logo.targetsize-${size}_altform-${altform}.png`), png(logoSvg(), size))
+  }
+}
+write(join(MSIX, 'Square150x150Logo.png'), png(wideSvg(150, 150, 136), 150))
+write(join(MSIX, 'Wide310x150Logo.png'), png(wideSvg(310, 150, 136), 310, 150))
 write(join(MSIX, 'StoreLogo.png'), png(logoSvg(), 50))
 write(join(MSIX, 'SplashScreen.png'), png(wideSvg(620, 300, 200), 620, 300))
 

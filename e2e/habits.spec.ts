@@ -29,6 +29,23 @@ test.describe('habits', () => {
     await expect(page.getByText('All done for today')).toBeVisible()
   })
 
+  test('draws no weekly bar for days with nothing done', async ({ page }) => {
+    await addHabit(page, 'Read')
+    const fills = page.locator('.week .fill')
+    await expect(fills).toHaveCount(7)
+    const heights = await fills.evaluateAll((els) => els.map((el) => el.getBoundingClientRect().height))
+    expect(heights).toEqual([0, 0, 0, 0, 0, 0, 0])
+
+    await page.getByTestId('habit-card').getByTestId('habit-check').click()
+    await expect
+      .poll(async () =>
+        (await fills.evaluateAll((els) => els.map((el) => el.getBoundingClientRect().height))).some(
+          (h) => h > 0,
+        ),
+      )
+      .toBe(true)
+  })
+
   test('counts up to a daily target', async ({ page }) => {
     await addHabit(page, 'Water', 3)
     const check = page.getByTestId('habit-check')

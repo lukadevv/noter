@@ -4,6 +4,7 @@
   import { portal, trapFocus } from '$lib/ui/portal'
   import { fadeIn, pop } from '$lib/ui/motion.svelte'
   import { t } from '$lib/i18n/index.svelte'
+  import { uiSound } from '$lib/audio/ui-sounds'
 
   interface Props {
     /** Accessible name, also shown as the heading unless `head` is given. */
@@ -21,6 +22,12 @@
   }
 
   let { label, onclose, size = 'md', icon, testid, flush = false, head, foot, children }: Props = $props()
+
+  // Mounted means opened, destroyed means closed, however it got there.
+  $effect(() => {
+    uiSound.play('dialog')
+    return () => uiSound.play('dialog', { reverse: true })
+  })
 
   function onKeydown(event: KeyboardEvent) {
     if (event.key !== 'Escape') return

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { uiSound } from '$lib/audio/ui-sounds'
   import Icon from './Icon.svelte'
   import NoteListItem from './NoteListItem.svelte'
   import { menu } from '$lib/stores/menu.svelte'
@@ -67,6 +68,7 @@
       return
     }
     notes.clearMarks()
+    if (notes.selectedNoteId !== id) uiSound.play('note')
     notes.select(id)
     if (ui.narrow) ui.showPane('note')
   }

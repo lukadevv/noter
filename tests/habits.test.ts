@@ -4,6 +4,7 @@ import {
   countsByDay,
   doneInWeek,
   isDueToday,
+  isExpectedOn,
   isScheduled,
   reminderAt,
   streak,
@@ -96,5 +97,33 @@ describe('completion and reminders', () => {
     expect(new Date(at).getHours()).toBe(8)
     expect(new Date(at).getMinutes()).toBe(30)
     expect(reminderAt('nope', TODAY)).toBeNull()
+  })
+})
+
+describe('progress summaries', () => {
+  const weekly = habit({ kind: 'perWeek', times: 2 })
+
+  it('counts a weekly habit only where it was done, or today while the goal is open', () => {
+    const counts = countsByDay(checks({ '2026-09-28': 1 }), 'h')
+    expect(isExpectedOn(weekly, counts, '2026-09-28', TODAY)).toBe(true)
+    // Tuesday was not done, but a weekly habit is not missed on a free day.
+    expect(isExpectedOn(weekly, counts, '2026-09-29', TODAY)).toBe(false)
+    expect(isExpectedOn(weekly, counts, TODAY, TODAY)).toBe(true)
+  })
+
+  it('drops a weekly habit from today once the weekly goal is met', () => {
+    const counts = countsByDay(checks({ '2026-09-28': 1, '2026-09-29': 1 }), 'h')
+    expect(isExpectedOn(weekly, counts, TODAY, TODAY)).toBe(false)
+  })
+
+  it('keeps a weekly habit counted on the day that met the goal', () => {
+    const counts = countsByDay(checks({ '2026-09-28': 1, [TODAY]: 1 }), 'h')
+    expect(isExpectedOn(weekly, counts, TODAY, TODAY)).toBe(true)
+  })
+
+  it('follows the schedule for daily and weekday habits', () => {
+    const none = new Map<string, number>()
+    expect(isExpectedOn(habit({ kind: 'daily' }), none, TODAY, TODAY)).toBe(true)
+    expect(isExpectedOn(habit({ kind: 'weekdays', days: [1] }), none, TODAY, TODAY)).toBe(false)
   })
 })

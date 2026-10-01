@@ -29,6 +29,14 @@ export function laps(watch: Stopwatch): Lap[] {
     .reverse()
 }
 
+/**
+ * The lap marks without lap `number` (1-based). Marks are cumulative, so the
+ * deleted lap's time simply folds into the next one's split.
+ */
+export function withoutLap(marks: number[], number: number): number[] {
+  return marks.filter((_, i) => i !== number - 1)
+}
+
 /** The fastest and slowest lap numbers, once there are at least two to compare. */
 export function extremes(list: Lap[]): { best: number; worst: number } | null {
   if (list.length < 2) return null

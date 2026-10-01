@@ -1,7 +1,7 @@
 import { liveQuery, type Subscription } from 'dexie'
 import { db } from '$lib/db/db'
 import type { Stopwatch } from '$lib/db/schema'
-import { elapsed, EMPTY_STOPWATCH } from './stopwatch'
+import { elapsed, EMPTY_STOPWATCH, withoutLap } from './stopwatch'
 
 /**
  * The stopwatch, stored as a start time plus what came before, like the
@@ -40,6 +40,11 @@ class StopwatchStore {
   async lap(): Promise<void> {
     if (!this.running) return
     await this.#save({ laps: [...this.watch.laps, elapsed(this.watch, Date.now())] })
+  }
+
+  /** Drops lap `number` (1-based), e.g. one pressed by accident. */
+  async removeLap(number: number): Promise<void> {
+    await this.#save({ laps: withoutLap(this.watch.laps, number) })
   }
 
   async reset(): Promise<void> {

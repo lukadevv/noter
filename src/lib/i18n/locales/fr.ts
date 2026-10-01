@@ -235,6 +235,7 @@ const fr: Messages = {
     cornerRoundness: 'Arrondi des coins',
     reduceMotion: 'Réduire les animations',
     lineNumbers: "Afficher les numéros de ligne dans l'éditeur",
+    notesInTree: 'Afficher les notes dans l’arborescence des dossiers',
     insertBar: 'Afficher la barre d’insertion sous l’éditeur',
     daily: {
       title: 'Notes quotidiennes',
@@ -325,6 +326,7 @@ const fr: Messages = {
       notifications: 'Notifications',
       vault: 'Coffre',
       home: 'Accueil',
+      sounds: 'Sons de l’interface',
     },
     search: 'Rechercher un réglage',
     noResults: 'Aucun réglage ne correspond.',
@@ -392,6 +394,31 @@ const fr: Messages = {
       blocked:
         'Les notifications sont bloquées. Autorisez-les dans les réglages du navigateur ou du système.',
       allow: 'Autoriser les notifications',
+    },
+    sounds: {
+      title: 'Sons de l’interface',
+      about: 'De courts sons qui répondent à vos actions. Les alarmes se règlent dans Minuteurs et sons.',
+      enable: 'Jouer les sons de l’interface',
+      enableHint:
+        'Lors d’un changement d’onglet, d’un appui sur un bouton, d’une création ou d’une suppression.',
+      volume: 'Volume · {percent} %',
+      choose: 'Quels sons',
+      chooseHint: 'Désactivez ceux qui ne vous plaisent pas.',
+      preview: 'Écouter : {name}',
+      names: {
+        tab: 'Changer d’onglet',
+        note: 'Ouvrir une note',
+        primary: 'Boutons principaux',
+        secondary: 'Autres boutons',
+        switchOn: 'Interrupteur activé',
+        switchOff: 'Interrupteur désactivé',
+        create: 'Créer quelque chose',
+        complete: 'Terminer quelque chose',
+        delete: 'Supprimer',
+        error: 'Erreurs et avertissements',
+        menu: 'Ouvrir un menu',
+        dialog: 'Ouvrir et fermer les boîtes de dialogue',
+      },
     },
     vault: {
       security: 'Verrouillage',
@@ -520,6 +547,8 @@ const fr: Messages = {
     lockNow: 'Verrouiller maintenant',
     removeEncryption: 'Retirer le chiffrement',
     openToUnlock: 'Ouvrez une note à l’intérieur pour le déverrouiller.',
+    inherited: 'Ce dossier est protégé par « {name} » : il se déverrouille et se verrouille avec lui.',
+    subfoldersHint: 'Les sous-dossiers sont couverts aussi : ils utilisent la même phrase secrète.',
     about:
       'Chiffrer un dossier réécrit chaque note qu’il contient en texte chiffré. Les titres, les contenus et les étiquettes deviennent illisibles sans la phrase secrète.',
     minLength: 'Au moins 8 caractères.',
@@ -955,6 +984,10 @@ const fr: Messages = {
     skipped: 'sautée',
     undo: 'Annuler',
     undoLast: 'Annuler la dernière prise',
+    deleteDose: 'Supprimer cette prise',
+    takenDay: 'Jour',
+    takenTime: 'Heure',
+    takenFuture: 'Cette heure n’est pas encore passée.',
     pause: 'Suspendre les rappels',
     resume: 'Reprendre les rappels',
     actions: 'Actions du médicament',
@@ -1155,6 +1188,7 @@ const fr: Messages = {
     total: 'Total',
     best: 'le plus rapide',
     worst: 'le plus lent',
+    deleteLap: 'Supprimer le tour {n}',
   },
 
   habits: {
