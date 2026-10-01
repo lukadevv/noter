@@ -7,6 +7,8 @@
  *   pnpm trailer --draft         720p at 30 fps, for checking the cut quickly
  *   pnpm trailer --check         only report what is missing, render nothing
  *   pnpm trailer --keep          keep the per-scene recordings in .trailer/.cache
+ *   pnpm trailer --reuse         edit and mix the recordings kept by --keep, without
+ *                                recording again (for tuning the cut, grade and sound)
  *
  * See .trailer/README.md.
  */
@@ -60,6 +62,7 @@ const { values: args } = parseArgs({
     draft: { type: 'boolean', default: false },
     check: { type: 'boolean', default: false },
     keep: { type: 'boolean', default: false },
+    reuse: { type: 'boolean', default: false },
   },
 })
 
@@ -161,6 +164,13 @@ const fps = args.draft ? 30 : config.video.fps
 const width = args.draft ? 1280 : config.video.width
 const height = args.draft ? 720 : config.video.height
 const deviceScaleFactor = (config.video.scale * width) / config.video.width
+// Cards are designed for a 1536x864 screen; the app scenes use `video.scale`.
+const CARD_SCALE = 1.25
+const cardScale = (CARD_SCALE * width) / config.video.width
+const cardViewport = {
+  width: Math.round(width / cardScale),
+  height: Math.round(height / cardScale),
+}
 const viewport = {
   width: Math.round(width / deviceScaleFactor),
   height: Math.round(height / deviceScaleFactor),
@@ -237,11 +247,8 @@ if (warnings.length) {
 }
 if (failures.length) fail(`Failed: ${failures.join(', ')}`)
 
-// --- One language ------------------------------------------------------------------
-
-async function renderLanguage(lang, beats) {
-  const { default: copy } = await import(pathToFileURL(join(HERE, 'copy', `${lang}.mjs`)).href)
-  const started = Date.now()
+/** Seeds the demo data, drives every scene and returns what was recorded. */
+async function recordScenes(lang, copy, recordsFile) {
   step(`[${lang}] Seeding the demo data`)
 
   const context = await browser.newContext({
@@ -267,7 +274,18 @@ async function renderLanguage(lang, beats) {
   await app.waitForTimeout(1500)
   await context.clock.pauseAt(new Date(new Date(config.clock.time).getTime() + 60_000))
 
-  const cards = await context.newPage()
+  // The title cards are laid out for a wider, less zoomed screen than the app
+  // scenes, so they get their own context with the matching scale.
+  const cardContext = await browser.newContext({
+    viewport: cardViewport,
+    deviceScaleFactor: cardScale,
+    locale: copy.browserLocale,
+    colorScheme: 'dark',
+    reducedMotion: 'no-preference',
+  })
+  await cardContext.clock.install({ time: new Date(config.clock.time) })
+  await cardContext.clock.pauseAt(new Date(new Date(config.clock.time).getTime() + 60_000))
+  const cards = await cardContext.newPage()
   await cards.goto(`${base}.trailer/app/card.html`)
   await cards.waitForFunction(() => typeof window.__card === 'function')
   await cards.evaluate(() => document.fonts.ready)
@@ -279,6 +297,7 @@ async function renderLanguage(lang, beats) {
       ffmpeg,
       lead: config.video.lead,
       scale: deviceScaleFactor,
+      camera: config.video.camera,
       seed: 7,
     }),
     card: new Recorder({
@@ -286,7 +305,8 @@ async function renderLanguage(lang, beats) {
       fps,
       ffmpeg,
       lead: config.video.lead,
-      scale: deviceScaleFactor,
+      scale: cardScale,
+      camera: false,
       seed: 11,
     }),
   }
@@ -311,6 +331,24 @@ async function renderLanguage(lang, beats) {
     step(`[${lang}] ${scene.id}: ${records.at(-1).duration.toFixed(1)}s recorded`)
   }
   await context.close()
+  await cardContext.close()
+  writeFileSync(recordsFile, JSON.stringify(records))
+  return records
+}
+
+// --- One language ------------------------------------------------------------------
+
+async function renderLanguage(lang, beats) {
+  const { default: copy } = await import(pathToFileURL(join(HERE, 'copy', `${lang}.mjs`)).href)
+  const started = Date.now()
+  const recordsFile = join(CACHE, 'scenes', `${lang}-records.json`)
+  let records
+  if (args.reuse && existsSync(recordsFile)) {
+    step(`[${lang}] Reusing the kept recordings`)
+    records = JSON.parse(readFileSync(recordsFile, 'utf8'))
+  } else {
+    records = await recordScenes(lang, copy, recordsFile)
+  }
 
   // Edit.
   const transition = config.video.transition

@@ -18,6 +18,13 @@ import { overlayScript } from './overlay.mjs'
  * Interactions go through `page.mouse` and `page.keyboard` with coordinates
  * read up front, never through locator actions: those wait for the page to
  * settle, and a page whose clock is paused never settles.
+ *
+ * The camera never touches the page. It is the capture itself: each frame
+ * screenshots a smaller rectangle of the page at a higher scale, so Chrome
+ * renders the close-up at full resolution (text stays sharp, unlike zooming
+ * the video afterwards) while the app's layout, its menus and every click
+ * coordinate stay exactly as they are. The caption is counter-scaled to the
+ * same rectangle, so it keeps its size and place on screen.
  */
 export class Recorder {
   /**
@@ -25,8 +32,9 @@ export class Recorder {
    * `lead` is the still pre-roll every scene starts with, which the editor
    * uses as the incoming half of a transition.
    */
-  constructor({ page, fps, ffmpeg, lead, scale = 1, seed = 1 }) {
+  constructor({ page, fps, ffmpeg, lead, scale = 1, camera = true, seed = 1 }) {
     this.page = page
+    this.cameraEnabled = camera
     this.scale = scale
     this.fps = fps
     this.lead = lead
@@ -34,7 +42,13 @@ export class Recorder {
     this.frameIndex = 0
     this.cues = []
     this.marks = {}
+    /** Cursor position, in page coordinates. */
     this.cursor = { x: 0, y: 0 }
+    /** Where the camera looks (page coordinates) and how close. */
+    this.view = { x: 0, y: 0, zoom: 1 }
+    this.tween = null
+    /** Slow extra push after a move has landed, so a held shot never goes dead. */
+    this.drift = null
     this.random = mulberry32(seed)
   }
 
@@ -75,6 +89,10 @@ export class Recorder {
         String(this.fps),
         '-i',
         '-',
+        // A close-up's capture can come out a pixel short from rounding; every
+        // frame is brought back to the exact output size.
+        '-vf',
+        `scale=${this.outputSize.width}:${this.outputSize.height}:flags=lanczos`,
         '-c:v',
         'libx264',
         '-preset',
@@ -87,6 +105,9 @@ export class Recorder {
       ],
       { stdio: ['pipe', 'inherit', 'inherit'] },
     )
+    // If ffmpeg dies, writing to it fails with EPIPE; the exit code below is
+    // the useful part, so the pipe error is not allowed to crash the run.
+    this.encoder.stdin.on('error', () => {})
     this.encoderDone = new Promise((resolve, reject) => {
       this.encoder.on('error', reject)
       this.encoder.on('close', (code) =>
@@ -100,6 +121,18 @@ export class Recorder {
     this.encoder.stdin.end()
     await this.encoderDone
     return { file: this.file, duration: this.time, lead: this.lead, cues: this.cues, marks: this.marks }
+  }
+
+  /** A point at a fraction of the viewport, so scenes do not depend on its size. */
+  at(fx, fy) {
+    const { width, height } = this.page.viewportSize()
+    return { x: Math.round(width * fx), y: Math.round(height * fy) }
+  }
+
+  /** Pixel size of every frame: the viewport at the device scale factor. */
+  get outputSize() {
+    const { width, height } = this.page.viewportSize()
+    return { width: Math.round(width * this.scale), height: Math.round(height * this.scale) }
   }
 
   /** Seconds since the scene began. */
@@ -129,15 +162,25 @@ export class Recorder {
     const step = after - before
     await this.#freeze()
     await this.page.clock.runFor(step)
-    await this.page.evaluate((ms) => window.__trailer.step(ms), step)
-    // Without an explicit clip the capture comes back in CSS pixels, ignoring
-    // the device scale factor; the clip's scale renders at full resolution.
+    this.#advanceCamera()
+    const clip = this.#clip()
+    await this.page.evaluate(
+      ([ms, c, x, y]) => {
+        window.__trailer.frameTo(c.x, c.y, c.zoom)
+        window.__trailer.cursor(x, y)
+        window.__trailer.step(ms)
+      },
+      [step, clip, this.cursor.x, this.cursor.y],
+    )
+    // The clip is also what makes the output full resolution: without one the
+    // capture comes back in CSS pixels, ignoring the device scale factor.
     const { data } = await this.cdp.send('Page.captureScreenshot', {
       format: 'jpeg',
       quality: 94,
       optimizeForSpeed: true,
-      clip: { x: 0, y: 0, ...this.page.viewportSize(), scale: this.scale },
+      clip: { x: clip.x, y: clip.y, width: clip.width, height: clip.height, scale: this.scale * clip.zoom },
     })
+    if (this.encoder.exitCode !== null) await this.encoderDone
     const buffer = Buffer.from(data, 'base64')
     if (!this.encoder.stdin.write(buffer))
       await new Promise((resolve) => this.encoder.stdin.once('drain', resolve))
@@ -178,16 +221,21 @@ export class Recorder {
 
   // --- Pointer -----------------------------------------------------------------
 
-  /** Centre of an element (or a point inside it, as fractions of its box). */
+  /**
+   * A point on an element (as fractions of its box). Waits with `until`, not
+   * `locator.waitFor`: Playwright polls on animation frames, which a paused
+   * clock never delivers, so a wait that does not succeed at once never ends.
+   */
   async pointOf(locator, { fx = 0.5, fy = 0.5 } = {}) {
-    await locator.waitFor({ state: 'visible' })
-    const box = await locator.boundingBox()
+    await this.until(locator, 10)
+    const box = await locator.first().boundingBox()
     if (!box) throw new Error(`no box for ${locator}`)
     return { x: box.x + box.width * fx, y: box.y + box.height * fy }
   }
 
   /** Puts the cursor somewhere without animating it, e.g. at the start of a scene. */
   async placeCursor(x, y) {
+    if (typeof x === 'object') ({ x, y } = x)
     this.cursor = { x, y }
     await this.page.mouse.move(x, y)
     await this.page.evaluate(([cx, cy]) => window.__trailer.cursor(cx, cy), [x, y])
@@ -198,7 +246,8 @@ export class Recorder {
     const to = 'x' in target ? target : await this.pointOf(target)
     const from = { ...this.cursor }
     const distance = Math.hypot(to.x - from.x, to.y - from.y)
-    const duration = seconds ?? Math.min(0.9, 0.28 + distance / 2200)
+    // Timed by how far it travels on screen, which is further when zoomed in.
+    const duration = seconds ?? Math.min(0.9, 0.28 + (distance * this.view.zoom) / 2200)
     const frames = Math.max(1, Math.round(duration * this.fps))
     // A slight arc instead of a ruler-straight line.
     const bend = (this.random() - 0.5) * 0.18 * distance
@@ -207,11 +256,11 @@ export class Recorder {
     for (let i = 1; i <= frames; i++) {
       const t = easeInOutCubic(i / frames)
       const arc = Math.sin(Math.PI * t) * bend
-      const x = from.x + (to.x - from.x) * t + nx * arc
-      const y = from.y + (to.y - from.y) * t + ny * arc
-      await this.page.mouse.move(x, y)
-      await this.page.evaluate(([cx, cy]) => window.__trailer.cursor(cx, cy), [x, y])
-      this.cursor = { x, y }
+      this.cursor = {
+        x: from.x + (to.x - from.x) * t + nx * arc,
+        y: from.y + (to.y - from.y) * t + ny * arc,
+      }
+      await this.page.mouse.move(this.cursor.x, this.cursor.y)
       await this.frame()
     }
   }
@@ -270,14 +319,152 @@ export class Recorder {
    */
   async settle(ms = 6000) {
     await this.caption('')
+    this.tween = null
+    this.view = { x: 0, y: 0, zoom: 1 }
     await this.page.clock.runFor(ms)
     await this.page.evaluate((value) => window.__trailer.step(value), ms)
   }
 
+  // --- Camera ---------------------------------------------------------------------
+
+  /**
+   * Starts a camera move: towards an element, a page point, or back to the
+   * whole screen (`camera(null)`). It runs on its own over the next frames,
+   * so the scene keeps clicking and typing while the camera travels.
+   * `fx`/`fy` pick the spot on the element to centre (as fractions of its box).
+   */
+  async camera(
+    target,
+    {
+      zoom = 1.6,
+      seconds = 0.9,
+      fx = 0.5,
+      fy = 0.5,
+      ease = easeInOutCubic,
+      drift = 0,
+      driftMax = 0.18,
+    } = {},
+  ) {
+    if (!this.cameraEnabled) return
+    const { width, height } = this.page.viewportSize()
+    let to = { x: width / 2, y: height / 2, zoom: 1 }
+    if (target) {
+      const point = 'x' in target ? target : await this.pointOf(target, { fx, fy })
+      to = { ...point, zoom }
+    }
+    const from = this.#currentView()
+    this.drift = target && drift ? { rate: drift, cap: to.zoom + driftMax } : null
+    this.tween = { from, to, start: this.time, seconds, ease }
+    if (seconds <= 0) this.#advanceCamera()
+  }
+
+  /** Waits for the current camera move to finish, recording as it goes. */
+  async settleCamera() {
+    while (this.tween) await this.frame()
+  }
+
+  #currentView() {
+    if (this.view.zoom === 1 && this.view.x === 0 && this.view.y === 0) {
+      const { width, height } = this.page.viewportSize()
+      return { x: width / 2, y: height / 2, zoom: 1 }
+    }
+    return { ...this.view }
+  }
+
+  #advanceCamera() {
+    if (!this.tween) {
+      if (this.drift) {
+        const zoom = Math.min(this.drift.cap, this.view.zoom + this.drift.rate / this.fps)
+        this.view = { ...this.view, zoom }
+      }
+      return
+    }
+    const { from, to, start, seconds, ease } = this.tween
+    const progress = seconds <= 0 ? 1 : Math.min(1, (this.time - start) / seconds)
+    const t = ease(progress)
+    this.view = {
+      x: from.x + (to.x - from.x) * t,
+      y: from.y + (to.y - from.y) * t,
+      zoom: from.zoom + (to.zoom - from.zoom) * t,
+    }
+    if (progress >= 1) this.tween = null
+  }
+
+  /** The rectangle of the page the camera sees, kept inside the page's edges. */
+  #clip() {
+    const { width, height } = this.page.viewportSize()
+    const zoom = Math.max(1, this.view.zoom)
+    if (zoom === 1) return { x: 0, y: 0, width, height, zoom: 1 }
+    const w = width / zoom
+    const h = height / zoom
+    const clamp = (value, max) => Math.min(max, Math.max(0, value))
+    // Snapped to the output pixel grid: a fractional origin makes text swim
+    // sideways by a sub-pixel amount from one frame to the next.
+    const grid = 1 / (this.scale * zoom)
+    const snap = (value) => Math.round(value / grid) * grid
+    return {
+      x: snap(clamp(this.view.x - w / 2, width - w)),
+      y: snap(clamp(this.view.y - h / 2, height - h)),
+      width: w,
+      height: h,
+      zoom,
+    }
+  }
+
+  // --- Effects --------------------------------------------------------------------
+
+  /** A glowing frame around an element, drawn in page coordinates. */
+  async focus(locator, { seconds = 1.6, pad = 10 } = {}) {
+    await this.until(locator, 10)
+    const box = await locator.first().boundingBox()
+    if (!box) return
+    await this.page.evaluate(
+      ([x, y, w, h, ms]) => window.__trailer.focus(x, y, w, h, ms),
+      [box.x - pad, box.y - pad, box.width + pad * 2, box.height + pad * 2, seconds * 1000],
+    )
+  }
+
+  /** Centres the app's alarm card on a point (see overlay.pinAlarm). */
+  async pinAlarm(point) {
+    await this.page.evaluate(([x, y]) => window.__trailer.pinAlarm(x, y), [point.x, point.y])
+  }
+
+  /** A ring expanding from a point (page coordinates). */
+  async pulse(point, { size = 360, color = '#8b8ce8', seconds = 1, behind = false } = {}) {
+    await this.page.evaluate(
+      ([x, y, s, c, ms, b]) => window.__trailer.pulse(x, y, s, c, ms, b),
+      [point.x, point.y, size, color, seconds * 1000, behind],
+    )
+  }
+
+  /** Confetti from a point (page coordinates). */
+  async burst(point, { count = 54, spread = 520, up = 340 } = {}) {
+    const colors = ['#8b8ce8', '#b9b6ff', '#6ec3f0', '#ffc857', '#5cbf92', '#e06a5a']
+    const bits = Array.from({ length: count }, () => {
+      const angle = this.random() * Math.PI * 2
+      const force = 0.35 + this.random() * 0.65
+      const round = this.random() < 0.3
+      return {
+        dx: Math.round(Math.cos(angle) * spread * force),
+        dy: Math.round(Math.sin(angle) * spread * force * 0.7 - up * this.random()),
+        fall: Math.round(180 + this.random() * 260),
+        rot: Math.round((this.random() - 0.5) * 900),
+        w: round ? 9 : 8 + Math.round(this.random() * 8),
+        h: round ? 9 : 5 + Math.round(this.random() * 6),
+        round,
+        color: colors[Math.floor(this.random() * colors.length)],
+        ms: 1300 + Math.round(this.random() * 700),
+        delay: Math.round(this.random() * 90),
+      }
+    })
+    await this.page.evaluate(([x, y, b]) => window.__trailer.burst(x, y, b), [point.x, point.y, bits])
+  }
+
   // --- Overlay --------------------------------------------------------------------
 
-  async caption(text) {
-    await this.page.evaluate((value) => window.__trailer.caption(value), text)
+  /** The lower-third caption: `style` is { color, icon } (icon as SVG markup). */
+  async caption(text, style = {}) {
+    await this.page.evaluate(([value, st]) => window.__trailer.caption(value, st), [text, style])
   }
 
   async showCursor(visible) {
@@ -285,8 +472,25 @@ export class Recorder {
   }
 }
 
-function easeInOutCubic(t) {
+export function easeInOutCubic(t) {
   return t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2
+}
+
+/** Gentle both ends, for slow moves that should not announce themselves. */
+export function easeInOutSine(t) {
+  return -(Math.cos(Math.PI * t) - 1) / 2
+}
+
+/** A quick kick that overshoots a little and settles. */
+export function easeOutBack(t) {
+  const c1 = 1.70158
+  const c3 = c1 + 1
+  return 1 + c3 * (t - 1) ** 3 + c1 * (t - 1) ** 2
+}
+
+/** Fast start, long soft landing: a camera push that feels deliberate. */
+export function easeOutExpo(t) {
+  return t >= 1 ? 1 : 1 - 2 ** (-10 * t)
 }
 
 /** Small seeded PRNG, so typing rhythm and cursor arcs are the same every run. */

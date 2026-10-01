@@ -11,14 +11,18 @@ export default {
 
   cards: {
     intro: {
-      line: 'Tus notas, timers, hábitos, medicación y contraseñas.',
-      sub: 'En un solo lugar.',
+      // The last word takes the accent gradient.
+      headline: 'Tu día entero, en un solo lugar.',
+      // In this order: notes, timers, habits, medication, vault.
+      features: ['Notas', 'Timers', 'Hábitos', 'Medicación', 'Contraseñas'],
     },
     localFirst: {
-      line: 'Sin cuenta. Sin servidor. Funciona offline.',
+      statements: ['Sin cuenta.', 'Sin servidor.', 'Funciona offline.'],
+      kicker: 'Tus datos se quedan en tu dispositivo.',
       platforms: ['Web', 'Windows', 'macOS', 'Linux', 'Android'],
     },
     outro: {
+      tagline: 'Gratis y de código abierto.',
       url: 'noter.lukadevv.com',
       store: 'Disponible en Microsoft Store',
     },
@@ -36,7 +40,7 @@ export default {
   typing: {
     title: 'Lanzamiento v1.2',
     tasks: ['Capturas de la tienda', 'Grabar el trailer'],
-    see: 'Ver',
+    see: 'Basado en',
     // Must match the title of a demo note, so the [[ menu offers it.
     link: 'Ideas de marketing',
     tag: 'lanzamiento',
@@ -126,15 +130,19 @@ export default {
     secrets: [
       {
         kind: 'login',
-        title: 'Correo personal',
+        title: 'Banco',
         favorite: true,
+        fields: { username: 'lucia.r', password: 'Cobre*Nube*88' },
+      },
+      {
+        kind: 'login',
+        title: 'Correo personal',
         fields: {
           username: 'lucia@example.com',
           password: 'Marea-Lenta-27!',
           url: 'https://mail.example.com',
         },
       },
-      { kind: 'login', title: 'Banco', fields: { username: 'lucia.r', password: 'Cobre*Nube*88' } },
       {
         kind: 'wifi',
         title: 'Wi-Fi de casa',

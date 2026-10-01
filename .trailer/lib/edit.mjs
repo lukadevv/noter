@@ -65,8 +65,8 @@ export function placeCues(scenes, records, cuts, { transition }) {
       if (time >= from - 1e-6 && time < to)
         placed.push({ name: cue.name, time, gain: cue.gain, scene: scene.id })
     }
-    // A soft whoosh under every slide.
-    if (scene.transition && scene.transition !== 'fade' && i > 0) {
+    // A soft whoosh under every moving transition; fades stay quiet.
+    if (i > 0 && scene.transition && !['fade', 'fadeblack'].includes(scene.transition)) {
       placed.push({ name: 'whoosh', time: cuts[i] - 0.35, gain: 0.4, scene: scene.id })
     }
   })
@@ -100,7 +100,12 @@ export async function renderVideo(ffmpeg, scenes, records, cuts, { transition, f
     previous = out
   }
   const total = cuts[cuts.length - 1]
-  filters.push(`[${previous}]fade=t=out:st=${(total - fadeOut).toFixed(4)}:d=${fadeOut}[v]`)
+  // A light grade over the whole cut: a touch more contrast and colour, and a
+  // soft vignette that settles the eye on the middle of the frame.
+  filters.push(
+    `[${previous}]eq=contrast=1.03:saturation=1.07,vignette=angle=PI/7,` +
+      `fade=t=out:st=${(total - fadeOut).toFixed(4)}:d=${fadeOut}[v]`,
+  )
 
   args.push('-filter_complex', filters.join(';'), '-map', '[v]')
   args.push(

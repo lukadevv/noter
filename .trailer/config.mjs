@@ -4,7 +4,7 @@
  */
 export default {
   /** Rendered by `pnpm trailer` with no --lang. Each needs copy/<lang>.mjs. */
-  languages: ['es', 'en'],
+  languages: ['es', 'en', 'pt', 'fr', 'de', 'it', 'zh', 'ja', 'ko', 'ar'],
 
   video: {
     width: 1920,
@@ -14,7 +14,14 @@ export default {
      * The app is laid out at width / scale CSS pixels and rendered at full
      * resolution, so text reads well on a phone without looking zoomed in.
      */
-    scale: 1.25,
+    scale: 1.5,
+    /**
+     * Camera moves (zoom and pan) inside the app scenes. Off: a zoom that
+     * changes scale from one frame to the next makes Chrome re-rasterise the
+     * text every frame, and it visibly shimmers. The close-up feel comes from
+     * `scale` instead, which makes the whole UI larger and never changes.
+     */
+    camera: false,
     /** Length of every transition, centred on the cut. */
     transition: 0.5,
     /** Still pre-roll at the start of each recording (the transition's in-half). */

@@ -25,6 +25,8 @@ pnpm trailer                             # every language in config.mjs
 pnpm trailer --lang es                   # one language; also es,en or all
 pnpm trailer --draft                     # 720p at 30 fps, about twice as fast
 pnpm trailer --keep                      # keep the per-scene recordings in .cache/
+pnpm trailer --lang es --keep            # record once and keep the scenes...
+pnpm trailer --lang es --reuse           # ...then re-cut and re-mix in seconds (same --draft setting)
 ```
 
 If ffmpeg is installed somewhere not on `PATH`, set `FFMPEG_PATH` and
@@ -94,15 +96,38 @@ protocol freezes the animation timeline. For each frame the recorder moves both
 forward by exactly 1/60 s, takes a screenshot and pipes it to ffmpeg. Rendering
 can be slow and the video still plays at a perfect 60 fps, the same on every
 run. The cursor and the captions are an overlay the recorder injects. Waits
-that take real time (unlocking the vault runs PBKDF2) happen off camera.
+that take real time (unlocking the vault runs PBKDF2) happen off camera, and
+so do waits on the page in general: Playwright's own `waitFor` polls on
+animation frames, which never come while the clock is paused, so the recorder
+polls by itself (`rec.until`).
+
+**Camera.** `rec.camera(target, { zoom })` pushes in on an element and
+`rec.camera(null)` pulls back; the move runs over the next frames while the
+scene keeps clicking and typing. It does not transform the page (that breaks
+CodeMirror's menus, which are positioned `fixed`): each frame screenshots a
+smaller rectangle at a higher scale instead, so close-ups are rendered sharp
+by Chrome. The caption layer is counter-scaled to the same rectangle and stays
+put on screen. Close-ups cost more to render than full-screen frames.
+
+**Effects.** Scenes can call `rec.focus(locator)` (a glowing frame that draws
+itself around something), `rec.pulse(point)` (a ring that expands, e.g. on each
+tick of the Pomodoro countdown) and `rec.burst(point)` (confetti). They are
+overlay elements, so they are stepped frame by frame like everything else. The
+title cards (`app/card.*`) have a drifting aurora, motes and a halo behind the
+logo. Text in the cards is only ever moved and faded, never scaled or blurred:
+scaled text is re-rasterised on every frame and visibly shimmers. A card's
+backdrop is brought up before its content (`__cardPrime`), so a transition never
+shows the previous card or a backdrop restarting its fade-in.
 
 **Edit.** Each scene is recorded with a still lead-in and a few seconds of tail.
 The music's tempo and beats are detected in plain JavaScript (spectral flux,
 autocorrelation, grid phase), and each cut goes to the beat nearest its
 scripted time, preferring the first beat of a bar, never before the scene has
 finished. If detection gets a track wrong, set `music.bpm` and
-`music.firstBeat` in `config.mjs`. Transitions are ffmpeg `xfade` fades and
-slides centred on the cut. Sound effects are placed from cues the scenes
+`music.firstBeat` in `config.mjs`. Transitions are ffmpeg `xfade` effects
+(zoom, slides, circle and clock wipes, fades; each scene names its own in
+`scenes.mjs`) centred on the cut, with a whoosh under the moving ones. The cut
+has a light grade (a little contrast and saturation, a soft vignette). Sound effects are placed from cues the scenes
 record and summed into one track; in the final mix the music ducks under them
 (sidechain compression), stops before the closing card for half a second of
 silence and the final accent, and everything is normalised to -14 LUFS.

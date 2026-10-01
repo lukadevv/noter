@@ -311,7 +311,7 @@
           onlink={(target) => void notes.openLink(target)}
           onimages={(files) => insertImages(files)}
           onurl={(url) => insertUrl(url)}
-          titles={() => notes.notes.map((n) => derivedTitle(n))}
+          titles={() => notes.notes.filter((n) => !n.encrypted).map((n) => derivedTitle(n))}
           tags={() => [...notes.tagCounts.keys()]}
           onpickimages={() => pickImages()}
         />

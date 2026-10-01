@@ -8,17 +8,22 @@
 export default {
   /** BCP 47 tag for the browser, which formats dates and numbers. */
   browserLocale: 'en-US',
+  // A right-to-left language also sets `dir: 'rtl'` (see ar.mjs).
 
   cards: {
     intro: {
-      line: 'Your notes, timers, habits, medication and passwords.',
-      sub: 'All in one place.',
+      // The last word takes the accent gradient.
+      headline: 'Your whole day, in one place.',
+      // In this order: notes, timers, habits, medication, vault.
+      features: ['Notes', 'Timers', 'Habits', 'Medication', 'Passwords'],
     },
     localFirst: {
-      line: 'No account. No server. Works offline.',
+      statements: ['No account.', 'No server.', 'Works offline.'],
+      kicker: 'Your data stays on your device.',
       platforms: ['Web', 'Windows', 'macOS', 'Linux', 'Android'],
     },
     outro: {
+      tagline: 'Free and open source.',
       url: 'noter.lukadevv.com',
       store: 'Available on the Microsoft Store',
     },
@@ -36,8 +41,10 @@ export default {
   typing: {
     title: 'Launch v1.2',
     tasks: ['Store screenshots', 'Record the trailer'],
-    see: 'See',
-    // Must match the title of a demo note, so the [[ menu offers it.
+    see: 'Based on',
+    // Must match the title of a demo note, so the [[ menu offers it. The
+    // first five characters are typed before picking it, or `linkTyped` if
+    // set (a better cut for languages written without spaces).
     link: 'Marketing ideas',
     tag: 'launch',
   },
@@ -133,15 +140,19 @@ export default {
     secrets: [
       {
         kind: 'login',
-        title: 'Personal email',
+        title: 'Bank',
         favorite: true,
+        fields: { username: 'lucy.r', password: 'Copper*Cloud*88' },
+      },
+      {
+        kind: 'login',
+        title: 'Personal email',
         fields: {
           username: 'lucy@example.com',
           password: 'Slow-Tide-27!',
           url: 'https://mail.example.com',
         },
       },
-      { kind: 'login', title: 'Bank', fields: { username: 'lucy.r', password: 'Copper*Cloud*88' } },
       {
         kind: 'wifi',
         title: 'Home Wi-Fi',

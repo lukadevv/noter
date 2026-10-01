@@ -90,6 +90,23 @@ test.describe('folder encryption', () => {
     await expect(page.getByTestId('palette-row').filter({ hasText: 'Secret plans' })).toHaveCount(0)
   })
 
+  test('does not offer an encrypted note when completing a link', async ({ page }) => {
+    const row = await createFolder(page, 'Private')
+    await createNoteWith(page, 'Hidden title\nNobody should see the title.')
+    await encryptFolder(page, row)
+
+    // A note outside the folder, with a link being typed.
+    await page.getByText('All notes').click()
+    await page.getByTestId('new-note').click()
+    await page.locator('.cm-content').click()
+    await page.keyboard.type('see [[')
+    await page.keyboard.type('n')
+
+    // The menu takes a moment to open; without the fix it lists the ciphertext.
+    await page.waitForTimeout(500)
+    await expect(page.locator('.cm-tooltip-autocomplete', { hasText: 'noter:enc' })).toHaveCount(0)
+  })
+
   test('drops the tags of an encrypted note', async ({ page }) => {
     const row = await createFolder(page, 'Private')
     await createNoteWith(page, 'Tagged secret\nWith a #confidential tag.')
