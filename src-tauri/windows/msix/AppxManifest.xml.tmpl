@@ -2,9 +2,9 @@
 <!--
   Microsoft Store package manifest, filled in by scripts/build-msix.ps1.
 
-  {{IDENTITY_NAME}}, {{PUBLISHER}} and {{PUBLISHER_DISPLAY_NAME}} must match
-  Partner Center → your app → Product management → Product identity exactly, or
-  the upload is rejected. The package is left unsigned: the Store signs it.
+  {{IDENTITY_NAME}}, {{PUBLISHER}}, {{PUBLISHER_DISPLAY_NAME}} and
+  {{DISPLAY_NAME}} must match Partner Center → your app → Product management →
+  Product identity exactly, or the upload is rejected. The package is left unsigned: the Store signs it.
 -->
 <Package
   xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
@@ -19,7 +19,7 @@
     ProcessorArchitecture="x64" />
 
   <Properties>
-    <DisplayName>Noter</DisplayName>
+    <DisplayName>{{DISPLAY_NAME}}</DisplayName>
     <PublisherDisplayName>{{PUBLISHER_DISPLAY_NAME}}</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
     <Description>Local-first notes, timers, medication reminders and a password vault.</Description>
@@ -46,7 +46,7 @@
   <Applications>
     <Application Id="Noter" Executable="Noter.exe" EntryPoint="Windows.FullTrustApplication">
       <uap:VisualElements
-        DisplayName="Noter"
+        DisplayName="{{DISPLAY_NAME}}"
         Description="Local-first notes, timers, medication reminders and a password vault."
         BackgroundColor="transparent"
         Square150x150Logo="Assets\Square150x150Logo.png"

@@ -33,6 +33,11 @@ in GitHub (_Settings → Secrets and variables → Actions → Variables_):
 Copy them exactly: Partner Center rejects a package whose identity differs by a
 single character.
 
+_Product identity_ does not list `Package/Properties/DisplayName`: it must be one
+of the names reserved under _Product management → Manage app names_. The
+optional `MSIX_DISPLAY_NAME` variable sets it and defaults to `Noter X`, the name
+reserved for the product ("Noter" was taken).
+
 ## 3. Build the package
 
 - **Without a release (first submission, or any time):** in GitHub, go to
@@ -139,6 +144,12 @@ detects the MSIX install and the app leaves updating to the Store.
 - **"The package identity doesn't match" / "Invalid package family name":** one
   of the three repository variables differs from _Product identity_. Fix it and
   run the workflow again.
+- **"This package's manifest (Package/Properties/DisplayName) uses a display
+  name that you have not reserved":** the name in the package is not one reserved
+  for this product. Set `MSIX_DISPLAY_NAME` to the name exactly as _Manage app
+  names_ shows it (the default is `Noter X`) and rebuild. The other
+  errors on the Packages page (no package, device family) disappear once a valid
+  package is accepted.
 - **"A package with this version already exists" (or a lower one):** bump
   `version` in `package.json` and rebuild.
 - **The MSIX workflow fails at "Check the Partner Center identity":** the
