@@ -1,6 +1,6 @@
 [package]
 name = "noter"
-version = "1.0.0"
+version = "1.1.0"
 description = "A local-first note-taking app"
 authors = ["lukadevv"]
 edition = "2021"
