@@ -67,7 +67,9 @@ must have a higher version than the last package the Store accepted, so bump
   user-to-user communication, no purchases and no publicly shared user content.
 - **Packages:** upload the `.msix` from step 3.
 - **Store listings:** description, at least one screenshot (1366×768 or larger)
-  and the logo (`assets/logo-1024.png`, transparent background).
+  and the logo (`assets/logo-1024.png`, transparent background). Each
+  language's listing can use its own screenshots from
+  `docs/screenshots/<locale>/` (1440×900, regenerated with `pnpm screenshots`).
 - **Submission options → Notes for certification:** the text below.
 
 ### Categories

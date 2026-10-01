@@ -235,6 +235,7 @@ const de: Messages = {
     cornerRoundness: 'Eckenrundung',
     reduceMotion: 'Bewegung reduzieren',
     lineNumbers: 'Zeilennummern im Editor anzeigen',
+    insertBar: 'Einfügeleiste unter dem Editor anzeigen',
     daily: {
       title: 'Tagesnotizen',
       about:
@@ -672,6 +673,16 @@ const de: Messages = {
     meds: 'Medikamente',
     vault: 'Tresor',
     habits: 'Gewohnheiten',
+    short: {
+      home: 'Start',
+      notes: 'Notizen',
+      timers: 'Timer',
+      habits: 'Routinen',
+      meds: 'Arznei',
+      vault: 'Tresor',
+      search: 'Suchen',
+      settings: 'Optionen',
+    },
   },
 
   home: {
@@ -821,6 +832,11 @@ const de: Messages = {
     divider: 'Trennlinie',
     date: 'Heutiges Datum',
     menu: 'Blockaktionen',
+    insert: 'Einfügen',
+    insertBar: 'Block einfügen',
+    cut: 'Ausschneiden',
+    copy: 'Kopieren',
+    paste: 'Einfügen',
     turnInto: 'Umwandeln in',
     duplicate: 'Duplizieren',
     moveUp: 'Nach oben',
@@ -1131,7 +1147,7 @@ const de: Messages = {
     hint: 'Tippe auf Start oder drücke die Leertaste',
     lap: 'Runde {n}',
     lapAction: 'Runde',
-    reset: 'Zurücksetzen',
+    reset: 'Reset',
     laps: 'Runden',
     split: 'Rundenzeit',
     total: 'Gesamt',

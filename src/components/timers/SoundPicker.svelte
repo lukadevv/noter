@@ -69,7 +69,7 @@
             <span class="bar" style="--h: {h}; --d: {i * 70}ms"></span>
           {/each}
         </span>
-        <span class="name truncate">{option.name}</span>
+        <span class="name">{option.name}</span>
         {#if selected}<span class="check"><Icon name="check" size={12} /></span>{/if}
       </button>
       <button
@@ -131,8 +131,15 @@
     cursor: pointer;
   }
 
+  /* Two lines before cutting: sound names run long in German or Portuguese. */
   .name {
+    display: -webkit-box;
     max-width: 100%;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    line-height: 1.25;
     font-size: var(--text-md);
     font-weight: 550;
   }

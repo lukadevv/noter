@@ -245,6 +245,7 @@ const ar: Messages = {
     cornerRoundness: 'استدارة الزوايا',
     reduceMotion: 'تقليل الحركة',
     lineNumbers: 'إظهار أرقام الأسطر في المحرر',
+    insertBar: 'إظهار شريط الإدراج أسفل المحرر',
     daily: {
       title: 'الملاحظات اليومية',
       about:
@@ -708,6 +709,16 @@ const ar: Messages = {
     meds: 'الأدوية',
     vault: 'الخزنة',
     habits: 'العادات',
+    short: {
+      home: 'الرئيسية',
+      notes: 'الملاحظات',
+      timers: 'المؤقتات',
+      habits: 'العادات',
+      meds: 'الأدوية',
+      vault: 'الخزنة',
+      search: 'بحث',
+      settings: 'الإعدادات',
+    },
   },
 
   home: {
@@ -917,6 +928,11 @@ const ar: Messages = {
     divider: 'فاصل',
     date: 'تاريخ اليوم',
     menu: 'إجراءات الكتلة',
+    insert: 'إدراج',
+    insertBar: 'إدراج كتلة',
+    cut: 'قص',
+    copy: 'نسخ',
+    paste: 'لصق',
     turnInto: 'تحويل إلى',
     duplicate: 'تكرار',
     moveUp: 'نقل لأعلى',

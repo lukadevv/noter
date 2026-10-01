@@ -29,4 +29,10 @@
     checked={theme.settings.showLineNumbers}
     onchange={(showLineNumbers) => theme.update({ showLineNumbers })}
   />
+
+  <Switch
+    label={t('settings.insertBar')}
+    checked={theme.settings.showInsertBar}
+    onchange={(showInsertBar) => theme.update({ showInsertBar })}
+  />
 </Group>

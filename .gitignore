@@ -37,3 +37,16 @@ android/app/release/
 *.keystore
 *.jks
 updater.conf.json
+
+# Trailer (.trailer/). Renders and caches are reproducible; audio files in
+# .trailer/assets/ are kept out because their licences do not always allow redistribution.
+.trailer/out/
+.trailer/.cache/
+.trailer/assets/**/*.mp3
+.trailer/assets/**/*.wav
+.trailer/assets/**/*.ogg
+.trailer/assets/**/*.flac
+.trailer/assets/**/*.m4a
+.trailer/assets/**/*.aac
+# Windows marks downloaded files with an alternate data stream that WSL shows as a file.
+*:Zone.Identifier

@@ -7,6 +7,7 @@ import Calendar from '@lucide/svelte/icons/calendar'
 import Check from '@lucide/svelte/icons/check'
 import CheckSquare from '@lucide/svelte/icons/square-check-big'
 import ChevronRight from '@lucide/svelte/icons/chevron-right'
+import ClipboardPaste from '@lucide/svelte/icons/clipboard-paste'
 import Code from '@lucide/svelte/icons/code'
 import Copy from '@lucide/svelte/icons/copy'
 import FileText from '@lucide/svelte/icons/file-text'
@@ -26,6 +27,7 @@ import Pencil from '@lucide/svelte/icons/pencil'
 import Pin from '@lucide/svelte/icons/pin'
 import Plus from '@lucide/svelte/icons/plus'
 import RotateCcw from '@lucide/svelte/icons/rotate-ccw'
+import Scissors from '@lucide/svelte/icons/scissors'
 import Search from '@lucide/svelte/icons/search'
 import Settings from '@lucide/svelte/icons/settings'
 import Star from '@lucide/svelte/icons/star'
@@ -139,6 +141,7 @@ export const ICONS: Record<string, IconComponent> = {
   check: Check,
   'check-square': CheckSquare,
   'chevron-right': ChevronRight,
+  'clipboard-paste': ClipboardPaste,
   code: Code,
   copy: Copy,
   'file-text': FileText,
@@ -159,6 +162,7 @@ export const ICONS: Record<string, IconComponent> = {
   plus: Plus,
   restore: RotateCcw,
   rocket: Rocket,
+  scissors: Scissors,
   search: Search,
   settings: Settings,
   star: Star,

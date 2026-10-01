@@ -234,6 +234,7 @@ const es: Messages = {
     cornerRoundness: 'Redondeo de esquinas',
     reduceMotion: 'Reducir el movimiento',
     lineNumbers: 'Mostrar números de línea en el editor',
+    insertBar: 'Mostrar la barra para insertar bajo el editor',
     daily: {
       title: 'Notas diarias',
       about:
@@ -666,6 +667,16 @@ const es: Messages = {
     meds: 'Medicación',
     vault: 'Bóveda',
     habits: 'Hábitos',
+    short: {
+      home: 'Inicio',
+      notes: 'Notas',
+      timers: 'Reloj',
+      habits: 'Hábitos',
+      meds: 'Medicinas',
+      vault: 'Bóveda',
+      search: 'Buscar',
+      settings: 'Ajustes',
+    },
   },
 
   home: {
@@ -815,6 +826,11 @@ const es: Messages = {
     divider: 'Separador',
     date: 'Fecha de hoy',
     menu: 'Acciones del bloque',
+    insert: 'Insertar',
+    insertBar: 'Insertar un bloque',
+    cut: 'Cortar',
+    copy: 'Copiar',
+    paste: 'Pegar',
     turnInto: 'Convertir en',
     duplicate: 'Duplicar',
     moveUp: 'Subir',
@@ -830,7 +846,7 @@ const es: Messages = {
       tea: 'Té',
       break: 'Pausa',
       oven: 'Horno',
-      focus: 'Concentración',
+      focus: 'Enfoque',
       nap: 'Siesta',
       hour: 'Una hora',
     },

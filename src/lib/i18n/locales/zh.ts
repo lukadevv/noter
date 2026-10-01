@@ -236,6 +236,7 @@ const zh: Messages = {
     cornerRoundness: '圆角程度',
     reduceMotion: '减少动效',
     lineNumbers: '在编辑器中显示行号',
+    insertBar: '在编辑器下方显示插入栏',
     daily: {
       title: '每日笔记',
       about: '每天一条笔记，只有在你打开时才会创建。如果今天的笔记留空，它会被再次删除--不写就不会堆积。',
@@ -642,6 +643,16 @@ const zh: Messages = {
     meds: '用药',
     vault: '保险库',
     habits: '习惯',
+    short: {
+      home: '首页',
+      notes: '笔记',
+      timers: '计时器',
+      habits: '习惯',
+      meds: '用药',
+      vault: '保险库',
+      search: '搜索',
+      settings: '设置',
+    },
   },
 
   home: {
@@ -776,6 +787,11 @@ const zh: Messages = {
     divider: '分隔线',
     date: '今天的日期',
     menu: '块操作',
+    insert: '插入',
+    insertBar: '插入块',
+    cut: '剪切',
+    copy: '复制',
+    paste: '粘贴',
     turnInto: '转换为',
     duplicate: '复制',
     moveUp: '上移',

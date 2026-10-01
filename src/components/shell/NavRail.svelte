@@ -35,7 +35,7 @@
       >
         <span class="indicator" aria-hidden="true"></span>
         <Icon name={entry.icon} size={19} />
-        <span class="label">{t(entry.label)}</span>
+        <span class="label">{t(entry.short)}</span>
         {#if count > 0}<span class="badge" aria-label={t('nav.alerts', { count })}>{count}</span>{/if}
       </button>
     {/each}
@@ -51,7 +51,7 @@
     onclick={onsearch}
   >
     <Icon name="search" size={19} />
-    <span class="label">{t('nav.search')}</span>
+    <span class="label">{t('nav.short.search')}</span>
   </button>
   <button
     class="item"
@@ -64,7 +64,7 @@
   >
     <span class="indicator" aria-hidden="true"></span>
     <Icon name="settings" size={19} />
-    <span class="label">{t('sidebar.settings')}</span>
+    <span class="label">{t('nav.short.settings')}</span>
   </button>
 </nav>
 
@@ -173,6 +173,11 @@
   }
 
   .label {
+    max-width: 100%;
+    padding-inline: 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     font-size: 10.5px;
     font-weight: 500;
     line-height: 1.2;

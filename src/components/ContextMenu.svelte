@@ -9,6 +9,8 @@
   interface Panel {
     items: MenuItem[]
     anchor: MenuAnchor
+    /** For a submenu: the row it opened from, so it opens beside it. */
+    beside?: { left: number; right: number; rtl: boolean }
     active: number
     /** Set once measured, so the panel never flashes at the wrong spot. */
     position: { x: number; y: number } | null
@@ -29,7 +31,13 @@
       const element = elements[level]
       if (!element || panel.position) return
       const rect = element.getBoundingClientRect()
-      panel.position = placeMenu(panel.anchor, rect, { width: innerWidth, height: innerHeight })
+      panel.position = placeMenu(
+        panel.anchor,
+        rect,
+        { width: innerWidth, height: innerHeight },
+        8,
+        panel.beside,
+      )
       // Hidden elements cannot take focus; wait until the placed panel is shown.
       requestAnimationFrame(() => {
         if (panel.active < 0) element.focus({ preventScroll: true })
@@ -63,7 +71,8 @@
       {
         items: item.submenu,
         // Opens beside the row; placeMenu flips it if there is no room.
-        anchor: { x: rtl ? rect.left - 200 : rect.right - 4, y: rect.top - 4 },
+        anchor: { x: rect.right, y: rect.top - 4 },
+        beside: { left: rect.left + 4, right: rect.right - 4, rtl },
         active: focusFirst ? nextIndex(item.submenu, -1, 'ArrowDown') : -1,
         position: null,
       },

@@ -1,6 +1,11 @@
 import { Decoration, EditorView, ViewPlugin, type DecorationSet, type ViewUpdate } from '@codemirror/view'
 import { RangeSetBuilder } from '@codemirror/state'
-import type { CompletionContext, CompletionResult } from '@codemirror/autocomplete'
+import {
+  pickedCompletion,
+  type Completion,
+  type CompletionContext,
+  type CompletionResult,
+} from '@codemirror/autocomplete'
 
 const LINK = /\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g
 
@@ -69,6 +74,22 @@ export interface CompletionSources {
 }
 
 /**
+ * Accepting a title finishes the link: `[[Ide` becomes `[[Ideas]]` with the
+ * cursor after it. Brackets already there (typed, or left from an earlier
+ * edit) are reused rather than doubled.
+ */
+export function closeLink(view: EditorView, completion: Completion, from: number, to: number): void {
+  const closed = view.state.sliceDoc(to, to + 2) === ']]'
+  const insert = closed ? completion.label : `${completion.label}]]`
+  view.dispatch({
+    changes: { from, to, insert },
+    selection: { anchor: from + completion.label.length + 2 },
+    annotations: pickedCompletion.of(completion),
+    userEvent: 'input.complete',
+  })
+}
+
+/**
  * Completion for `[[note title]]` and `#tag`.
  *
  * Both read from live getters rather than a snapshot, so a note created a moment
@@ -81,7 +102,7 @@ export function linkCompletions(sources: CompletionSources) {
       const typed = link.text.slice(2)
       return {
         from: link.from + 2,
-        options: sources.titles().map((title) => ({ label: title, type: 'text' })),
+        options: sources.titles().map((title) => ({ label: title, type: 'text', apply: closeLink })),
         filter: typed.length > 0,
       }
     }

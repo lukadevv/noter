@@ -235,6 +235,7 @@ const fr: Messages = {
     cornerRoundness: 'Arrondi des coins',
     reduceMotion: 'Réduire les animations',
     lineNumbers: "Afficher les numéros de ligne dans l'éditeur",
+    insertBar: 'Afficher la barre d’insertion sous l’éditeur',
     daily: {
       title: 'Notes quotidiennes',
       about:
@@ -670,6 +671,16 @@ const fr: Messages = {
     meds: 'Médicaments',
     vault: 'Coffre',
     habits: 'Habitudes',
+    short: {
+      home: 'Accueil',
+      notes: 'Notes',
+      timers: 'Minuteurs',
+      habits: 'Habitudes',
+      meds: 'Traitement',
+      vault: 'Coffre',
+      search: 'Chercher',
+      settings: 'Réglages',
+    },
   },
 
   home: {
@@ -819,6 +830,11 @@ const fr: Messages = {
     divider: 'Séparateur',
     date: 'Date du jour',
     menu: 'Actions du bloc',
+    insert: 'Insérer',
+    insertBar: 'Insérer un bloc',
+    cut: 'Couper',
+    copy: 'Copier',
+    paste: 'Coller',
     turnInto: 'Transformer en',
     duplicate: 'Dupliquer',
     moveUp: 'Monter',
@@ -834,7 +850,7 @@ const fr: Messages = {
       tea: 'Thé',
       break: 'Pause',
       oven: 'Four',
-      focus: 'Concentration',
+      focus: 'Focus',
       nap: 'Sieste',
       hour: 'Une heure',
     },
