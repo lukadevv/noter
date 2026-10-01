@@ -18,7 +18,7 @@
 
   Optional:
     MSIX_DISPLAY_NAME             Package/Properties/DisplayName, the app name
-                                  reserved in Partner Center. Defaults to Noter.
+                                  reserved in Partner Center. Defaults to Noter X.
 
 .EXAMPLE
   pnpm desktop:build; pwsh scripts/build-msix.ps1
@@ -37,8 +37,8 @@ foreach ($name in 'MSIX_IDENTITY_NAME', 'MSIX_PUBLISHER', 'MSIX_PUBLISHER_DISPLA
 }
 
 # The Store only accepts a display name that is reserved for the product, so a
-# reservation such as "Noter - Notes" has to be mirrored here.
-$displayName = if ($env:MSIX_DISPLAY_NAME) { $env:MSIX_DISPLAY_NAME.Trim() } else { 'Noter' }
+# different reservation has to be mirrored here.
+$displayName = if ($env:MSIX_DISPLAY_NAME) { $env:MSIX_DISPLAY_NAME.Trim() } else { 'Noter X' }
 
 $release = Join-Path $root 'src-tauri/target/release'
 $exe = @('Noter.exe', 'noter.exe') | ForEach-Object { Join-Path $release $_ } | Where-Object { Test-Path $_ } | Select-Object -First 1
