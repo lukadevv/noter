@@ -3,7 +3,7 @@ apply plugin: 'com.android.application'
 import groovy.json.JsonSlurper
 
 // One place numbers a release: the version in package.json. `versionCode` has
-// to be an always-growing integer, so the three parts are packed into one —
+// to be an always-growing integer, so the three parts are packed into one -
 // 1.4.2 becomes 10402, which keeps ordering intact up to 99 minors and patches.
 def appVersion = new JsonSlurper().parse(file("$rootDir/../package.json")).version
 def (major, minor, patch) = appVersion.tokenize('.').collect { it.toInteger() }
@@ -25,7 +25,7 @@ android {
         }
     }
     // Release signing comes from the environment so no key material lives in the
-    // repository. Without it — a local release build — Gradle leaves the APK
+    // repository. Without it - a local release build - Gradle leaves the APK
     // unsigned rather than failing, and `assembleDebug` is unaffected either way.
     signingConfigs {
         release {

@@ -52,7 +52,7 @@ export function looksLikeUrl(text: string): boolean {
  * Downloads a remote image and stores it locally.
  *
  * Hotlinking would leak the reader's IP to the remote host every time the note
- * is opened, break when the URL rots, and fail offline — so the bytes are pulled
+ * is opened, break when the URL rots, and fail offline - so the bytes are pulled
  * in once and kept. When CORS blocks the fetch (common on CDNs that do not send
  * the header) the URL is kept as a plain external reference and flagged as such,
  * which is honest about being fragile rather than silently dropping the paste.

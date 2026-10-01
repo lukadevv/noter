@@ -30,7 +30,7 @@ export async function latestVersion(noteId: string): Promise<Version | undefined
  * Records a snapshot if it is worth recording.
  *
  * Nothing is stored when the text is unchanged, or when the last snapshot is
- * recent — otherwise a long editing session would fill the history with dozens
+ * recent - otherwise a long editing session would fill the history with dozens
  * of near-identical rows and bury the version the user actually wants.
  */
 export async function snapshot(note: Note, force = false): Promise<Version | null> {

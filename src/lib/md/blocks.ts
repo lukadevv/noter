@@ -4,8 +4,8 @@
  * A note is plain markdown; a "block" is just a paragraph, a heading, a list
  * item, a quote, or a fenced block. Board and gallery are fences too
  * (```board, ```gallery), rendered inline by the editor. This module knows the
- * markdown for each kind — what to insert from the `/` menu and how to turn one
- * kind into another — and nothing about CodeMirror, so it can be unit-tested.
+ * markdown for each kind - what to insert from the `/` menu and how to turn one
+ * kind into another - and nothing about CodeMirror, so it can be unit-tested.
  */
 import { wrapFence } from './fences'
 

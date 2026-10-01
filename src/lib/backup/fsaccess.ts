@@ -7,8 +7,8 @@ import { archiveFileName, exportMarkdownArchive } from './archive'
  *
  * IndexedDB is not a safe home for the only copy of anything: browsers evict it
  * under storage pressure, and Safari clears it after seven days without a visit.
- * The File System Access API lets the user grant a folder once — the handle is
- * stored and survives restarts — after which backups are written without any
+ * The File System Access API lets the user grant a folder once - the handle is
+ * stored and survives restarts - after which backups are written without any
  * further prompting.
  *
  * Firefox and Safari do not implement it. There the app falls back to manual

@@ -78,7 +78,7 @@
 
     <fieldset class="field">
       <legend>{t('timers.duration')}</legend>
-      <div class="total" aria-live="polite">{total > 0 ? formatLength(total) : '—'}</div>
+      <div class="total" aria-live="polite">{total > 0 ? formatLength(total) : '-'}</div>
       <div class="hms">
         <Stepper label={t('timers.hours')} unit="h" max={23} bind:value={hours} />
         <Stepper label={t('timers.minutes')} unit="min" max={59} bind:value={minutes} />

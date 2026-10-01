@@ -157,7 +157,7 @@ test.describe('notes and folders', () => {
     await page.locator('.cm-content').click()
     await page.keyboard.type('XYZ')
     await expect(page.locator('.cm-content')).not.toContainText('XYZ')
-    await expect(page.getByText('Locked — tap the padlock to edit')).toBeVisible()
+    await expect(page.getByText('Locked - tap the padlock to edit')).toBeVisible()
 
     // The lock is part of the note, so it survives a reload.
     await page.reload()

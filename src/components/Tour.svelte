@@ -10,7 +10,7 @@
   import { t } from '$lib/i18n/index.svelte'
 
   /**
-   * The welcome tour. A spotlight — a hole cut in a dimmed overlay — moves
+   * The welcome tour. A spotlight - a hole cut in a dimmed overlay - moves
    * from one part of the app to the next, with a card explaining each. It
    * navigates for you, and falls back to a centred card when what it wants to
    * point at is not on screen.

@@ -43,8 +43,8 @@ export const wikiLinkHighlight = ViewPlugin.fromClass(
 )
 
 /**
- * Follows a `[[link]]` on Ctrl/⌘-click — a plain click places the cursor, as in
- * any editor — or on a plain click when the note is locked for editing, where
+ * Follows a `[[link]]` on Ctrl/⌘-click - a plain click places the cursor, as in
+ * any editor - or on a plain click when the note is locked for editing, where
  * placing a cursor to type has no point.
  */
 export function wikiLinkClicks(onLink: (target: string) => void) {

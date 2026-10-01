@@ -79,7 +79,7 @@
    * Where a drop lands: the top and bottom bands reorder, the middle nests.
    *
    * The bands are a share of the row with a pixel floor. At 30px a quarter of
-   * the row is a 7px target, which is far too small to hit on purpose — so in
+   * the row is a 7px target, which is far too small to hit on purpose - so in
    * practice every reorder turned into a nest.
    */
   const EDGE_RATIO = 0.3

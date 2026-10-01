@@ -13,7 +13,7 @@ export interface StoreImageOptions {
  * Stores an image, reusing an identical one if it is already here.
  *
  * Deduplication is on the hash of the *original* bytes, so pasting the same
- * screenshot into ten notes costs one copy — a common enough habit that it is
+ * screenshot into ten notes costs one copy - a common enough habit that it is
  * worth the extra digest.
  */
 export async function storeImage(source: Blob, options: StoreImageOptions): Promise<Asset> {

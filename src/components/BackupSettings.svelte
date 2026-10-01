@@ -359,7 +359,7 @@
   {:else}
     <p class="note faint">
       {t('settings.auto.unsupported')}
-      <strong>Export vault</strong> above and save the file somewhere safe — a reminder appears here once a backup
+      <strong>Export vault</strong> above and save the file somewhere safe - a reminder appears here once a backup
       is more than two weeks old.
     </p>
   {/if}

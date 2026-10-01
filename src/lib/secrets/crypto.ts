@@ -10,7 +10,7 @@
  *    a per-vault salt; it only wraps and unwraps the data key.
  *
  * AES-GCM authenticates, so a wrong password fails to unwrap instead of
- * yielding a garbage key — no separate verifier is needed. Each item is sealed
+ * yielding a garbage key - no separate verifier is needed. Each item is sealed
  * with its own id as additional authenticated data, so ciphertexts cannot be
  * swapped between items undetected.
  */

@@ -60,7 +60,7 @@ export interface Streak {
 
 /**
  * The run of scheduled days (or weeks) done, ending today. Today not being done
- * yet does not break it — the day is not over — and unscheduled days are
+ * yet does not break it - the day is not over - and unscheduled days are
  * skipped rather than counted as misses. `since` bounds the walk back.
  */
 export function streak(

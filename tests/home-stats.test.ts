@@ -110,7 +110,7 @@ describe('monthGrid', () => {
 
 describe('countWords', () => {
   it('counts words in any script and ignores punctuation', () => {
-    expect(countWords('Hello, world — 42 times!')).toBe(4)
+    expect(countWords('Hello, world - 42 times!')).toBe(4)
     expect(countWords('')).toBe(0)
     expect(countWords('café niño')).toBe(2)
   })

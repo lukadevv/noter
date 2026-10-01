@@ -58,7 +58,7 @@ export async function typeMarkdown(page: Page, text: string): Promise<void> {
  * Checking the note list is not enough: the store updates the list optimistically
  * the moment a key is pressed, while the write itself is on a 400 ms debounce. A
  * test that reloaded on the strength of the list alone would race the write and
- * fail intermittently — so this reads the database directly.
+ * fail intermittently - so this reads the database directly.
  */
 export async function settleAutosave(page: Page, expectedText: string): Promise<void> {
   await expect(page.getByTestId('note-item').filter({ hasText: expectedText })).toHaveCount(1, {
@@ -182,7 +182,7 @@ export async function renameFolder(page: Page, row: Locator, name: string): Prom
  *
  * The row is addressed by position, not by text: starting a rename swaps the
  * name for an input, so a text-based locator would stop matching exactly when it
- * is needed. For the same reason the rename field is looked up on the tree —
+ * is needed. For the same reason the rename field is looked up on the tree -
  * only one can be open at a time.
  */
 export async function createFolder(page: Page, name: string): Promise<Locator> {

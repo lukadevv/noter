@@ -69,7 +69,7 @@ export function structuredData(siteUrl: string, version: string): string {
     '@type': 'SoftwareApplication',
     '@id': `${base}/#app`,
     name: SITE_NAME,
-    alternateName: `${SITE_NAME} — ${SITE_TAGLINE}`,
+    alternateName: `${SITE_NAME} - ${SITE_TAGLINE}`,
     description: SITE_DESCRIPTION,
     applicationCategory: 'ProductivityApplication',
     applicationSubCategory: 'Note-taking',

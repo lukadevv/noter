@@ -5,7 +5,7 @@ import { kindOfLine, turnLinesInto, type BlockKind } from '$lib/md/blocks'
 /**
  * Top-level blocks of a note, as the block handle sees them.
  *
- * A block is a paragraph, heading, quote, fence, table… — a top-level node of
+ * A block is a paragraph, heading, quote, fence, table… - a top-level node of
  * the markdown syntax tree, widened to whole lines. Each item of a top-level
  * list is its own block (with its nested lines), because moving "one bullet"
  * is what people mean, not moving the whole list.

@@ -13,7 +13,7 @@ const { version } = JSON.parse(readFileSync(new URL('./package.json', import.met
  * The CSP is only injected for production builds: Vite's dev server relies on
  * inline bootstrap scripts and a websocket that a strict policy would block.
  *
- * `frame-ancestors` is deliberately absent — browsers ignore it in a <meta> tag,
+ * `frame-ancestors` is deliberately absent - browsers ignore it in a <meta> tag,
  * so it belongs in an HTTP response header. See the deployment notes in README.
  */
 const CSP = [
@@ -63,7 +63,7 @@ function csp(): Plugin {
  *
  * Open Graph requires an absolute URL for `og:image`, which a static build has
  * no way to know. Set `VITE_SITE_URL` when deploying; without it the tags fall
- * back to relative paths, which most scrapers ignore — so previews simply do not
+ * back to relative paths, which most scrapers ignore - so previews simply do not
  * appear rather than pointing somewhere wrong.
  */
 function siteUrl(): Plugin {

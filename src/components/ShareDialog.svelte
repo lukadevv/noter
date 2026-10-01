@@ -33,7 +33,7 @@
 <Dialog label={t('share.title')} {onclose} size="md" flush icon="link" testid="share-dialog">
   <div class="content">
     <!-- The note travels inside the URL fragment, which browsers never send to a
-         server — so this genuinely involves no backend. -->
+         server - so this genuinely involves no backend. -->
     <p class="note faint">
       {t('share.about')}
     </p>

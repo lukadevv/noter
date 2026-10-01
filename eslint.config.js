@@ -10,7 +10,7 @@ import svelteConfig from './svelte.config.js'
  *
  * `svelte-check` already covers types, so this focuses on the things a type
  * checker does not see: unsafe patterns, dead code, and accessibility in
- * markup. Formatting rules are switched off entirely — Prettier owns that, and
+ * markup. Formatting rules are switched off entirely - Prettier owns that, and
  * two tools arguing about whitespace is a waste of everyone's time.
  */
 export default ts.config(

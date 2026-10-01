@@ -40,7 +40,7 @@ const pt: Messages = {
     savedSearchName: 'Nome para esta busca',
     deleteSavedSearch: 'Excluir busca salva',
     noFolders:
-      'Ainda não há pastas. Crie uma para agrupar notas relacionadas — ou continue escrevendo em Todas as notas.',
+      'Ainda não há pastas. Crie uma para agrupar notas relacionadas - ou continue escrevendo em Todas as notas.',
     folderActions: 'Ações da pasta',
     expandFolder: 'Expandir pasta',
     collapseFolder: 'Recolher pasta',
@@ -109,7 +109,7 @@ const pt: Messages = {
     },
     lockEditing: 'Bloquear edição',
     unlockEditing: 'Desbloquear edição',
-    lockedHint: 'Bloqueada — toque no cadeado para editar',
+    lockedHint: 'Bloqueada - toque no cadeado para editar',
     lockedToast: 'Nota bloqueada para não ser alterada por engano.',
     unlockedToast: 'Nota desbloqueada para edição.',
   },
@@ -237,7 +237,7 @@ const pt: Messages = {
     daily: {
       title: 'Notas diárias',
       about:
-        'Uma nota por dia, criada só quando você a abre. Se deixar a nota de hoje vazia, ela é removida de novo — nada se acumula a menos que você escreva nela.',
+        'Uma nota por dia, criada só quando você a abre. Se deixar a nota de hoje vazia, ela é removida de novo - nada se acumula a menos que você escreva nela.',
       folder: 'Pasta',
       noFolder: 'Sem pasta',
       titleFormat: 'Formato do título · prévia: {preview}',
@@ -267,7 +267,7 @@ const pt: Messages = {
     backup: {
       title: 'Backup e transferência',
       about:
-        'Um backup .noter guarda tudo — notas, pastas, imagens, temas e configurações — em um arquivo, para levar a outro computador. O arquivo Markdown é um zip de arquivos .md legíveis que abre em qualquer editor.',
+        'Um backup .noter guarda tudo - notas, pastas, imagens, temas e configurações - em um arquivo, para levar a outro computador. O arquivo Markdown é um zip de arquivos .md legíveis que abre em qualquer editor.',
       stale: 'Seu último backup foi há {count} dias.',
       passphrase: 'Criptografar com uma senha (opcional)',
       passphrasePlaceholder: 'Deixe vazio para um arquivo sem criptografia',
@@ -309,7 +309,7 @@ const pt: Messages = {
       lastBackup: 'Último backup: {date}.',
       never: 'Nenhum backup foi escrito ainda.',
       unsupported:
-        'Este navegador não consegue gravar diretamente numa pasta (só Chrome e Edge implementam isso). Exporte um backup .noter acima e guarde o arquivo em local seguro — um lembrete aparece aqui quando o backup tiver mais de duas semanas.',
+        'Este navegador não consegue gravar diretamente numa pasta (só Chrome e Edge implementam isso). Exporte um backup .noter acima e guarde o arquivo em local seguro - um lembrete aparece aqui quando o backup tiver mais de duas semanas.',
     },
     sections: {
       general: 'Geral',
@@ -375,7 +375,7 @@ const pt: Messages = {
     notifications: {
       enable: 'Mostrar notificações',
       enableHint: 'Quando um timer toca ou chega a hora de uma dose.',
-      web: 'No navegador, os lembretes aparecem enquanto o Noter está aberto, mesmo em outra aba. Com a aba fechada nada pode tocar — instale o app no celular para lembretes que sempre chegam.',
+      web: 'No navegador, os lembretes aparecem enquanto o Noter está aberto, mesmo em outra aba. Com a aba fechada nada pode tocar - instale o app no celular para lembretes que sempre chegam.',
       desktop:
         'No computador, os lembretes tocam enquanto o Noter está aberto, mesmo com a janela minimizada.',
       android: 'No Android, os lembretes são agendados no sistema e chegam mesmo com o Noter fechado.',
@@ -533,7 +533,7 @@ const pt: Messages = {
     comparedWith: 'Comparado com o texto atual',
     titleChange: 'Título:',
     selectVersion: 'Selecione uma versão para ver o que mudou.',
-    restoreNote: 'Restaurar não perde o texto atual — um instantâneo é tirado antes.',
+    restoreNote: 'Restaurar não perde o texto atual - um instantâneo é tirado antes.',
     restoreVersion: 'Restaurar esta versão',
   },
 
@@ -548,7 +548,7 @@ const pt: Messages = {
       other: 'Esta nota tem {count} imagens, que quem receber não vai ver.',
     },
     characters: '{count} caracteres',
-    tooLong: 'Maior que {max} — alguns aplicativos vão cortá-lo.',
+    tooLong: 'Maior que {max} - alguns aplicativos vão cortá-lo.',
     warning: 'Qualquer pessoa com o link pode ler esta nota. Trate-o como a própria nota.',
     copyLink: 'Copiar link',
     sharedNote: 'Nota compartilhada',
@@ -634,7 +634,7 @@ const pt: Messages = {
     onlyHttp: 'Só é possível baixar URLs http(s).',
     downloadFailed: 'Não foi possível baixar a imagem ({reason}); criando um link para ela.',
     folderLocked: 'Desbloqueie a pasta primeiro.',
-    backupNeedsPassphrase: 'O backup criptografado precisa da senha — faça-o nas Configurações.',
+    backupNeedsPassphrase: 'O backup criptografado precisa da senha - faça-o nas Configurações.',
     secretsSkipped: 'As entradas de cofre deste backup pertencem a outro cofre e não foram importadas.',
   },
 
@@ -833,7 +833,7 @@ const pt: Messages = {
     },
     timer: 'Timer',
     ringingTitle: '⏰ {label}',
-    ringingBody: 'O tempo acabou — passaram {length}.',
+    ringingBody: 'O tempo acabou - passaram {length}.',
     stop: 'Parar',
     stopAndRepeat: 'Parar e recomeçar',
     silence: 'Silenciar',
@@ -1155,7 +1155,7 @@ const pt: Messages = {
     remind: 'Lembrar se não estiver feito até',
     done: 'Feito',
     notDone: 'não feito',
-    doneNamed: '{name}: feito — toque para desfazer',
+    doneNamed: '{name}: feito - toque para desfazer',
     checkNamed: 'Marcar {name} como feito',
     undoOne: 'Um a menos',
     archive: 'Arquivar',

@@ -42,7 +42,7 @@ export type ListScope =
  * The trade-off is deliberate: a personal notebook is thousands of records, not
  * millions, and keeping them resident makes list rendering, counts, search
  * indexing and backlinks synchronous. If a store ever outgrows this, only this
- * class and the repos change — components read through the derived getters.
+ * class and the repos change - components read through the derived getters.
  */
 /** Fills a template's `{{date}}`, `{{time}}` and `{{title}}` placeholders. */
 export function expandTemplate(body: string, title: string, at: Date): string {
@@ -130,7 +130,7 @@ class NotesStore {
    * Runs a query string over the note set.
    *
    * Filters are applied by the evaluator, then the surviving notes are ordered
-   * by full-text relevance where the query had free words — so `tag:bug parser`
+   * by full-text relevance where the query had free words - so `tag:bug parser`
    * both filters and ranks.
    */
   runQuery(query: string): Note[] {
@@ -407,7 +407,7 @@ class NotesStore {
    * Writes any pending edit immediately.
    *
    * Returns a promise that settles once the write has committed, so anything
-   * that reads the database straight afterwards — an export, a snapshot — sees
+   * that reads the database straight afterwards - an export, a snapshot - sees
    * the current text rather than the state from before the last keystroke.
    */
   flushPending(): Promise<void> {
@@ -536,7 +536,7 @@ class NotesStore {
 
   /**
    * The daily note opened most recently, so it can be discarded when the user
-   * leaves it empty — whether they go to another note or to the next day.
+   * leaves it empty - whether they go to another note or to the next day.
    */
   openedDaily: string | null = null
 

@@ -8,7 +8,7 @@ use base64::{engine::general_purpose::STANDARD, Engine as _};
 /// several times its size on the way across.
 ///
 /// Only a path the user chose is ever passed in, which is why no scope check
-/// happens here — the dialog is the permission prompt.
+/// happens here - the dialog is the permission prompt.
 #[tauri::command]
 fn write_export(path: String, contents: String) -> Result<(), String> {
     let bytes = STANDARD

@@ -3,8 +3,8 @@ import type { SoundRecipe } from '$lib/db/schema'
 /**
  * Alarm sounds, synthesised with the Web Audio API.
  *
- * No audio files: every sound is a short recipe — a waveform, a few pitches,
- * an envelope — so the built-in set costs a few hundred bytes, works offline,
+ * No audio files: every sound is a short recipe - a waveform, a few pitches,
+ * an envelope - so the built-in set costs a few hundred bytes, works offline,
  * and users can design their own "custom beeps" with the same knobs.
  */
 

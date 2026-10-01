@@ -92,7 +92,7 @@ function daysBetween(from: string, to: string): number {
 }
 
 /**
- * Consecutive days with any writing, ending today — or yesterday, so the
+ * Consecutive days with any writing, ending today - or yesterday, so the
  * streak does not read zero every morning before the first note.
  */
 export function streak(rows: ActivityDay[], today: string): number {

@@ -7,7 +7,7 @@ import { derivedTitle } from '$lib/db/repo/notes'
  *
  * This runs on the main thread rather than in a worker. The store already holds
  * every note in memory, so a worker would mean structured-cloning the entire
- * corpus across the boundary on every edit — more total work than indexing it
+ * corpus across the boundary on every edit - more total work than indexing it
  * here. The initial build is instead sliced across idle callbacks so it never
  * blocks the first paint or a keystroke.
  */

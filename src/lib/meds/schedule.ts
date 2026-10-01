@@ -73,8 +73,8 @@ export interface DayRecord {
 
 /**
  * The last `days` days, oldest first: doses taken each day against doses
- * expected. The schedule is anchored at the first dose ever logged — slots
- * fall every interval from there — so nothing is "missed" before you started,
+ * expected. The schedule is anchored at the first dose ever logged - slots
+ * fall every interval from there - so nothing is "missed" before you started,
  * and a slot only counts once it has come due.
  */
 export function history(med: Med, doses: Dose[], now: number, days = 7): DayRecord[] {
@@ -162,7 +162,7 @@ export function doseCheck(med: Med, doses: Dose[], at: number): DoseWarning | nu
   }
 }
 
-/** "5 h 12 min", "12 min", "2 d 3 h" — for "next in …" and "overdue by …". */
+/** "5 h 12 min", "12 min", "2 d 3 h" - for "next in …" and "overdue by …". */
 export function formatSpan(ms: number): string {
   const minutes = Math.max(1, Math.round(Math.abs(ms) / 60_000))
   const d = Math.floor(minutes / 1440)

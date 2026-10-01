@@ -21,7 +21,7 @@ import { migrateBodyForView, needsMigration } from '$lib/md/migrate'
 const IDLE_TIMEOUT_MS = 15 * 60_000
 
 /**
- * Holds the derived keys of unlocked folders — in memory only.
+ * Holds the derived keys of unlocked folders - in memory only.
  *
  * Nothing here is ever persisted: keys die with the tab, and an idle timer
  * discards them sooner. That is the whole security value of the feature; a key
@@ -172,7 +172,7 @@ async function openVersions(key: CryptoKey, noteId: string): Promise<void> {
 }
 
 /**
- * Decrypts any value that belongs to a folder — a snapshot, a template body.
+ * Decrypts any value that belongs to a folder - a snapshot, a template body.
  * Plaintext passes through untouched; null means the folder is locked.
  */
 export async function revealInFolder(folderId: string, value: string): Promise<string | null> {
@@ -197,7 +197,7 @@ export class FolderLockedError extends Error {
  * Re-encrypts a note for a new folder, or returns null when nothing changes.
  *
  * Each encrypted folder has its own key, so a note moved between folders has
- * to be decrypted with the old key and sealed with the new one — otherwise it
+ * to be decrypted with the old key and sealed with the new one - otherwise it
  * becomes unreadable in its new home, or stays plaintext inside a locked one.
  */
 export async function recryptForFolder(note: Note, targetFolderId: string): Promise<Partial<Note> | null> {

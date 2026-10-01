@@ -4,8 +4,8 @@ import { EditorView } from '@codemirror/view'
 /**
  * Locking a note against accidental edits.
  *
- * The editor stays focusable and selectable while locked — you can still read,
- * search, copy and tick checkboxes — only typing, pasting and dropping are
+ * The editor stays focusable and selectable while locked - you can still read,
+ * search, copy and tick checkboxes - only typing, pasting and dropping are
  * refused. `EditorView.editable(false)` would be simpler but makes the content
  * unfocusable, so keystrokes never arrive and the user gets no hint about why
  * nothing happens. `inputmode=none` keeps a phone's keyboard from opening.

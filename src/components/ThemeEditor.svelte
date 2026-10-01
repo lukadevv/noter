@@ -44,8 +44,8 @@
   /** Set once the theme is saved, so closing afterwards keeps it applied. */
   let saved = false
 
-  // However the editor goes away — Cancel, Escape on the parent dialog, a route
-  // change — an unsaved preview must not stay painted on the whole app.
+  // However the editor goes away - Cancel, Escape on the parent dialog, a route
+  // change - an unsaved preview must not stay painted on the whole app.
   $effect(() => () => {
     if (!saved) theme.cancelPreview()
   })

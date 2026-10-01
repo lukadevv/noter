@@ -267,7 +267,7 @@ const es: Messages = {
     backup: {
       title: 'Copias de seguridad y traslado',
       about:
-        'Una copia .noter guarda todo —notas, carpetas, imágenes, temas y ajustes— en un solo archivo, para pasar de una computadora a otra. El archivo Markdown es un zip de archivos .md legibles que abre cualquier editor.',
+        'Una copia .noter guarda todo -notas, carpetas, imágenes, temas y ajustes- en un solo archivo, para pasar de una computadora a otra. El archivo Markdown es un zip de archivos .md legibles que abre cualquier editor.',
       stale: 'Tu última copia de seguridad fue hace {count} días.',
       passphrase: 'Cifrar con una contraseña (opcional)',
       passphrasePlaceholder: 'Dejalo vacío para un archivo sin cifrar',
@@ -1159,7 +1159,7 @@ const es: Messages = {
     remind: 'Avisarme si no lo hice antes de las',
     done: 'Hecho',
     notDone: 'sin hacer',
-    doneNamed: '{name}: hecho — tocá para deshacer',
+    doneNamed: '{name}: hecho - tocá para deshacer',
     checkNamed: 'Marcar {name} como hecho',
     undoOne: 'Uno menos',
     archive: 'Archivar',

@@ -16,8 +16,8 @@
 
   /**
    * Everything that wants doing today, in one list: doses due, habits not
-   * ticked yet, countdowns running. Actionable in place — "Taken" and the habit
-   * check work right here — so Home is somewhere you act, not just look.
+   * ticked yet, countdowns running. Actionable in place - "Taken" and the habit
+   * check work right here - so Home is somewhere you act, not just look.
    */
   interface Props {
     now: number
